@@ -32,9 +32,9 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
-  # FIXME: Add the rest of your current configuration
-
   networking.hostName = "thixos";
+
+  programs.zsh.enable = true;
 
   users.users = {
     thom = {
@@ -42,6 +42,7 @@
       openssh.authorizedKeys.keys = [
       ];
       extraGroups = ["wheel"];
+      shell = pkgs.zsh;
     };
   };
 
