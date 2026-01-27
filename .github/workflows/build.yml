@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v6
     - uses: DeterminateSystems/determinate-nix-action@main
     - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
-    - run: nix run nixos-wsl-tarball-builder thixos.wsl
+    - run: sudo ./result/bin/nixos-wsl-tarball-builder thixos.wsl
     - uses: actions/upload-artifact@v6
       with:
         name: thixos-wsl-installer
