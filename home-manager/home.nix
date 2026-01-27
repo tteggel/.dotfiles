@@ -24,7 +24,7 @@
 
   home.packages = with pkgs; [
     gh
-   (writeShellApplication {
+    (writeShellApplication {
       name = "init-gh";
       runtimeInputs = [ gh ];
       text = builtins.readFile ./scripts/init-gh;
