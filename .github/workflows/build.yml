@@ -12,7 +12,8 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - uses: DeterminateSystems/determinate-nix-action@main
-    - run: sudo nix run .#nixosConfigurations.thixos.config.system.build.tarballBuilder
+    - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
+    - run: sudo ./result/bin/nixos-wsl-tarball-builder thixos.wsl
     - uses: anothrNick/github-tag-action@master
       id: tag
       env:
