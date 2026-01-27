@@ -11,20 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
-    
-    - uses: DeterminateSystems/nix-installer-action@main
-    
-    - uses: DeterminateSystems/magic-nix-cache-action@main
-
-    - uses: DeterminateSystems/flake-checker-action@main
-    
-    - name: Build WSL Tarball
-      id: build
-      run: |
-        nix build .#nixosConfigurations.thixos.config.system.build.tarball
-        mv result/nixos-wsl-x86_64-linux.tar.gz thixos.wsl
-        echo "Build complete."
-
+    - uses: DeterminateSystems/determinate-nix-action@main
+    - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
+    - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
+    - run: sudo ./bin/nixos-wsl-tarball-builder thixos.wsl
     - uses: actions/upload-artifact@v6
       with:
         name: thixos-wsl-installer
