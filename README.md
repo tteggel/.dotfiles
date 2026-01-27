@@ -10,4 +10,4 @@ sudo chown -R thom:users ~/src/github.com/tteggel"
 ```
 
 ## Update
-sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles
+`sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles`
