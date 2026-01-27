@@ -22,9 +22,8 @@
         specialArgs = {inherit inputs outputs;};
         system = "x86_64-linux";
         modules = [
-          ./nixos/configuration.nix
           nixos-wsl.nixosModules.default
-          nixos-wsl.nixosModules.wsl
+          ./nixos/configuration.nix
           {
             system.stateVersion = "25.05";
             wsl.enable = true;
