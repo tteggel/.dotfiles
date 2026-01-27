@@ -21,7 +21,7 @@ jobs:
     - name: Build WSL Tarball
       id: build
       run: |
-        nix build .dotfiles#nixosConfigurations.thixos.config.system.build.tarball
+        nix build .#nixosConfigurations.thixos.config.system.build.tarball
         mv result/nixos-wsl-x86_64-linux.tar.gz thixos.wsl
         echo "Build complete."
 
