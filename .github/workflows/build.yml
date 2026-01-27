@@ -15,9 +15,9 @@ jobs:
     - uses: actions/checkout@v6
     - uses: DeterminateSystems/determinate-nix-action@main
     - run: |
-        root=$(mktemp -d)
+        root=$(sudo mktemp -d)
         sudo mkdir -p $root/home/thom/src/github.com/tteggel
-        git clone git@github.com:tteggel/.dotfiles.git $root/home/thom/src/github.com/tteggel/.dotfiles
+        sudo git clone git@github.com:tteggel/.dotfiles.git $root/home/thom/src/github.com/tteggel/.dotfiles
         nix run .#nixosConfigurations.thixos.config.system.build.tarballBuilder -- --extra-files $root --chown /home/thom 1000:100
     - uses: anothrNick/github-tag-action@master
       id: tag
