@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - uses: DeterminateSystems/determinate-nix-action@main
-    - run: nix run .#nixosConfigurations.thixos.config.system.build.tarballBuilder
+    - run: sudo nix run .#nixosConfigurations.thixos.config.system.build.tarballBuilder
     - uses: anothrNick/github-tag-action@master
       id: tag
       env:
