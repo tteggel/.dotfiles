@@ -12,9 +12,10 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - uses: DeterminateSystems/determinate-nix-action@main
+    - uses: DeterminateSystems/flakehub-cache-action@main
+    - uses: DeterminateSystems/nix-flake-checker-action@main
     - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
-    - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
-    - run: sudo ./bin/nixos-wsl-tarball-builder thixos.wsl
+    - run: nix run nixos-wsl-tarball-builder thixos.wsl
     - uses: actions/upload-artifact@v6
       with:
         name: thixos-wsl-installer
