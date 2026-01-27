@@ -14,8 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - uses: DeterminateSystems/determinate-nix-action@main
-    - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
-    - run: sudo ./result/bin/nixos-wsl-tarball-builder thixos.wsl
+    - run: |
+        root=$(mktemp -d)
+        sudo mkdir -p $root/home/thom/src/github.com/tteggel
+        git clone git@github.com:tteggel/.dotfiles.git $root/home/thom/src/github.com/tteggel/.dotfiles
+        nix run .#nixosConfigurations.thixos.config.system.build.tarballBuilder -- --extra-files $root --chown /home/thom 1000:100
     - uses: anothrNick/github-tag-action@master
       id: tag
       env:
