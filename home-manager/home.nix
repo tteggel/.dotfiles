@@ -224,13 +224,11 @@
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
-
     initContent =
       let
-        initStarship = lib.mkOrder 1000 "eval \"$(starship init zsh)\"";
-        initGH = lib.mkOrder 1010 "init-gh";
+        initGH = lib.mkOrder 1500 "init-gh";
       in
-        lib.mkMerge [ initStarship initGH ];
+        lib.mkMerge [ initGH ];
   };
 
   systemd.user.startServices = "sd-switch";
