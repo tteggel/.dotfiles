@@ -28,7 +28,9 @@
       name = "init-gh";
       runtimeInputs = [ gh ];
       text = ''
-        [ -t 1 ] && exit 0
+        if [[ $- != *i* ]]; then
+          exit 0
+        fi
 
         if ! mkdir "$HOME/.init-gh-completed" 2>/dev/null; then
           exit 0
