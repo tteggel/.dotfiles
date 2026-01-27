@@ -89,7 +89,7 @@
         style = "bg:color_orange fg:color_fg0";
       };
       username = {
-        show_always = true;
+        show_always = false;
         style_user = "bg:color_orange fg:color_fg0";
         style_root = "bg:color_orange fg:color_fg0";
         format = "[ $user ]($style)";
@@ -99,7 +99,7 @@
         format = "[ $path ]($style)";
         truncation_length = 3;
         truncation_symbol = "…/";
-        subsitiutions = {
+        substitutions = {
           "Documents" = "󰈙 ";
           "Downloads" = " ";
           "Music" = "󰝚 ";
