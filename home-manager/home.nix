@@ -23,6 +23,12 @@
   };
 
   home.packages = with pkgs; [
+    gh
+   (writeShellApplication {
+      name = "init-gh";
+      runtimeInputs = [ gh ];
+      text = builtins.readFile ./scripts/init-gh;
+    })
   ];
 
   programs.home-manager.enable = true;
@@ -209,8 +215,9 @@
     initContent =
       let
         initStarship = lib.mkOrder 1000 "eval \"$(starship init zsh)\"";
+        initGH = lib.mkOrder 1010 "init-gh"
       in
-        lib.mkMerge [ initStarship ];
+        lib.mkMerge [ initStarship, initGH ];
   };
 
   systemd.user.startServices = "sd-switch";
