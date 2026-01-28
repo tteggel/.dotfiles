@@ -28,7 +28,8 @@
       name = "init-gh";
       runtimeInputs = [ gh ];
       text = ''
-        if ! [ -t 0 ]; then
+        ppid=$(ps -p $$ -o ppid= | tr -d '[:space:]')
+        if [$(ps -p "$ppid" -o cmd= 2>/dev/null | tr -d '[:space:]') != '/init']; then
           exit 1
         fi
 
