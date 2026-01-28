@@ -29,8 +29,8 @@
       runtimeInputs = [ gh ];
       text = ''
         ppid=$(ps -p $$ -o ppid=)
-        pppid=$(ps -p $ppid -o ppid=)
-        pppbin=$(ps -p $pppid -o cmd=)
+        pppid=$(ps -p "$ppid" -o ppid=)
+        pppbin=$(ps -p "$pppid" -o cmd=)
         if [ "$pppbin" = '/bin/login' ]; then
           exit 1
         fi
