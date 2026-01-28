@@ -32,9 +32,15 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
+  environment.systemPackages = with pkgs; [
+    wget
+  ];
+
   networking.hostName = "thixos";
 
   programs.zsh.enable = true;
+
+  programs.nix-ld.enable = true;
 
   users.users = {
     thom = {
