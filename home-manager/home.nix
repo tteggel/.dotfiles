@@ -29,7 +29,7 @@
       runtimeInputs = [ gh ];
       text = ''
         ppid=$(ps -p $$ -o ppid= | tr -d '[:space:]')
-        if [ "$(ps -p $ppid -o cmd= 2>/dev/null | tr -d '[:space:]')" != '/init' ]; then
+        if [ "$(ps -p "$ppid" -o cmd= 2>/dev/null | tr -d '[:space:]')" != '/init' ]; then
           exit 1
         fi
 
