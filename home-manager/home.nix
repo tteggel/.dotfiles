@@ -29,7 +29,7 @@
       runtimeInputs = [ gh ];
       text = ''
         ppid=$(ps -p $$ -o ppid= | tr -d '[:space:]')
-        if [ $(ps -p "$ppid" -o cmd= 2>/dev/null | tr -d '[:space:]') != '/init' ]; then
+        if [ "$(ps -p $ppid -o cmd= 2>/dev/null | tr -d '[:space:]')" != '/init' ]; then
           exit 1
         fi
 
@@ -89,6 +89,7 @@
           ];
         in
           "${format}";
+      right_format = "$status";
       palette = "gruvbox_dark";
       palettes = {
         gruvbox_dark = {
@@ -216,6 +217,11 @@
         vimcmd_replace_one_symbol = "[](bold fg:color_purple)";
         vimcmd_replace_symbol = "[](bold fg:color_purple)";
         vimcmd_visual_symbol = "[](bold fg:color_yellow)";
+      };
+      status = {
+        disabled = false;
+        map_symbol = true;
+        pipestatus = true;
       };
     };
   };
