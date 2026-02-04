@@ -9,5 +9,5 @@ sudo nixos-rebuild switch --flake ~/nixos-config#thixos --option experimental-fe
 
 ## Update
 ```shell
-sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles`
+sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles
 ```
