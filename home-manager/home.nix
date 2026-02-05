@@ -24,6 +24,7 @@
 
   home.packages = with pkgs; [
     gh
+    jq
     (writeShellApplication {
       name = "init-gh";
       runtimeInputs = [ gh ];
