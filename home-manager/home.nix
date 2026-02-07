@@ -25,6 +25,9 @@
   home.packages = with pkgs; [
     gh
     jq
+    claude-code
+    gemini-cli
+    codex
     (writeShellApplication {
       name = "init-gh";
       runtimeInputs = [ gh ];
