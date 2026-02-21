@@ -10,6 +10,7 @@
 
   nixpkgs = {
     overlays = [
+      inputs.claude-code-nix.overlays.default
     ];
     config = {
       allowUnfree = true;
@@ -25,7 +26,7 @@
   home.packages = with pkgs; [
     gh
     jq
-    claude-code
+    claude-code-bun
     gemini-cli
     codex
     (writeShellApplication {
