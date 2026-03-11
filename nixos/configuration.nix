@@ -69,9 +69,9 @@
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
     interactiveShellInit = ''
+      export STARSHIP_CONFIG=/etc/starship.toml
       init-gh
       eval "$(starship init zsh)"
-      export STARSHIP_CONFIG=/etc/starship.toml
 
       # Shift+arrow key bindings (Windows Terminal)
       bindkey '\e[1;2D' backward-word
