@@ -246,8 +246,15 @@
     initContent =
       let
         initGH = lib.mkOrder 1500 "init-gh";
+        keyBindings = ''
+          # Shift+arrow key bindings (Windows Terminal sends \e[1;2A/B/C/D)
+          bindkey '\e[1;2D' backward-word
+          bindkey '\e[1;2C' forward-word
+          bindkey '\e[1;2A' up-line-or-history
+          bindkey '\e[1;2B' down-line-or-history
+        '';
       in
-        lib.mkMerge [ initGH ];
+        lib.mkMerge [ initGH keyBindings ];
   };
 
   systemd.user.startServices = "sd-switch";
