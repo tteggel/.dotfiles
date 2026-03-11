@@ -68,6 +68,14 @@
     enableCompletion = true;
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
+    histSize = 10000;
+    histFile = "$HOME/.zsh_history";
+    setOptions = [
+      "HIST_FCNTL_LOCK"
+      "HIST_IGNORE_DUPS"
+      "HIST_IGNORE_SPACE"
+      "SHARE_HISTORY"
+    ];
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
       init-gh
