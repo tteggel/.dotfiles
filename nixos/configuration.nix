@@ -73,11 +73,32 @@
       init-gh
       eval "$(starship init zsh)"
 
-      # Shift+arrow key bindings (Windows Terminal)
-      bindkey '\e[1;2D' backward-word
-      bindkey '\e[1;2C' forward-word
-      bindkey '\e[1;2A' up-line-or-history
-      bindkey '\e[1;2B' down-line-or-history
+      # Emacs mode (enables Ctrl+A/E/K/U/W/R/L, Alt+D/B/F, etc.)
+      bindkey -e
+
+      # Word navigation
+      bindkey '\e[1;5D' backward-word          # Ctrl+Left
+      bindkey '\e[1;5C' forward-word           # Ctrl+Right
+      bindkey '\e[1;3D' backward-word          # Alt+Left
+      bindkey '\e[1;3C' forward-word           # Alt+Right
+
+      # Line navigation
+      bindkey '\e[H'  beginning-of-line        # Home (normal mode)
+      bindkey '\eOH'  beginning-of-line        # Home (application mode)
+      bindkey '\e[F'  end-of-line              # End (normal mode)
+      bindkey '\eOF'  end-of-line              # End (application mode)
+
+      # Deletion
+      bindkey '\e[3~'   delete-char            # Delete
+      bindkey '\e[3;5~' kill-word              # Ctrl+Delete
+      bindkey '\e^?'    backward-kill-word     # Alt+Backspace
+      bindkey '\e^H'    backward-kill-word     # Ctrl+Backspace
+
+      # History
+      bindkey '\e[1;2A' up-line-or-history     # Shift+Up
+      bindkey '\e[1;2B' down-line-or-history   # Shift+Down
+      bindkey '\e[1;2D' backward-word          # Shift+Left
+      bindkey '\e[1;2C' forward-word           # Shift+Right
     '';
   };
 
