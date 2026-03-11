@@ -19,6 +19,8 @@ $kotlin\
 $haskell\
 $python\
 [](fg:color_blue bg:color_bg3)\
+$gcloud\
+$kubernetes\
 $docker_context\
 $conda\
 $pixi\
@@ -123,6 +125,17 @@ format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)"
 symbol = ""
 style = "bg:color_blue"
 format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)"
+
+[kubernetes]
+disabled = false
+symbol = "󱃾"
+style = "bg:color_bg3"
+format = "[[ $symbol $context( \\($namespace\\)) ](fg:color_fg0 bg:color_bg3)]($style)"
+
+[gcloud]
+symbol = "󱇶"
+style = "bg:color_bg3"
+format = "[[ $symbol $project ](fg:color_fg0 bg:color_bg3)]($style)"
 
 [docker_context]
 symbol = ""
