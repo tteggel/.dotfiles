@@ -169,6 +169,10 @@
     };
   };
 
+  system.activationScripts.wezterm.text = ''
+    cp ${../config/wezterm.lua} /mnt/c/Users/thom/.wezterm.lua
+  '';
+
   services.openssh = {
     enable = true;
     settings = {

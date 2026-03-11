@@ -32,19 +32,20 @@ $line_break$character"""
 right_format = "$status"
 scan_timeout = 100
 command_timeout = 1000
-palette = "gruvbox_dark"
+palette = "onedark"
 
-[palettes.gruvbox_dark]
-color_fg0 = "#fbf1c7"
-color_bg1 = "#3c3836"
-color_bg3 = "#665c54"
-color_blue = "#458588"
-color_aqua = "#689d6a"
-color_green = "#98971a"
-color_orange = "#d65d0e"
-color_purple = "#b16286"
-color_red = "#cc241d"
-color_yellow = "#d79921"
+[palettes.onedark]
+color_fg0 = "#282c34"
+color_fg_light = "#abb2bf"
+color_bg1 = "#282c34"
+color_bg3 = "#3e4451"
+color_blue = "#61afef"
+color_aqua = "#56b6c2"
+color_green = "#98c379"
+color_orange = "#d19a66"
+color_purple = "#c678dd"
+color_red = "#e06c75"
+color_yellow = "#e5c07b"
 
 [os]
 disabled = false
@@ -132,31 +133,31 @@ format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)"
 disabled = false
 symbol = "󱃾"
 style = "bg:color_bg3"
-format = "[[ $symbol $context( \\($namespace\\)) ](fg:color_fg0 bg:color_bg3)]($style)"
+format = "[[ $symbol $context( \\($namespace\\)) ](fg:color_fg_light bg:color_bg3)]($style)"
 
 [gcloud]
 symbol = "󱇶"
 style = "bg:color_bg3"
-format = "[[ $symbol $project ](fg:color_fg0 bg:color_bg3)]($style)"
+format = "[[ $symbol $project ](fg:color_fg_light bg:color_bg3)]($style)"
 
 [docker_context]
 symbol = ""
 style = "bg:color_bg3"
-format = "[[ $symbol( $environment) ](fg:#83a598 bg:color_bg3)]($style)"
+format = "[[ $symbol( $environment) ](fg:color_fg_light bg:color_bg3)]($style)"
 
 [conda]
 style = "bg:color_bg3"
-format = "[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)"
+format = "[[ $symbol( $version) ](fg:color_fg_light bg:color_bg3)]($style)"
 
 [pixi]
 style = "bg:color_bg3"
-format = "[[ $symbol( $version)( $environment) ](fg:color_fg0 bg:color_bg3)]($style)"
+format = "[[ $symbol( $version)( $environment) ](fg:color_fg_light bg:color_bg3)]($style)"
 
 [time]
 disabled = false
 time_format = "%R"
 style = "bg:color_bg1"
-format = "[[  $time ](fg:color_fg0 bg:color_bg1)]($style)"
+format = "[[  $time ](fg:color_fg_light bg:color_bg1)]($style)"
 
 [line_break]
 disabled = false
