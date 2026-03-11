@@ -32,6 +32,13 @@
     wget
     gh
     jq
+    eza
+    bat
+    fd
+    ripgrep
+    fzf
+    zoxide
+    delta
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
     inputs.llm-agents.packages.x86_64-linux.codex
@@ -66,6 +73,7 @@
   programs.zsh = {
     enable = true;
     enableCompletion = true;
+    promptInit = "";  # disable default prompt, we use starship
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
     histSize = 10000;
@@ -76,10 +84,22 @@
       "HIST_IGNORE_SPACE"
       "SHARE_HISTORY"
     ];
+    shellAliases = {
+      ls = "eza";
+      ll = "eza -l --git";
+      la = "eza -la --git";
+      lt = "eza -T --git-ignore";
+      cat = "bat --paging=never";
+      grep = "rg";
+      find = "fd";
+    };
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
+      export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       init-gh
       eval "$(starship init zsh)"
+      eval "$(fzf --zsh)"
+      eval "$(zoxide init zsh)"
 
       # Emacs mode (enables Ctrl+A/E/K/U/W/R/L, Alt+D/B/F, etc.)
       bindkey -e
@@ -120,6 +140,22 @@
     config = {
       user.name = "Thom Leggett";
       user.email = "thom@tteggel.org";
+      core.pager = "delta";
+      interactive.diffFilter = "delta --color-only";
+      delta = {
+        navigate = true;
+        side-by-side = true;
+        line-numbers = true;
+      };
+      merge.conflictstyle = "diff3";
+      diff.colorMoved = "default";
+      alias = {
+        st = "status";
+        co = "checkout";
+        br = "branch";
+        ci = "commit";
+        lg = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
+      };
     };
   };
 

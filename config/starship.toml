@@ -30,6 +30,8 @@ $time\
 $line_break$character"""
 
 right_format = "$status"
+scan_timeout = 100
+command_timeout = 1000
 palette = "gruvbox_dark"
 
 [palettes.gruvbox_dark]
