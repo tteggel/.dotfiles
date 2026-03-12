@@ -51,6 +51,9 @@ keybinds clear-defaults=true {
         // Scroll
         bind "Ctrl s" { SwitchToMode "scroll"; }
 
+        // Command palette
+        bind "Ctrl p" { Run "command-palette" { floating true; }; }
+
         // Layouts
         bind "Ctrl Space" { NextSwapLayout; }
     }

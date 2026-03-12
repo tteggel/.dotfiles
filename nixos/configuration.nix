@@ -42,6 +42,8 @@
     lazygit
     difftastic
     zellij
+    google-cloud-sdk
+    kubectl
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
     inputs.llm-agents.packages.x86_64-linux.codex
@@ -57,6 +59,44 @@
           zellij action go-to-previous-tab
           zellij action close-tab
         fi
+      '';
+    })
+    (writeShellApplication {
+      name = "command-palette";
+      runtimeInputs = [ fzf zellij ];
+      text = ''
+        commands=(
+          "code-session:Start coding session layout"
+          "claude:Claude Code"
+          "gemini:Gemini CLI"
+          "lazygit:Git UI"
+          "gh pr list:List pull requests"
+          "gh pr create:Create pull request"
+          "gh pr checkout:Checkout pull request"
+          "gh repo clone:Clone a GitHub repo"
+          "gcloud-switch:Switch GCP project and fetch kube credentials"
+          "nixos-rebuild:sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles"
+          "update-system:nix flake update --flake ~/src/github.com/tteggel/.dotfiles && sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push"
+        )
+        selected=$(printf '%s\n' "''${commands[@]}" | fzf --delimiter=: --with-nth=2 --prompt="Run> " --height=~100% --reverse --no-info) || exit 0
+        cmd="''${selected%%:*}"
+        zellij action toggle-floating-panes
+        zellij run -- bash -c "$cmd"
+      '';
+    })
+    (writeShellApplication {
+      name = "gcloud-switch";
+      runtimeInputs = [ google-cloud-sdk kubectl fzf ];
+      text = ''
+        project=$(gcloud projects list --format="value(projectId)" | fzf --prompt="Project> " --height=~100% --reverse) || exit 0
+        gcloud config set project "$project"
+
+        cluster=$(gcloud container clusters list --format="csv[no-heading](name,location)" 2>/dev/null | fzf --prompt="Cluster> " --height=~100% --reverse) || exit 0
+        cluster_name="''${cluster%%,*}"
+        cluster_location="''${cluster##*,}"
+        gcloud container clusters get-credentials "$cluster_name" --region "$cluster_location"
+
+        echo "Switched to project=$project cluster=$cluster_name"
       '';
     })
     (writeShellApplication {
