@@ -80,7 +80,7 @@
         )
         selected=$(printf '%s\n' "''${commands[@]}" | fzf --delimiter=$'\t' --with-nth=2 --prompt="Run> " --height=~100% --reverse --no-info) || exit 0
         cmd="''${selected%%	*}"
-        eval "exec $cmd"
+        exec bash -c "$cmd"
       '';
     })
     (writeShellApplication {
