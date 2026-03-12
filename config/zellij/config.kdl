@@ -1,11 +1,30 @@
 // Zellij configuration
 
-theme "one-half-dark"
+theme "onedark-bright-select"
+
+themes {
+    onedark-bright-select {
+        fg "#dcdfe4"
+        bg "#3e4452"
+        black "#282c34"
+        red "#e06c75"
+        green "#98c379"
+        yellow "#e5c07b"
+        blue "#61afef"
+        magenta "#c678dd"
+        cyan "#56b6c2"
+        white "#ffffff"
+        orange "#d19a66"
+    }
+}
 
 // Clean UI
 pane_frames false
 default_layout "compact"
 show_startup_tips false
+
+// Editor for scrollback
+scrollback_editor "micro"
 
 // Mouse support
 mouse_mode true
