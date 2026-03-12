@@ -43,6 +43,7 @@
     difftastic
     zellij
     google-cloud-sdk
+    google-cloud-sdk.components.gke-gcloud-auth-plugin
     kubectl
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
@@ -164,6 +165,7 @@
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
       export ZELLIJ_CONFIG_DIR=/etc/zellij
+      export USE_GKE_GCLOUD_AUTH_PLUGIN=True
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       init-gh
       eval "$(starship init zsh)"
