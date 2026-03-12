@@ -41,6 +41,7 @@
     delta
     lazygit
     difftastic
+    zellij
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
     inputs.llm-agents.packages.x86_64-linux.codex
@@ -69,6 +70,7 @@
   ];
 
   environment.etc."starship.toml".source = ../config/starship.toml;
+  environment.etc."zellij/config.kdl".source = ../config/zellij/config.kdl;
 
   networking.hostName = "thixos";
 
@@ -97,9 +99,15 @@
     };
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
+      export ZELLIJ_CONFIG_DIR=/etc/zellij
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       init-gh
       eval "$(starship init zsh)"
+
+      # Auto-attach to zellij session (or start one) unless already inside zellij
+      if [ -z "$ZELLIJ" ]; then
+        zellij attach -c default
+      fi
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
 

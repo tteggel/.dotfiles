@@ -1,0 +1,82 @@
+// Zellij configuration
+
+theme "one-half-dark"
+
+// Clean UI
+pane_frames false
+default_layout "compact"
+
+// Mouse support
+mouse_mode true
+
+// Copy behavior
+copy_on_select true
+
+// Scrollback
+scroll_buffer_size 10000
+
+// Session management
+session_serialization true
+serialize_pane_viewport true
+
+keybinds clear-defaults=true {
+    // Ctrl-based bindings — user has caps lock mapped to ctrl for ergo
+
+    shared_except "locked" {
+        // Session/mode
+        bind "Ctrl g" { SwitchToMode "locked"; }
+        bind "Ctrl q" { Quit; }
+        bind "Ctrl d" { Detach; }
+
+        // Panes
+        bind "Ctrl n" { NewPane; }
+        bind "Ctrl x" { CloseFocus; }
+        bind "Ctrl h" { MoveFocus "Left"; }
+        bind "Ctrl j" { MoveFocus "Down"; }
+        bind "Ctrl k" { MoveFocus "Up"; }
+        bind "Ctrl l" { MoveFocus "Right"; }
+        bind "Ctrl =" { Resize "Increase"; }
+        bind "Ctrl -" { Resize "Decrease"; }
+
+        // Tabs
+        bind "Ctrl t" { NewTab; }
+        bind "Ctrl 1" { GoToTab 1; }
+        bind "Ctrl 2" { GoToTab 2; }
+        bind "Ctrl 3" { GoToTab 3; }
+        bind "Ctrl 4" { GoToTab 4; }
+        bind "Ctrl 5" { GoToTab 5; }
+        bind "Ctrl [" { GoToPreviousTab; }
+        bind "Ctrl ]" { GoToNextTab; }
+
+        // Scroll
+        bind "Ctrl s" { SwitchToMode "scroll"; }
+
+        // Layouts
+        bind "Ctrl Space" { NextSwapLayout; }
+    }
+
+    locked {
+        bind "Ctrl g" { SwitchToMode "normal"; }
+    }
+
+    scroll {
+        bind "Ctrl s" { SwitchToMode "normal"; }
+        bind "j" "Down" { ScrollDown; }
+        bind "k" "Up" { ScrollUp; }
+        bind "d" { HalfPageScrollDown; }
+        bind "u" { HalfPageScrollUp; }
+        bind "Esc" { SwitchToMode "normal"; }
+        bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
+    }
+
+    entersearch {
+        bind "Enter" { SwitchToMode "search"; }
+        bind "Esc" { SwitchToMode "scroll"; }
+    }
+
+    search {
+        bind "n" { Search "down"; }
+        bind "N" { Search "up"; }
+        bind "Esc" { SwitchToMode "scroll"; }
+    }
+}

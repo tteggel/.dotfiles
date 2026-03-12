@@ -36,27 +36,13 @@ config.scrollback_lines = 10000
 -- No close confirmation
 config.window_close_confirmation = 'NeverPrompt'
 
--- Keybindings for pane splitting and navigation
-local act = wezterm.action
-config.keys = {
-  -- Pane splitting (Ctrl+Shift+| and Ctrl+Shift+_)
-  { key = '|', mods = 'CTRL|SHIFT', action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
-  { key = '_', mods = 'CTRL|SHIFT', action = act.SplitVertical { domain = 'CurrentPaneDomain' } },
+-- Start maximized
+wezterm.on('gui-startup', function(cmd)
+  local _, _, window = wezterm.mux.spawn_window(cmd or {})
+  window:gui_window():maximize()
+end)
 
-  -- Pane navigation (Ctrl+Shift+arrow)
-  { key = 'LeftArrow',  mods = 'CTRL|SHIFT', action = act.ActivatePaneDirection 'Left' },
-  { key = 'RightArrow', mods = 'CTRL|SHIFT', action = act.ActivatePaneDirection 'Right' },
-  { key = 'UpArrow',    mods = 'CTRL|SHIFT', action = act.ActivatePaneDirection 'Up' },
-  { key = 'DownArrow',  mods = 'CTRL|SHIFT', action = act.ActivatePaneDirection 'Down' },
-
-  -- Pane resize (Ctrl+Shift+Alt+arrow)
-  { key = 'LeftArrow',  mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Left', 5 } },
-  { key = 'RightArrow', mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Right', 5 } },
-  { key = 'UpArrow',    mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Up', 5 } },
-  { key = 'DownArrow',  mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Down', 5 } },
-
-  -- Close pane (Ctrl+Shift+W)
-  { key = 'w', mods = 'CTRL|SHIFT', action = act.CloseCurrentPane { confirm = false } },
-}
+-- Pane management is handled by Zellij — keep WezTerm keys minimal
+config.keys = {}
 
 return config
