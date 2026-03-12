@@ -16,6 +16,10 @@ config.default_domain = 'WSL:NixOS'
 config.font = wezterm.font 'ZedMono NF'
 config.font_size = 11.0
 config.color_scheme = 'OneDark (base16)'
+config.colors = {
+  selection_fg = '#282c34',
+  selection_bg = '#61afef',
+}
 
 -- Clean look: no title bar, just the tab bar
 config.window_decorations = 'RESIZE'
@@ -32,6 +36,9 @@ config.window_padding = {
 
 -- Scrollback
 config.scrollback_lines = 10000
+
+-- Hold Shift to bypass Zellij mouse capture for native WezTerm selection
+config.bypass_mouse_reporting_modifiers = 'SHIFT'
 
 -- No close confirmation
 config.window_close_confirmation = 'NeverPrompt'

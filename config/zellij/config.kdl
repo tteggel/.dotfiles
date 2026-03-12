@@ -12,6 +12,7 @@ mouse_mode true
 
 // Copy behavior
 copy_on_select true
+copy_command "clip.exe"
 
 // Scrollback
 scroll_buffer_size 10000

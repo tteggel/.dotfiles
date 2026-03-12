@@ -42,8 +42,9 @@
     lazygit
     difftastic
     zellij
-    google-cloud-sdk
-    google-cloud-sdk.components.gke-gcloud-auth-plugin
+    (google-cloud-sdk.withExtraComponents [
+      google-cloud-sdk.components.gke-gcloud-auth-plugin
+    ])
     kubectl
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
@@ -76,6 +77,7 @@
           "gh pr checkout	Checkout pull request"
           "gh repo clone	Clone a GitHub repo"
           "gcloud-switch	Switch GCP project and fetch kube credentials"
+          "gcloud-reauth	Re-authenticate gcloud and ADC"
           "sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles	Rebuild NixOS"
           "git -C ~/src/github.com/tteggel/.dotfiles diff --quiet flake.lock || { echo 'Error: flake.lock has uncommitted changes'; exit 1; } && nix flake update --flake ~/src/github.com/tteggel/.dotfiles && sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push	Update system"
         )
@@ -85,9 +87,28 @@
       '';
     })
     (writeShellApplication {
-      name = "gcloud-switch";
-      runtimeInputs = [ google-cloud-sdk kubectl fzf ];
+      name = "gcloud-reauth";
+      runtimeInputs = [ (google-cloud-sdk.withExtraComponents [
+        google-cloud-sdk.components.gke-gcloud-auth-plugin
+      ]) ];
       text = ''
+        gcloud auth login
+        gcloud auth application-default login
+        echo "Reauth complete."
+      '';
+    })
+    (writeShellApplication {
+      name = "gcloud-switch";
+      runtimeInputs = [ (google-cloud-sdk.withExtraComponents [
+        google-cloud-sdk.components.gke-gcloud-auth-plugin
+      ]) kubectl fzf ];
+      text = ''
+        if ! gcloud projects list --format="value(projectId)" --limit=1 &>/dev/null; then
+          echo "Not authenticated. Logging in..."
+          gcloud auth login
+          gcloud auth application-default login
+        fi
+
         project=$(gcloud projects list --format="value(projectId)" --filter="NOT projectId:sys-*" | fzf --prompt="Project> " --height=~100% --reverse) || exit 0
         gcloud config set project "$project"
 
