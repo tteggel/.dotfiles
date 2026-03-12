@@ -66,32 +66,42 @@
       runtimeInputs = [ fzf zellij ];
       text = ''
         commands=(
-          "code-session:Start coding session layout"
-          "claude:Claude Code"
-          "gemini:Gemini CLI"
-          "lazygit:Git UI"
-          "gh pr list:List pull requests"
-          "gh pr create:Create pull request"
-          "gh pr checkout:Checkout pull request"
-          "gh repo clone:Clone a GitHub repo"
-          "gcloud-switch:Switch GCP project and fetch kube credentials"
-          "nixos-rebuild:sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles"
-          "update-system:nix flake update --flake ~/src/github.com/tteggel/.dotfiles && sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push"
+          "code-session	Start coding session layout"
+          "claude	Claude Code"
+          "gemini	Gemini CLI"
+          "lazygit	Git UI"
+          "gh pr list	List pull requests"
+          "gh pr create	Create pull request"
+          "gh pr checkout	Checkout pull request"
+          "gh repo clone	Clone a GitHub repo"
+          "gcloud-switch	Switch GCP project and fetch kube credentials"
+          "sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles	Rebuild NixOS"
+          "git -C ~/src/github.com/tteggel/.dotfiles diff --quiet flake.lock || { echo 'Error: flake.lock has uncommitted changes'; exit 1; } && nix flake update --flake ~/src/github.com/tteggel/.dotfiles && sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push	Update system"
         )
-        selected=$(printf '%s\n' "''${commands[@]}" | fzf --delimiter=: --with-nth=2 --prompt="Run> " --height=~100% --reverse --no-info) || exit 0
-        cmd="''${selected%%:*}"
-        zellij action toggle-floating-panes
-        zellij run -- bash -c "$cmd"
+        selected=$(printf '%s\n' "''${commands[@]}" | fzf --delimiter=$'\t' --with-nth=2 --prompt="Run> " --height=~100% --reverse --no-info) || exit 0
+        cmd="''${selected%%	*}"
+        eval "exec $cmd"
       '';
     })
     (writeShellApplication {
       name = "gcloud-switch";
       runtimeInputs = [ google-cloud-sdk kubectl fzf ];
       text = ''
-        project=$(gcloud projects list --format="value(projectId)" | fzf --prompt="Project> " --height=~100% --reverse) || exit 0
+        project=$(gcloud projects list --format="value(projectId)" --filter="NOT projectId:sys-*" | fzf --prompt="Project> " --height=~100% --reverse) || exit 0
         gcloud config set project "$project"
 
-        cluster=$(gcloud container clusters list --format="csv[no-heading](name,location)" 2>/dev/null | fzf --prompt="Cluster> " --height=~100% --reverse) || exit 0
+        clusters=$(gcloud container clusters list --format="csv[no-heading](name,location)" 2>/dev/null)
+        count=$(echo "$clusters" | grep -c . || true)
+
+        if [ "$count" -eq 0 ]; then
+          echo "Switched to project=$project (no clusters)"
+          exit 0
+        elif [ "$count" -eq 1 ]; then
+          cluster="$clusters"
+        else
+          cluster=$(echo "$clusters" | fzf --prompt="Cluster> " --height=~100% --reverse) || exit 0
+        fi
+
         cluster_name="''${cluster%%,*}"
         cluster_location="''${cluster##*,}"
         gcloud container clusters get-credentials "$cluster_name" --region "$cluster_location"

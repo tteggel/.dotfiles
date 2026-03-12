@@ -5,6 +5,7 @@ theme "one-half-dark"
 // Clean UI
 pane_frames false
 default_layout "compact"
+show_startup_tips false
 
 // Mouse support
 mouse_mode true
@@ -25,12 +26,11 @@ keybinds clear-defaults=true {
     shared_except "locked" {
         // Session/mode
         bind "Ctrl g" { SwitchToMode "locked"; }
-        bind "Ctrl q" { Quit; }
-        bind "Ctrl d" { Detach; }
+        bind "Ctrl q" { Detach; }
 
         // Panes
         bind "Ctrl n" { NewPane; }
-        bind "Ctrl x" { CloseFocus; }
+        bind "Ctrl d" { CloseFocus; }
         bind "Ctrl h" { MoveFocus "Left"; }
         bind "Ctrl j" { MoveFocus "Down"; }
         bind "Ctrl k" { MoveFocus "Up"; }
