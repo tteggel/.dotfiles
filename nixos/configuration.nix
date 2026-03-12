@@ -47,6 +47,19 @@
     inputs.llm-agents.packages.x86_64-linux.codex
     starship
     (writeShellApplication {
+      name = "code-session";
+      runtimeInputs = [ zellij ];
+      text = ''
+        if [ -z "''${ZELLIJ:-}" ]; then
+          zellij --layout /etc/zellij/layouts/code.kdl
+        else
+          zellij action new-tab --layout /etc/zellij/layouts/code.kdl --cwd "$(pwd)" --name code
+          zellij action go-to-previous-tab
+          zellij action close-tab
+        fi
+      '';
+    })
+    (writeShellApplication {
       name = "init-gh";
       runtimeInputs = [ gh ];
       text = ''
@@ -71,6 +84,7 @@
 
   environment.etc."starship.toml".source = ../config/starship.toml;
   environment.etc."zellij/config.kdl".source = ../config/zellij/config.kdl;
+  environment.etc."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
 
   networking.hostName = "thixos";
 

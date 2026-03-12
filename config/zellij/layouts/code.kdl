@@ -1,0 +1,16 @@
+layout {
+    pane split_direction="vertical" {
+        pane stacked=true size="50%" {
+            pane command="claude" name="Claude" {
+                args "code" "--resume"
+            }
+            pane command="gemini" name="Gemini" {
+                args "--resume"
+            }
+        }
+        pane stacked=true size="50%" {
+            pane command="lazygit" name="Git"
+            pane name="Terminal"
+        }
+    }
+}
