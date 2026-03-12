@@ -26,6 +26,7 @@
             system.stateVersion = "25.05";
             wsl.enable = true;
             wsl.defaultUser = "thom";
+            wsl.interop.register = true;
           }
         ];
       };
