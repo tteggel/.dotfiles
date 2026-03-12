@@ -39,6 +39,8 @@
     fzf
     zoxide
     delta
+    lazygit
+    difftastic
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
     inputs.llm-agents.packages.x86_64-linux.codex
@@ -149,7 +151,10 @@
       };
       merge.conflictstyle = "diff3";
       diff.colorMoved = "default";
+      difftool.difftastic.cmd = ''difft "$LOCAL" "$REMOTE"'';
+      difftool.prompt = false;
       alias = {
+        dft = "difftool -t difftastic";
         st = "status";
         co = "checkout";
         br = "branch";
