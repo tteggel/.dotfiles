@@ -5,7 +5,26 @@
   config,
   pkgs,
   ...
-}: {
+}: let
+  expectedDotfiles = [
+    ".ssh"
+    ".cache"
+    ".local"
+    ".config/gcloud"
+    ".config/gh"
+    ".config/claude"
+    ".claude"
+    ".zsh_history"
+    ".zoxide.db"
+    ".zoxide.db.zo"
+    ".sudo_as_admin_successful"
+    ".init-gh-completed"
+    ".zcompdump*"
+    ".zsh_sessions"
+    ".wget-hsts"
+    "src"
+  ];
+in {
   nixpkgs = {
     config = {
       allowUnfreePredicate = _: true;
@@ -88,9 +107,18 @@
       name = "command-palette";
       runtimeInputs = [ fzf zellij fd zoxide ];
       text = ''
+        # Prevent multiple palette instances
+        exec 9>/tmp/command-palette.lock
+        if ! flock -n 9; then
+          exit 0
+        fi
+
         LAUNCH_CWD="$PWD"
 
-        # Format: type:payload<TAB>[Category] Description<TAB>keybinding hint
+        # Types: action (zellij action, hides overlay first)
+        #        exec   (interactive, takes over the overlay pane)
+        #        run    (shows output in overlay, then press-any-key)
+        #        system (like run, but name:cmd payload format)
         commands=(
           "action:zellij action new-pane	[Pane] New pane	Ctrl+Shift+N"
           "action:zellij action new-pane --floating	[Pane] New floating pane"
@@ -104,32 +132,48 @@
           "action:zellij action switch-mode scroll	[Mode] Scroll mode	Ctrl+Shift+S"
           "action:zellij action switch-mode locked	[Mode] Lock mode	Ctrl+Shift+G"
           "action:zellij action detach	[Session] Detach	Ctrl+Shift+Q"
-          "run:zsh -c 'cd \"\$(zoxide query -i)\" && exec zsh'	[Nav] Jump to directory"
-          "run:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
-          "run:code-session	[Dev] Coding session"
-          "run:claude	[Dev] Claude Code"
-          "run:gemini	[Dev] Gemini CLI"
-          "run:codex	[Dev] Codex CLI"
-          "run:lazygit	[Git] Git UI (lazygit)"
+          "exec:zsh -c 'cd \"\$(zoxide query -i)\" && exec zsh'	[Nav] Jump to directory"
+          "exec:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
+          "exec:code-session	[Dev] Coding session"
+          "exec:claude	[Dev] Claude Code"
+          "exec:gemini	[Dev] Gemini CLI"
+          "exec:codex	[Dev] Codex CLI"
+          "exec:lazygit	[Git] Git UI (lazygit)"
           "run:gh pr list	[Git] List pull requests"
-          "run:gh pr create	[Git] Create pull request"
-          "run:gh pr checkout	[Git] Checkout pull request"
-          "run-no-cwd:gh repo clone	[Git] Clone repo"
+          "exec:gh pr create	[Git] Create pull request"
+          "exec:gh pr checkout	[Git] Checkout pull request"
+          "run:gh repo clone	[Git] Clone repo"
           "run:gh issue list	[Git] List issues"
-          "run:gh issue create	[Git] Create issue"
+          "exec:gh issue create	[Git] Create issue"
           "run:gh run list	[Git] CI/CD runs"
-          "run:gh run watch	[Git] Watch CI/CD run"
-          "run:gcloud-switch	[GCP] Switch project"
-          "run:gcloud-reauth	[GCP] Re-authenticate"
+          "exec:gh run watch	[Git] Watch CI/CD run"
+          "exec:gcloud-switch	[GCP] Switch project"
+          "exec:gcloud-reauth	[GCP] Re-authenticate"
           "run:kubectl get pods	[K8s] List pods"
-          "run:zsh -c 'kubectl get pods --no-headers -o custom-columns=:metadata.name | fzf | xargs -r kubectl logs -f'	[K8s] Tail pod logs"
+          "exec:zsh -c 'kubectl get pods --no-headers -o custom-columns=:metadata.name | fzf | xargs -r kubectl logs -f'	[K8s] Tail pod logs"
+          "run:hygiene-inspection	[Sys] Hygiene inspection"
           "system:Rebuild NixOS:sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles	[Sys] Rebuild NixOS"
           "system:Update system:git -C ~/src/github.com/tteggel/.dotfiles diff --quiet flake.lock || { echo 'Error: flake.lock has uncommitted changes'; exit 1; } && nix flake update --flake ~/src/github.com/tteggel/.dotfiles && sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push	[Sys] Update system"
         )
 
-        selected=$(printf '%s\n' "''${commands[@]}" | fzf \
+        # Right-align keybinding hints
+        term_width=$(tput cols 2>/dev/null || echo 80)
+        formatted=()
+        for cmd in "''${commands[@]}"; do
+          IFS=$'\t' read -r prefix desc hint <<< "$cmd"
+          if [ -n "$hint" ]; then
+            pad=$((term_width - ''${#desc} - ''${#hint} - 6))
+            [ "$pad" -lt 2 ] && pad=2
+            spaces=$(printf '%*s' "$pad" "")
+            formatted+=("$prefix	$desc$spaces$hint")
+          else
+            formatted+=("$prefix	$desc")
+          fi
+        done
+
+        selected=$(printf '%s\n' "''${formatted[@]}" | fzf \
           --delimiter=$'\t' \
-          --with-nth=2,3 \
+          --with-nth=2 \
           --preview-window=hidden \
           --prompt="Run> " \
           --height=~100% \
@@ -140,23 +184,30 @@
         type="''${entry%%:*}"
         payload="''${entry#*:}"
 
+        wait_for_key() {
+          printf '\n\033[2m(press any key to close)\033[0m'
+          read -rsn1
+        }
+
         case "$type" in
           action)
             zellij action toggle-floating-panes
             exec bash -c "$payload"
             ;;
-          run)
-            # shellcheck disable=SC2086
-            exec zellij run --cwd "$LAUNCH_CWD" -- $payload
+          exec)
+            cd "$LAUNCH_CWD"
+            # shellcheck disable=SC2294
+            eval "exec $payload"
             ;;
-          run-no-cwd)
-            # shellcheck disable=SC2086
-            exec zellij run -- $payload
+          run)
+            cd "$LAUNCH_CWD"
+            eval "$payload" || true
+            wait_for_key
             ;;
           system)
-            name="''${payload%%:*}"
             cmd="''${payload#*:}"
-            exec zellij run --name "$name" -- bash -c "$cmd"
+            bash -c "$cmd" || true
+            wait_for_key
             ;;
         esac
       '';
@@ -207,6 +258,143 @@
       '';
     })
     (writeShellApplication {
+      name = "hygiene-inspection";
+      runtimeInputs = [
+        fd git gh
+        (google-cloud-sdk.withExtraComponents [
+          google-cloud-sdk.components.gke-gcloud-auth-plugin
+        ])
+        kubectl
+      ];
+      text = ''
+        RED=$'\033[0;31m'
+        YELLOW=$'\033[0;33m'
+        GREEN=$'\033[0;32m'
+        BOLD=$'\033[1m'
+        NC=$'\033[0m'
+
+        issues=0
+        warnings=0
+
+        issue() { printf '%s  ISSUE:%s %s\n' "$RED" "$NC" "$1"; issues=$((issues + 1)); }
+        warn()  { printf '%s  WARN:%s  %s\n' "$YELLOW" "$NC" "$1"; warnings=$((warnings + 1)); }
+        section() { printf '\n%s%s%s\n' "$BOLD" "$1" "$NC"; }
+
+        ALLOWLIST="/etc/hygiene-expected-dotfiles"
+
+        # --- Unmanaged dotfiles ---
+        section "Home directory"
+        while IFS= read -r entry; do
+          name="''${entry#"$HOME"/}"
+          matched=false
+          while IFS= read -r pattern; do
+            [ -z "$pattern" ] && continue
+            # shellcheck disable=SC2254
+            case "$name" in
+              $pattern) matched=true; break ;;
+            esac
+          done < "$ALLOWLIST"
+          if [ "$matched" = false ]; then
+            issue "Unmanaged: ~/$name"
+          fi
+        done < <(find "$HOME" -maxdepth 1 -mindepth 1 | sort)
+
+        # --- Dirty git repos ---
+        section "Git repositories"
+        while IFS= read -r gitdir; do
+          repo="''${gitdir%/.git}"
+          name="''${repo#"$HOME"/}"
+          pushd "$repo" > /dev/null || continue
+
+          if [ -n "$(timeout 5 git status --porcelain 2>/dev/null)" ]; then
+            issue "Dirty repo: $name (uncommitted changes)"
+          fi
+
+          stash_count=$(timeout 5 git stash list 2>/dev/null | wc -l)
+          if [ "$stash_count" -gt 0 ]; then
+            issue "Stashes in: $name ($stash_count stash(es))"
+          fi
+
+          # Check for unpushed commits on current branch
+          upstream=$(timeout 5 git rev-parse --abbrev-ref '@{upstream}' 2>/dev/null || true)
+          if [ -n "$upstream" ]; then
+            unpushed=$(timeout 5 git rev-list "$upstream"..HEAD 2>/dev/null | wc -l)
+            if [ "$unpushed" -gt 0 ]; then
+              issue "Unpushed commits: $name ($unpushed commit(s))"
+            fi
+          fi
+
+          popd > /dev/null || true
+        done < <(timeout 10 fd --type d --hidden --no-ignore --glob '.git' "$HOME/src" 2>/dev/null)
+
+        # --- Imperative nix packages ---
+        section "Nix"
+        if [ -d "$HOME/.nix-profile/bin" ] || nix-env -q 2>/dev/null | grep -q .; then
+          issue "Imperative nix packages found (use flake instead)"
+        fi
+
+        # --- User crontabs ---
+        section "Cron"
+        if crontab -l 2>/dev/null | grep -qv '^#\|^$'; then
+          issue "User crontab entries found"
+        fi
+
+        # --- Unmanaged systemd user units ---
+        section "Systemd user units"
+        if [ -d "$HOME/.config/systemd/user" ]; then
+          unit_count=$(find "$HOME/.config/systemd/user" -type f 2>/dev/null | wc -l)
+          if [ "$unit_count" -gt 0 ]; then
+            issue "Unmanaged systemd user units ($unit_count file(s) in ~/.config/systemd/user)"
+          fi
+        fi
+
+        # --- Warnings: credentials & state ---
+        section "Credentials & state"
+        if [ -d "$HOME/.ssh" ]; then
+          key_count=$(find "$HOME/.ssh" -name '*.pub' 2>/dev/null | wc -l)
+          if [ "$key_count" -gt 0 ]; then
+            warn "SSH keys present ($key_count key(s))"
+          fi
+        fi
+
+        if [ -d "$HOME/.gnupg" ]; then
+          warn "GPG directory present"
+        fi
+
+        if gh auth status &>/dev/null; then
+          warn "gh authenticated"
+        fi
+
+        if gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null | grep -q .; then
+          warn "gcloud authenticated"
+        fi
+
+        if kubectl config current-context &>/dev/null; then
+          warn "kubectl context configured"
+        fi
+
+        if [ -d "$HOME/.docker" ]; then
+          warn "Docker state present (~/.docker)"
+        fi
+
+        # Large /tmp files (>100MB)
+        large_tmp=$(find /tmp -maxdepth 2 -user "$(whoami)" -size +100M 2>/dev/null | wc -l)
+        if [ "$large_tmp" -gt 0 ]; then
+          warn "Large files in /tmp ($large_tmp file(s) >100MB)"
+        fi
+
+        # --- Summary ---
+        printf '\n%s---%s\n' "$BOLD" "$NC"
+        if [ "$issues" -eq 0 ] && [ "$warnings" -eq 0 ]; then
+          printf '%sClean: safe to move.%s\n' "$GREEN" "$NC"
+        else
+          [ "$issues" -gt 0 ] && printf '%s%d issue(s)%s ' "$RED" "$issues" "$NC"
+          [ "$warnings" -gt 0 ] && printf '%s%d warning(s)%s ' "$YELLOW" "$warnings" "$NC"
+          printf '\n'
+        fi
+      '';
+    })
+    (writeShellApplication {
       name = "init-gh";
       runtimeInputs = [ gh ];
       text = ''
@@ -229,6 +417,8 @@
     })
   ];
 
+  environment.etc."hygiene-expected-dotfiles".text =
+    builtins.concatStringsSep "\n" expectedDotfiles + "\n";
   environment.etc."starship.toml".source = ../config/starship.toml;
   environment.etc."zellij/config.kdl".source = ../config/zellij/config.kdl;
   environment.etc."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
