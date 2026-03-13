@@ -122,16 +122,34 @@ in {
         commands=(
           "action:zellij action new-pane	[Pane] New pane	Ctrl+Shift+N"
           "action:zellij action new-pane --floating	[Pane] New floating pane"
+          "action:zellij action new-pane --direction down	[Pane] Split down"
+          "action:zellij action new-pane --direction right	[Pane] Split right"
           "action:zellij action close-pane	[Pane] Close pane	Ctrl+Shift+W"
           "action:zellij action toggle-fullscreen	[Pane] Toggle fullscreen	Ctrl+Shift+Z"
+          "action:zellij action toggle-floating-panes	[Pane] Toggle floating panes"
           "action:zellij action rename-pane	[Pane] Rename pane"
           "action:zellij action edit-scrollback	[Pane] Edit scrollback"
+          "action:zellij action move-focus left	[Pane] Focus left	Ctrl+Shift+H"
+          "action:zellij action move-focus down	[Pane] Focus down	Ctrl+Shift+J"
+          "action:zellij action move-focus up	[Pane] Focus up	Ctrl+Shift+K"
+          "action:zellij action move-focus right	[Pane] Focus right	Ctrl+Shift+L"
+          "action:zellij action resize increase	[Pane] Grow pane	Ctrl+Shift+="
+          "action:zellij action resize decrease	[Pane] Shrink pane	Ctrl+Shift+-"
           "action:zellij action new-tab	[Tab] New tab	Ctrl+Shift+T"
+          "action:zellij action close-tab	[Tab] Close tab"
           "action:zellij action rename-tab	[Tab] Rename tab"
+          "action:zellij action go-to-previous-tab	[Tab] Previous tab	Ctrl+Shift+["
+          "action:zellij action go-to-next-tab	[Tab] Next tab	Ctrl+Shift+]"
+          "action:zellij action go-to-tab 1	[Tab] Tab 1	Ctrl+Shift+1"
+          "action:zellij action go-to-tab 2	[Tab] Tab 2	Ctrl+Shift+2"
+          "action:zellij action go-to-tab 3	[Tab] Tab 3	Ctrl+Shift+3"
+          "action:zellij action go-to-tab 4	[Tab] Tab 4	Ctrl+Shift+4"
+          "action:zellij action go-to-tab 5	[Tab] Tab 5	Ctrl+Shift+5"
           "action:zellij action next-swap-layout	[Layout] Swap layout	Ctrl+Shift+Space"
           "action:zellij action switch-mode scroll	[Mode] Scroll mode	Ctrl+Shift+S"
           "action:zellij action switch-mode locked	[Mode] Lock mode	Ctrl+Shift+G"
-          "action:zellij action detach	[Session] Detach	Ctrl+Shift+Q"
+          "session:zellij action detach	[Session] Detach	Ctrl+Shift+Q"
+          "session:zellij action quit	[Session] Quit Zellij"
           "exec:zsh -c 'cd \"\$(zoxide query -i)\" && exec zsh'	[Nav] Jump to directory"
           "exec:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
           "exec:code-session	[Dev] Coding session"
@@ -192,6 +210,9 @@ in {
         case "$type" in
           action)
             zellij action toggle-floating-panes
+            exec bash -c "$payload"
+            ;;
+          session)
             exec bash -c "$payload"
             ;;
           exec)
