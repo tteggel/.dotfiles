@@ -50,6 +50,26 @@
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
     inputs.llm-agents.packages.x86_64-linux.codex
     micro
+    (writeShellApplication {
+      name = "zed";
+      text = ''
+        # Find zed.exe via WSL interop PATH
+        ZED_EXE="$(command -v zed.exe 2>/dev/null || echo "/mnt/c/Users/thom/AppData/Local/Programs/Zed/zed.exe")"
+
+        args=()
+        for arg in "$@"; do
+          if [[ "$arg" == -* ]]; then
+            args+=("$arg")
+          elif [[ -e "$arg" || -d "$arg" ]]; then
+            args+=("$(wslpath -w "$arg")")
+          else
+            args+=("$arg")
+          fi
+        done
+
+        "$ZED_EXE" "''${args[@]}"
+      '';
+    })
     starship
     (writeShellApplication {
       name = "code-session";
@@ -66,25 +86,79 @@
     })
     (writeShellApplication {
       name = "command-palette";
-      runtimeInputs = [ fzf zellij ];
+      runtimeInputs = [ fzf zellij fd zoxide ];
       text = ''
+        LAUNCH_CWD="$PWD"
+
+        # Format: type:payload<TAB>[Category] Description<TAB>keybinding hint
         commands=(
-          "code-session	Start coding session layout"
-          "claude	Claude Code"
-          "gemini	Gemini CLI"
-          "lazygit	Git UI"
-          "gh pr list	List pull requests"
-          "gh pr create	Create pull request"
-          "gh pr checkout	Checkout pull request"
-          "gh repo clone	Clone a GitHub repo"
-          "gcloud-switch	Switch GCP project and fetch kube credentials"
-          "gcloud-reauth	Re-authenticate gcloud and ADC"
-          "sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles	Rebuild NixOS"
-          "git -C ~/src/github.com/tteggel/.dotfiles diff --quiet flake.lock || { echo 'Error: flake.lock has uncommitted changes'; exit 1; } && nix flake update --flake ~/src/github.com/tteggel/.dotfiles && sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push	Update system"
+          "action:zellij action new-pane	[Pane] New pane	Ctrl+Shift+N"
+          "action:zellij action new-pane --floating	[Pane] New floating pane"
+          "action:zellij action close-pane	[Pane] Close pane	Ctrl+Shift+W"
+          "action:zellij action toggle-fullscreen	[Pane] Toggle fullscreen	Ctrl+Shift+Z"
+          "action:zellij action rename-pane	[Pane] Rename pane"
+          "action:zellij action edit-scrollback	[Pane] Edit scrollback"
+          "action:zellij action new-tab	[Tab] New tab	Ctrl+Shift+T"
+          "action:zellij action rename-tab	[Tab] Rename tab"
+          "action:zellij action next-swap-layout	[Layout] Swap layout	Ctrl+Shift+Space"
+          "action:zellij action switch-mode scroll	[Mode] Scroll mode	Ctrl+Shift+S"
+          "action:zellij action switch-mode locked	[Mode] Lock mode	Ctrl+Shift+G"
+          "action:zellij action detach	[Session] Detach	Ctrl+Shift+Q"
+          "run:zsh -c 'cd \"\$(zoxide query -i)\" && exec zsh'	[Nav] Jump to directory"
+          "run:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
+          "run:code-session	[Dev] Coding session"
+          "run:claude	[Dev] Claude Code"
+          "run:gemini	[Dev] Gemini CLI"
+          "run:codex	[Dev] Codex CLI"
+          "run:lazygit	[Git] Git UI (lazygit)"
+          "run:gh pr list	[Git] List pull requests"
+          "run:gh pr create	[Git] Create pull request"
+          "run:gh pr checkout	[Git] Checkout pull request"
+          "run-no-cwd:gh repo clone	[Git] Clone repo"
+          "run:gh issue list	[Git] List issues"
+          "run:gh issue create	[Git] Create issue"
+          "run:gh run list	[Git] CI/CD runs"
+          "run:gh run watch	[Git] Watch CI/CD run"
+          "run:gcloud-switch	[GCP] Switch project"
+          "run:gcloud-reauth	[GCP] Re-authenticate"
+          "run:kubectl get pods	[K8s] List pods"
+          "run:zsh -c 'kubectl get pods --no-headers -o custom-columns=:metadata.name | fzf | xargs -r kubectl logs -f'	[K8s] Tail pod logs"
+          "system:Rebuild NixOS:sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles	[Sys] Rebuild NixOS"
+          "system:Update system:git -C ~/src/github.com/tteggel/.dotfiles diff --quiet flake.lock || { echo 'Error: flake.lock has uncommitted changes'; exit 1; } && nix flake update --flake ~/src/github.com/tteggel/.dotfiles && sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push	[Sys] Update system"
         )
-        selected=$(printf '%s\n' "''${commands[@]}" | fzf --delimiter=$'\t' --with-nth=2 --prompt="Run> " --height=~100% --reverse --no-info) || exit 0
-        cmd="''${selected%%	*}"
-        exec bash -c "$cmd"
+
+        selected=$(printf '%s\n' "''${commands[@]}" | fzf \
+          --delimiter=$'\t' \
+          --with-nth=2,3 \
+          --preview-window=hidden \
+          --prompt="Run> " \
+          --height=~100% \
+          --reverse \
+          --no-info) || exit 0
+
+        entry="''${selected%%	*}"
+        type="''${entry%%:*}"
+        payload="''${entry#*:}"
+
+        case "$type" in
+          action)
+            zellij action toggle-floating-panes
+            exec bash -c "$payload"
+            ;;
+          run)
+            # shellcheck disable=SC2086
+            exec zellij run --cwd "$LAUNCH_CWD" -- $payload
+            ;;
+          run-no-cwd)
+            # shellcheck disable=SC2086
+            exec zellij run -- $payload
+            ;;
+          system)
+            name="''${payload%%:*}"
+            cmd="''${payload#*:}"
+            exec zellij run --name "$name" -- bash -c "$cmd"
+            ;;
+        esac
       '';
     })
     (writeShellApplication {
@@ -187,7 +261,7 @@
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
       export ZELLIJ_CONFIG_DIR=/etc/zellij
-      export EDITOR=micro
+      export EDITOR=zed
       export USE_GKE_GCLOUD_AUTH_PLUGIN=True
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       init-gh
