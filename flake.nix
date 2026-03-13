@@ -5,6 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     llm-agents.url = "github:numtide/llm-agents.nix";
+    dim-unfocused.url = "path:./bespoke/zellij/dim-unfocused";
   };
 
   outputs = {

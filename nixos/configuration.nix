@@ -6,6 +6,9 @@
   pkgs,
   ...
 }: let
+  bespoke-zellij = inputs.dim-unfocused.packages.x86_64-linux;
+  zellij-main = bespoke-zellij.zellij;
+  dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   expectedDotfiles = [
     ".ssh"
     ".cache"
@@ -60,7 +63,7 @@ in {
     delta
     lazygit
     difftastic
-    zellij
+    zellij-main
     (google-cloud-sdk.withExtraComponents [
       google-cloud-sdk.components.gke-gcloud-auth-plugin
     ])
@@ -92,7 +95,7 @@ in {
     starship
     (writeShellApplication {
       name = "code-session";
-      runtimeInputs = [ zellij ];
+      runtimeInputs = [ zellij-main ];
       text = ''
         if [ -z "''${ZELLIJ:-}" ]; then
           zellij --layout /etc/zellij/layouts/code.kdl
@@ -105,7 +108,7 @@ in {
     })
     (writeShellApplication {
       name = "command-palette";
-      runtimeInputs = [ fzf zellij fd zoxide ];
+      runtimeInputs = [ fzf zellij-main fd zoxide ];
       text = ''
         # Prevent multiple palette instances
         exec 9>/tmp/command-palette.lock
@@ -443,6 +446,8 @@ in {
   environment.etc."starship.toml".source = ../config/starship.toml;
   environment.etc."zellij/config.kdl".source = ../config/zellij/config.kdl;
   environment.etc."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
+  environment.etc."zellij/plugins/dim-unfocused.wasm".source =
+    "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
   networking.hostName = "thixos";
 

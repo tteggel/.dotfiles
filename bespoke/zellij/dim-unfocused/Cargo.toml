@@ -1,0 +1,7 @@
+[package]
+name = "dim-unfocused"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zellij-tile = { path = "zellij-src/zellij-tile" }

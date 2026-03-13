@@ -40,6 +40,14 @@ scroll_buffer_size 10000
 session_serialization true
 serialize_pane_viewport true
 
+// Background plugins
+load_plugins {
+    "file:/etc/zellij/plugins/dim-unfocused.wasm" {
+        dim_bg "#1e1e1e"
+        dim_fg "#666666"
+    }
+}
+
 keybinds clear-defaults=true {
     // Ctrl+Shift = Zellij workspace, Ctrl = shell/apps
     // Caps lock mapped to ctrl for ergo
