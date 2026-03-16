@@ -95,19 +95,65 @@ in {
     starship
     (writeShellApplication {
       name = "session-picker";
-      runtimeInputs = [ zellij-main fzf zoxide ];
+      runtimeInputs = [ zellij-main fzf zoxide gh git ];
       text = ''
-        new_session() {
-          dir=$(zoxide query -i 2>/dev/null) || return
+        SRC_ROOT="$HOME/src/github.com"
+
+        start_session() {
+          local dir="$1"
+          local name
           name=$(basename "$dir")
           cd "$dir" && exec zellij -s "$name" -n /etc/zellij/layouts/code.kdl
+        }
+
+        new_session() {
+          dir=$(zoxide query -i 2>/dev/null) || return 1
+          start_session "$dir"
+        }
+
+        clone_gh_repo() {
+          repo=$(gh repo list --limit 50 --sort updated --json nameWithOwner -q '.[].nameWithOwner' 2>/dev/null | \
+            cat - <(for org in $(gh org list 2>/dev/null); do
+              gh repo list "$org" --limit 50 --sort updated --json nameWithOwner -q '.[].nameWithOwner' 2>/dev/null
+            done) | \
+            sort -u | \
+            fzf --prompt="GitHub repo> " --height=~50% --reverse) || return 1
+
+          owner=$(dirname "$repo")
+          name=$(basename "$repo")
+          target="$SRC_ROOT/$owner/$name"
+
+          if [ -d "$target" ]; then
+            start_session "$target"
+          else
+            mkdir -p "$SRC_ROOT/$owner"
+            gh repo clone "$repo" "$target" || return 1
+            start_session "$target"
+          fi
+        }
+
+        clone_remote() {
+          printf "Remote URL: "
+          read -r url
+          [ -z "$url" ] && return 1
+
+          # Extract repo name from URL
+          name=$(basename "$url" .git)
+          target="$HOME/src/$name"
+
+          if [ -d "$target" ]; then
+            start_session "$target"
+          else
+            git clone "$url" "$target" || return 1
+            start_session "$target"
+          fi
         }
 
         sessions=$(zellij list-sessions -n -s 2>/dev/null || true)
 
         if [ -z "$sessions" ]; then
           new_session
-          exit 0
+          exit $?
         fi
 
         # Build menu: annotate and sort (no-client first), add new-session entry
@@ -130,12 +176,25 @@ in {
           fi
         done <<< "$sessions"
 
-        menu="''${no_client}''${has_client}[+] New session"
+        NEW_ENTRY="[+] New session       (Ctrl+N)"
+        GH_ENTRY="[+] Clone GitHub repo (Ctrl+G)"
+        REMOTE_ENTRY="[+] Clone remote      (Ctrl+U)"
 
-        pick=$(echo "$menu" | fzf --prompt="Zellij session> " --height=~50% --reverse) || exit 0
+        menu="''${no_client}''${has_client}$NEW_ENTRY
+$GH_ENTRY
+$REMOTE_ENTRY"
 
-        if [ "$pick" = "[+] New session" ]; then
+        pick=$(echo "$menu" | fzf --prompt="Zellij session> " --height=~50% --reverse \
+          --bind "ctrl-n:become(echo '$NEW_ENTRY')" \
+          --bind "ctrl-g:become(echo '$GH_ENTRY')" \
+          --bind "ctrl-u:become(echo '$REMOTE_ENTRY')") || exit 1
+
+        if echo "$pick" | grep -q "New session"; then
           new_session
+        elif echo "$pick" | grep -q "Clone GitHub"; then
+          clone_gh_repo
+        elif echo "$pick" | grep -q "Clone remote"; then
+          clone_remote
         else
           session_name=$(echo "$pick" | awk '{print $1}')
           exec zellij attach "$session_name"
@@ -202,6 +261,7 @@ in {
           "action:zellij action switch-mode locked	[Mode] Lock mode	Ctrl+Shift+G"
           "session:zellij action detach	[Session] Detach	Ctrl+Shift+Q"
           "session:zellij action quit	[Session] Quit Zellij"
+          "exec:session-picker	[Session] Switch session	Ctrl+Shift+O"
           "exec:zsh -c 'cd \"\$(zoxide query -i)\" && exec zsh'	[Nav] Jump to directory"
           "exec:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
           "exec:code-session	[Dev] Coding session"
@@ -534,7 +594,7 @@ in {
 
       # Auto-attach to zellij session (or start one) unless already inside zellij
       if [ -z "$ZELLIJ" ]; then
-        session-picker
+        session-picker && exit
       fi
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"

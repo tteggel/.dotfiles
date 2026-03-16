@@ -82,6 +82,9 @@ keybinds clear-defaults=true {
         // Scroll
         bind "Ctrl Shift s" { SwitchToMode "scroll"; }
 
+        // Session picker
+        bind "Ctrl Shift o" { Run "session-picker" { floating true; close_on_exit true; }; }
+
         // Command palette
         bind "Ctrl Shift p" { Run "command-palette" { floating true; close_on_exit true; }; }
 
