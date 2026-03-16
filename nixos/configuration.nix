@@ -89,10 +89,59 @@ in {
           fi
         done
 
-        "$ZED_EXE" "''${args[@]}"
+        "$ZED_EXE" --wait "''${args[@]}"
       '';
     })
     starship
+    (writeShellApplication {
+      name = "session-picker";
+      runtimeInputs = [ zellij-main fzf zoxide ];
+      text = ''
+        new_session() {
+          dir=$(zoxide query -i 2>/dev/null) || return
+          name=$(basename "$dir")
+          cd "$dir" && exec zellij -s "$name" -n /etc/zellij/layouts/code.kdl
+        }
+
+        sessions=$(zellij list-sessions -n -s 2>/dev/null || true)
+
+        if [ -z "$sessions" ]; then
+          new_session
+          exit 0
+        fi
+
+        # Build menu: annotate and sort (no-client first), add new-session entry
+        menu=""
+        no_client=""
+        has_client=""
+        while IFS= read -r line; do
+          name=$(echo "$line" | awk '{print $1}')
+          if echo "$line" | grep -q "EXITED"; then
+            entry="$name (EXITED)"
+            no_client="''${no_client}''${entry}"$'\n'
+          elif echo "$line" | grep -q "(current session)"; then
+            entry="$name (current)"
+            has_client="''${has_client}''${entry}"$'\n'
+          elif echo "$line" | grep -q "attached"; then
+            entry="$name (attached)"
+            has_client="''${has_client}''${entry}"$'\n'
+          else
+            no_client="''${no_client}''${name}"$'\n'
+          fi
+        done <<< "$sessions"
+
+        menu="''${no_client}''${has_client}[+] New session"
+
+        pick=$(echo "$menu" | fzf --prompt="Zellij session> " --height=~50% --reverse) || exit 0
+
+        if [ "$pick" = "[+] New session" ]; then
+          new_session
+        else
+          session_name=$(echo "$pick" | awk '{print $1}')
+          exec zellij attach "$session_name"
+        fi
+      '';
+    })
     (writeShellApplication {
       name = "code-session";
       runtimeInputs = [ zellij-main ];
@@ -477,7 +526,7 @@ in {
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
       export ZELLIJ_CONFIG_DIR=/etc/zellij
-      export EDITOR=zed
+      export EDITOR=micro
       export USE_GKE_GCLOUD_AUTH_PLUGIN=True
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       init-gh
@@ -485,7 +534,7 @@ in {
 
       # Auto-attach to zellij session (or start one) unless already inside zellij
       if [ -z "$ZELLIJ" ]; then
-        zellij attach -c default
+        session-picker
       fi
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
