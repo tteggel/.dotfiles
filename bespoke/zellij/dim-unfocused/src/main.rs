@@ -39,12 +39,14 @@ fn default_shader() -> String {
     let vdist = sqrt(vx * vx + vy * vy);
     let vignette = clamp(1.2 - vdist * 0.4, 0.55, 1.0);
 
-    // --- Glare: bright wash from top-right corner ---
-    let gx = (w - lx) / max(w, 1.0);
-    let gy = ly * 2.0 / max(h, 1.0);
-    let gdist = sqrt(gx * gx + gy * gy);
-    let glare = clamp(1.0 - gdist / 0.9, 0.0, 1.0);
-    let glare = glare * glare * 0.4;
+    // --- Glare: elliptical highlight near top-right, warm tint ---
+    let gx = (w * 0.8 - lx) / max(w, 1.0);
+    let gy = (ly - h * 0.15) * 2.5 / max(h, 1.0);
+    let gdist = sqrt(gx * gx * 0.6 + gy * gy);
+    let glare = clamp(1.0 - gdist / 0.8, 0.0, 1.0);
+    let glare = glare * glare * glare * 0.55;
+    // Warm shift: push hue toward amber (70°) in glare zone
+    let hue = mix(hue, 70.0, glare * 0.5);
 
     // --- Scanlines: faint darkening on alternating rows ---
     let scanline = if y % 2.0 < 1.0 { 0.97 } else { 1.0 };
