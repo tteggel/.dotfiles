@@ -112,12 +112,28 @@ in {
         }
 
         clone_gh_repo() {
-          repo=$(gh repo list --limit 50 --sort updated --json nameWithOwner -q '.[].nameWithOwner' 2>/dev/null | \
-            cat - <(for org in $(gh org list 2>/dev/null); do
-              gh repo list "$org" --limit 50 --sort updated --json nameWithOwner -q '.[].nameWithOwner' 2>/dev/null
-            done) | \
-            sort -u | \
-            fzf --prompt="GitHub repo> " --height=~50% --reverse) || return 1
+          repos=$(gh repo list --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.updatedAt) | reverse | .[].nameWithOwner' 2>&1) || {
+            echo "Failed to fetch repos: $repos" >&2
+            echo "Check 'gh auth status'" >&2
+            read -r -n 1
+            return 1
+          }
+
+          org_repos=""
+          for org in $(gh org list 2>/dev/null); do
+            org_repos="$org_repos
+$(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.updatedAt) | reverse | .[].nameWithOwner' 2>/dev/null)"
+          done
+
+          all_repos=$(printf '%s\n%s' "$repos" "$org_repos" | sed '/^$/d' | sort -u)
+
+          if [ -z "$all_repos" ]; then
+            echo "No repos found." >&2
+            read -r -n 1
+            return 1
+          fi
+
+          repo=$(echo "$all_repos" | fzf --prompt="GitHub repo> " --height=~50% --reverse) || return 1
 
           owner=$(dirname "$repo")
           name=$(basename "$repo")
