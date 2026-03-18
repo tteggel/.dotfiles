@@ -647,6 +647,24 @@ $REMOTE_ENTRY"
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
 
+      # Set pane title to repo:branch or cwd (picked up by Zellij)
+      _set_pane_title() {
+        local title
+        local repo
+        repo=$(git rev-parse --show-toplevel 2>/dev/null)
+        if [[ -n "$repo" ]]; then
+          local name branch dirty
+          name=$(basename "$repo")
+          branch=$(git branch --show-current 2>/dev/null)
+          [[ -n $(git status --porcelain 2>/dev/null | head -1) ]] && dirty="*"
+          title="''${name}:''${branch}''${dirty}"
+        else
+          title="''${PWD/#$HOME/~}"
+        fi
+        print -Pn "\e]2;''${title}\a"
+      }
+      precmd_functions+=(_set_pane_title)
+
       # Emacs mode (enables Ctrl+A/E/K/U/W/R/L, Alt+D/B/F, etc.)
       bindkey -e
 
