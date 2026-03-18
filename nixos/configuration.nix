@@ -73,6 +73,13 @@ in {
     inputs.llm-agents.packages.x86_64-linux.codex
     micro
     (writeShellApplication {
+      name = "open-browser";
+      text = ''
+        CHROME="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+        "$CHROME" "$@"
+      '';
+    })
+    (writeShellApplication {
       name = "zed";
       text = ''
         # Find zed.exe via WSL interop PATH
@@ -626,6 +633,7 @@ $REMOTE_ENTRY"
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
       export ZELLIJ_CONFIG_DIR=/etc/zellij
+      export BROWSER=open-browser
       export EDITOR=micro
       export USE_GKE_GCLOUD_AUTH_PLUGIN=True
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
