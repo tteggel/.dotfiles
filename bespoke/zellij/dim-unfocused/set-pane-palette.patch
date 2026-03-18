@@ -1,0 +1,364 @@
+diff --git a/zellij-server/src/panes/grid.rs b/zellij-server/src/panes/grid.rs
+index 35b2d92..78ab634 100644
+--- a/zellij-server/src/panes/grid.rs
++++ b/zellij-server/src/panes/grid.rs
+@@ -542,6 +542,17 @@ impl Grid {
+         self.pane_default_bg = bg.as_ref().and_then(|s| xparse_color(s.as_bytes()));
+         self.output_buffer.update_all_lines();
+     }
++    pub fn set_pane_palette(&mut self, overrides: &[(u8, Option<(u8, u8, u8)>)]) {
++        if overrides.is_empty() {
++            self.changed_colors = None;
++        } else {
++            let colors = self.changed_colors.get_or_insert([None; 256]);
++            for &(index, rgb) in overrides {
++                colors[index as usize] = rgb.map(|(r, g, b)| AnsiCode::RgbCode((r, g, b)));
++            }
++        }
++        self.output_buffer.update_all_lines();
++    }
+     pub fn get_pane_default_color_strings(&self) -> (Option<String>, Option<String>) {
+         (
+             self.pane_default_fg.and_then(ansi_code_to_color_string),
+diff --git a/zellij-server/src/panes/terminal_pane.rs b/zellij-server/src/panes/terminal_pane.rs
+index d4b4329..31e9780 100644
+--- a/zellij-server/src/panes/terminal_pane.rs
++++ b/zellij-server/src/panes/terminal_pane.rs
+@@ -321,6 +321,10 @@ impl Pane for TerminalPane {
+         self.grid.set_pane_default_colors(fg, bg);
+         self.set_should_render(true);
+     }
++    fn set_pane_palette(&mut self, overrides: &[(u8, Option<(u8, u8, u8)>)]) {
++        self.grid.set_pane_palette(overrides);
++        self.set_should_render(true);
++    }
+     fn get_pane_default_colors(&self) -> (Option<String>, Option<String>) {
+         self.grid.get_pane_default_color_strings()
+     }
+diff --git a/zellij-server/src/plugins/zellij_exports.rs b/zellij-server/src/plugins/zellij_exports.rs
+index d48a80b..b154fc9 100644
+--- a/zellij-server/src/plugins/zellij_exports.rs
++++ b/zellij-server/src/plugins/zellij_exports.rs
+@@ -599,6 +599,9 @@ fn host_run_plugin_command(mut caller: Caller<'_, PluginEnv>) {
+                     PluginCommand::SetPaneColor(pane_id, fg, bg) => {
+                         set_pane_color(env, pane_id.into(), fg, bg)
+                     },
++                    PluginCommand::SetPanePalette(pane_id, overrides) => {
++                        set_pane_palette(env, pane_id.into(), overrides)
++                    },
+                     PluginCommand::OpenFileNearPlugin(file_to_open, context) => {
+                         open_file_near_plugin(env, file_to_open, context)
+                     },
+@@ -3646,6 +3649,16 @@ fn set_pane_color(env: &PluginEnv, pane_id: PaneId, fg: Option<String>, bg: Opti
+         .send_to_screen(ScreenInstruction::SetPaneColor(pane_id, fg, bg, None));
+ }
+ 
++fn set_pane_palette(
++    env: &PluginEnv,
++    pane_id: PaneId,
++    overrides: Vec<(u8, Option<(u8, u8, u8)>)>,
++) {
++    let _ = env
++        .senders
++        .send_to_screen(ScreenInstruction::SetPanePalette(pane_id, overrides, None));
++}
++
+ fn scan_host_folder(env: &PluginEnv, folder_to_scan: PathBuf) {
+     if !folder_to_scan.starts_with("/host") {
+         log::error!(
+@@ -5106,6 +5119,7 @@ fn check_command_permission(
+         | PluginCommand::TogglePaneBorderless(..)
+         | PluginCommand::SetPaneBorderless(..)
+         | PluginCommand::SetPaneColor(..)
++        | PluginCommand::SetPanePalette(..)
+         | PluginCommand::GroupAndUngroupPanes(..)
+         | PluginCommand::HighlightAndUnhighlightPanes(..)
+         | PluginCommand::CloseMultiplePanes(..)
+diff --git a/zellij-server/src/screen.rs b/zellij-server/src/screen.rs
+index 565aa8b..7b45a94 100644
+--- a/zellij-server/src/screen.rs
++++ b/zellij-server/src/screen.rs
+@@ -618,6 +618,11 @@ pub enum ScreenInstruction {
+         Option<String>,
+         Option<NotificationEnd>,
+     ),
++    SetPanePalette(
++        PaneId,
++        Vec<(u8, Option<(u8, u8, u8)>)>,
++        Option<NotificationEnd>,
++    ),
+     WriteKeyToPaneId(
+         Option<KeyWithModifier>,
+         Vec<u8>,
+@@ -903,6 +908,7 @@ impl From<&ScreenInstruction> for ScreenContext {
+             ScreenInstruction::WriteToPaneId(..) => ScreenContext::WriteToPaneId,
+             ScreenInstruction::Paste(..) => ScreenContext::Paste,
+             ScreenInstruction::SetPaneColor(..) => ScreenContext::SetPaneColor,
++            ScreenInstruction::SetPanePalette(..) => ScreenContext::SetPanePalette,
+             ScreenInstruction::WriteKeyToPaneId(..) => ScreenContext::WriteKeyToPaneId,
+             ScreenInstruction::CopyTextToClipboard(..) => ScreenContext::CopyTextToClipboard,
+             ScreenInstruction::MovePaneWithPaneId(..) => ScreenContext::MovePaneWithPaneId,
+@@ -7543,6 +7549,16 @@ pub(crate) fn screen_thread_main(
+                 }
+                 screen.render(None)?;
+             },
++            ScreenInstruction::SetPanePalette(pane_id, overrides, _completion) => {
++                let all_tabs = screen.get_tabs_mut();
++                for tab in all_tabs.values_mut() {
++                    if tab.has_pane_with_pid(&pane_id) {
++                        tab.set_pane_palette(pane_id, &overrides).non_fatal();
++                        break;
++                    }
++                }
++                screen.render(None)?;
++            },
+             ScreenInstruction::WriteKeyToPaneId(
+                 key_with_modifier,
+                 bytes,
+diff --git a/zellij-server/src/tab/mod.rs b/zellij-server/src/tab/mod.rs
+index bcefc51..308abe6 100644
+--- a/zellij-server/src/tab/mod.rs
++++ b/zellij-server/src/tab/mod.rs
+@@ -324,6 +324,7 @@ pub trait Pane {
+         None
+     }
+     fn set_pane_default_colors(&mut self, _fg: Option<String>, _bg: Option<String>) {}
++    fn set_pane_palette(&mut self, _overrides: &[(u8, Option<(u8, u8, u8)>)]) {}
+     fn get_pane_default_colors(&self) -> (Option<String>, Option<String>) {
+         (None, None)
+     }
+@@ -2591,6 +2592,21 @@ impl Tab {
+         }
+         Ok(())
+     }
++    pub fn set_pane_palette(
++        &mut self,
++        pane_id: PaneId,
++        overrides: &[(u8, Option<(u8, u8, u8)>)],
++    ) -> Result<()> {
++        let pane = self
++            .floating_panes
++            .get_mut(&pane_id)
++            .or_else(|| self.tiled_panes.get_pane_mut(pane_id))
++            .or_else(|| self.suppressed_panes.get_mut(&pane_id).map(|p| &mut p.1));
++        if let Some(pane) = pane {
++            pane.set_pane_palette(overrides);
++        }
++        Ok(())
++    }
+     pub fn has_pane_with_pid(&self, pid: &PaneId) -> bool {
+         self.tiled_panes.panes_contain(pid)
+             || self.floating_panes.panes_contain(pid)
+diff --git a/zellij-tile/src/shim.rs b/zellij-tile/src/shim.rs
+index 167df3e..fab9ed7 100644
+--- a/zellij-tile/src/shim.rs
++++ b/zellij-tile/src/shim.rs
+@@ -2405,6 +2405,15 @@ pub fn set_pane_color(pane_id: PaneId, fg: Option<String>, bg: Option<String>) {
+     unsafe { host_run_plugin_command() };
+ }
+ 
++/// Override entries in the pane's 256-color palette.
++/// Each entry is (color_index, Some((r,g,b))) to set or (color_index, None) to reset.
++pub fn set_pane_palette(pane_id: PaneId, overrides: Vec<(u8, Option<(u8, u8, u8)>)>) {
++    let plugin_command = PluginCommand::SetPanePalette(pane_id, overrides);
++    let protobuf_plugin_command: ProtobufPluginCommand = plugin_command.try_into().unwrap();
++    object_to_stdout(&protobuf_plugin_command.encode_to_vec());
++    unsafe { host_run_plugin_command() };
++}
++
+ pub fn start_web_server() {
+     let plugin_command = PluginCommand::StartWebServer;
+     let protobuf_plugin_command: ProtobufPluginCommand = plugin_command.try_into().unwrap();
+diff --git a/zellij-utils/assets/prost/api.plugin_command.rs b/zellij-utils/assets/prost/api.plugin_command.rs
+index ccb77f8..1145e6d 100644
+--- a/zellij-utils/assets/prost/api.plugin_command.rs
++++ b/zellij-utils/assets/prost/api.plugin_command.rs
+@@ -301,6 +301,8 @@ pub mod plugin_command {
+         SetPaneRegexHighlightsPayload(super::SetPaneRegexHighlightsPayload),
+         #[prost(message, tag="159")]
+         ClearPaneHighlightsPayload(super::ClearPaneHighlightsPayload),
++        #[prost(message, tag="160")]
++        SetPanePalettePayload(super::SetPanePalettePayload),
+     }
+ }
+ #[allow(clippy::derive_partial_eq_without_eq)]
+@@ -1786,6 +1788,26 @@ pub struct SetPaneColorPayload {
+ }
+ #[allow(clippy::derive_partial_eq_without_eq)]
+ #[derive(Clone, PartialEq, ::prost::Message)]
++pub struct PaletteColorOverride {
++    #[prost(uint32, tag="1")]
++    pub index: u32,
++    #[prost(uint32, optional, tag="2")]
++    pub r: ::core::option::Option<u32>,
++    #[prost(uint32, optional, tag="3")]
++    pub g: ::core::option::Option<u32>,
++    #[prost(uint32, optional, tag="4")]
++    pub b: ::core::option::Option<u32>,
++}
++#[allow(clippy::derive_partial_eq_without_eq)]
++#[derive(Clone, PartialEq, ::prost::Message)]
++pub struct SetPanePalettePayload {
++    #[prost(message, optional, tag="1")]
++    pub pane_id: ::core::option::Option<PaneId>,
++    #[prost(message, repeated, tag="2")]
++    pub overrides: ::prost::alloc::vec::Vec<PaletteColorOverride>,
++}
++#[allow(clippy::derive_partial_eq_without_eq)]
++#[derive(Clone, PartialEq, ::prost::Message)]
+ pub struct HighlightStyle {
+     #[prost(oneof="highlight_style::Style", tags="1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11")]
+     pub style: ::core::option::Option<highlight_style::Style>,
+@@ -2070,6 +2092,7 @@ pub enum CommandName {
+     SetPaneColor = 206,
+     SetPaneRegexHighlights = 207,
+     ClearPaneHighlights = 208,
++    SetPanePalette = 209,
+ }
+ impl CommandName {
+     /// String value of the enum field names used in the ProtoBuf definition.
+@@ -2266,6 +2289,7 @@ impl CommandName {
+             CommandName::SetPaneColor => "SetPaneColor",
+             CommandName::SetPaneRegexHighlights => "SetPaneRegexHighlights",
+             CommandName::ClearPaneHighlights => "ClearPaneHighlights",
++            CommandName::SetPanePalette => "SetPanePalette",
+         }
+     }
+     /// Creates an enum from field names used in the ProtoBuf definition.
+@@ -2459,6 +2483,7 @@ impl CommandName {
+             "SetPaneColor" => Some(Self::SetPaneColor),
+             "SetPaneRegexHighlights" => Some(Self::SetPaneRegexHighlights),
+             "ClearPaneHighlights" => Some(Self::ClearPaneHighlights),
++            "SetPanePalette" => Some(Self::SetPanePalette),
+             _ => None,
+         }
+     }
+diff --git a/zellij-utils/src/data.rs b/zellij-utils/src/data.rs
+index 724f0ab..1b4d538 100644
+--- a/zellij-utils/src/data.rs
++++ b/zellij-utils/src/data.rs
+@@ -3539,6 +3539,7 @@ pub enum PluginCommand {
+     SetPaneColor(PaneId, Option<String>, Option<String>), // (pane_id, fg, bg)
+     SetPaneRegexHighlights(PaneId, Vec<RegexHighlight>),
+     ClearPaneHighlights(PaneId),
++    SetPanePalette(PaneId, Vec<(u8, Option<(u8, u8, u8)>)>), // (pane_id, [(index, rgb_or_none)])
+ }
+ 
+ // Response type for plugin API methods that open a pane in a new tab
+diff --git a/zellij-utils/src/errors.rs b/zellij-utils/src/errors.rs
+index 82016f7..000e913 100644
+--- a/zellij-utils/src/errors.rs
++++ b/zellij-utils/src/errors.rs
+@@ -374,6 +374,7 @@ pub enum ScreenContext {
+     WriteToPaneId,
+     Paste,
+     SetPaneColor,
++    SetPanePalette,
+     WriteKeyToPaneId,
+     CopyTextToClipboard,
+     MovePaneWithPaneId,
+diff --git a/zellij-utils/src/plugin_api/plugin_command.proto b/zellij-utils/src/plugin_api/plugin_command.proto
+index 0634d63..e975079 100644
+--- a/zellij-utils/src/plugin_api/plugin_command.proto
++++ b/zellij-utils/src/plugin_api/plugin_command.proto
+@@ -201,6 +201,7 @@ enum CommandName {
+   SetPaneColor = 206;
+   SetPaneRegexHighlights = 207;
+   ClearPaneHighlights = 208;
++  SetPanePalette = 209;
+ }
+ 
+ message PluginCommand {
+@@ -351,6 +352,7 @@ message PluginCommand {
+     SetPaneColorPayload set_pane_color_payload = 157;
+     SetPaneRegexHighlightsPayload set_pane_regex_highlights_payload = 158;
+     ClearPaneHighlightsPayload clear_pane_highlights_payload = 159;
++    SetPanePalettePayload set_pane_palette_payload = 160;
+   }
+ }
+ 
+@@ -1225,6 +1227,18 @@ message SetPaneColorPayload {
+   optional string bg = 3;
+ }
+ 
++message PaletteColorOverride {
++  uint32 index = 1;
++  optional uint32 r = 2;
++  optional uint32 g = 3;
++  optional uint32 b = 4;
++}
++
++message SetPanePalettePayload {
++  PaneId pane_id = 1;
++  repeated PaletteColorOverride overrides = 2;
++}
++
+ message HighlightStyle {
+   oneof style {
+     bool emphasis_0 = 1;
+diff --git a/zellij-utils/src/plugin_api/plugin_command.rs b/zellij-utils/src/plugin_api/plugin_command.rs
+index 00acb76..24b5f67 100644
+--- a/zellij-utils/src/plugin_api/plugin_command.rs
++++ b/zellij-utils/src/plugin_api/plugin_command.rs
+@@ -107,6 +107,7 @@ pub use super::generated_api::api::{
+         SaveSessionResponse as ProtobufSaveSessionResponse, ScrollDownInPaneIdPayload,
+         ScrollToBottomInPaneIdPayload, ScrollToTopInPaneIdPayload, ScrollUpInPaneIdPayload,
+         SetFloatingPanePinnedPayload, SetPaneBorderlessPayload, SetPaneColorPayload,
++        SetPanePalettePayload, PaletteColorOverride,
+         SetPaneRegexHighlightsPayload, SetSelfMouseSelectionSupportPayload, SetTimeoutPayload,
+         ShowCursorPayload, ShowFloatingPanesPayload as ProtobufShowFloatingPanesPayload,
+         ShowFloatingPanesResponse as ProtobufShowFloatingPanesResponse, ShowPaneWithIdPayload,
+@@ -2439,6 +2440,31 @@ impl TryFrom<ProtobufPluginCommand> for PluginCommand {
+                 },
+                 _ => Err("Mismatched payload for SetPaneColor"),
+             },
++            Some(CommandName::SetPanePalette) => match protobuf_plugin_command.payload {
++                Some(Payload::SetPanePalettePayload(payload)) => match payload.pane_id {
++                    Some(pane_id) => {
++                        let overrides = payload
++                            .overrides
++                            .into_iter()
++                            .map(|o| {
++                                let rgb = match (o.r, o.g, o.b) {
++                                    (Some(r), Some(g), Some(b)) => {
++                                        Some((r as u8, g as u8, b as u8))
++                                    },
++                                    _ => None,
++                                };
++                                (o.index as u8, rgb)
++                            })
++                            .collect();
++                        Ok(PluginCommand::SetPanePalette(
++                            pane_id.try_into()?,
++                            overrides,
++                        ))
++                    },
++                    None => Err("Malformed SetPanePalette payload"),
++                },
++                _ => Err("Mismatched payload for SetPanePalette"),
++            },
+             Some(CommandName::SetPaneRegexHighlights) => {
+                 match protobuf_plugin_command.payload {
+                     Some(Payload::SetPaneRegexHighlightsPayload(p)) => {
+@@ -4103,6 +4129,21 @@ impl TryFrom<PluginCommand> for ProtobufPluginCommand {
+                     bg,
+                 })),
+             }),
++            PluginCommand::SetPanePalette(pane_id, overrides) => Ok(ProtobufPluginCommand {
++                name: CommandName::SetPanePalette as i32,
++                payload: Some(Payload::SetPanePalettePayload(SetPanePalettePayload {
++                    pane_id: Some(pane_id.try_into()?),
++                    overrides: overrides
++                        .into_iter()
++                        .map(|(index, rgb)| PaletteColorOverride {
++                            index: index as u32,
++                            r: rgb.map(|(r, _, _)| r as u32),
++                            g: rgb.map(|(_, g, _)| g as u32),
++                            b: rgb.map(|(_, _, b)| b as u32),
++                        })
++                        .collect(),
++                })),
++            }),
+             PluginCommand::SetPaneRegexHighlights(pane_id, highlights) => {
+                 Ok(ProtobufPluginCommand {
+                     name: CommandName::SetPaneRegexHighlights as i32,
