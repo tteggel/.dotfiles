@@ -83,10 +83,10 @@ keybinds clear-defaults=true {
         bind "Ctrl Shift s" { SwitchToMode "scroll"; }
 
         // Session picker
-        bind "Ctrl Shift o" { Run "session-picker" { floating true; close_on_exit true; }; }
+        bind "Ctrl Shift o" { Run "session-picker" { floating true; close_on_exit true; skip_confirm true; }; }
 
         // Command palette
-        bind "Ctrl Shift p" { Run "command-palette" { floating true; close_on_exit true; }; }
+        bind "Ctrl Shift p" { Run "command-palette" { floating true; close_on_exit true; skip_confirm true; }; }
 
         // Layouts
         bind "Ctrl Shift Space" { NextSwapLayout; }

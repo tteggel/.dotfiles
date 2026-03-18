@@ -1,56 +1,88 @@
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 use zellij_tile::prelude::*;
 
-#[derive(Default)]
 struct DimUnfocused {
-    dim_bg: String,
-    dim_fg: String,
+    shader_script: String,
+    shader_file: Option<PathBuf>,
     dimmed_panes: std::collections::HashSet<(u32, bool)>,
+}
+
+impl Default for DimUnfocused {
+    fn default() -> Self {
+        Self {
+            shader_script: String::new(),
+            shader_file: None,
+            dimmed_panes: std::collections::HashSet::new(),
+        }
+    }
 }
 
 register_plugin!(DimUnfocused);
 
-fn parse_hex(s: &str) -> Option<(u8, u8, u8)> {
-    let s = s.strip_prefix('#')?;
-    if s.len() != 6 {
-        return None;
+fn default_shader() -> String {
+    r#"fn shade(r, g, b, x, y, w, h, is_fg) {
+    // Distance from top-right corner, normalized
+    // Cells are ~2x tall as wide, so scale y
+    let dx = (w - x) / max(w, 1.0);
+    let dy = y * 2.0 / max(h, 1.0);
+    let dist = sqrt(dx * dx + dy * dy);
+
+    // Glare: bright in top-right, fading with distance
+    let glare = clamp(1.0 - dist / 0.8, 0.0, 1.0);
+    let glare = glare * glare;
+
+    let lch = rgb_to_oklch(r, g, b);
+    let l = lch[0];
+    let c = lch[1];
+    let hue = lch[2];
+
+    if is_fg {
+        // Desaturate heavily (reduce chroma), preserve lightness
+        let nc = c * 0.15;
+        // Near glare: push lightness up (washed out by light)
+        let nl = mix(l, 1.0, glare * 0.6);
+        let rgb = oklch_to_rgb(nl, nc, hue);
+        [clamp(rgb[0], 0.0, 255.0), clamp(rgb[1], 0.0, 255.0), clamp(rgb[2], 0.0, 255.0)]
+    } else {
+        // BG: desaturate partially, glare lifts lightness
+        let nc = c * 0.3;
+        let nl = mix(l, 0.8, glare * 0.5);
+        let rgb = oklch_to_rgb(nl, nc, hue);
+        [clamp(rgb[0], 0.0, 255.0), clamp(rgb[1], 0.0, 255.0), clamp(rgb[2], 0.0, 255.0)]
     }
-    let r = u8::from_str_radix(&s[0..2], 16).ok()?;
-    let g = u8::from_str_radix(&s[2..4], 16).ok()?;
-    let b = u8::from_str_radix(&s[4..6], 16).ok()?;
-    Some((r, g, b))
+}"#.to_string()
 }
 
-fn to_hex(r: u8, g: u8, b: u8) -> String {
-    format!("#{:02x}{:02x}{:02x}", r, g, b)
-}
-
-/// Blend color toward target by factor (0.0 = original, 1.0 = target)
-fn blend(color: (u8, u8, u8), target: (u8, u8, u8), factor: f32) -> (u8, u8, u8) {
-    let lerp = |a: u8, b: u8| -> u8 {
-        (a as f32 + (b as f32 - a as f32) * factor).round() as u8
-    };
-    (lerp(color.0, target.0), lerp(color.1, target.1), lerp(color.2, target.2))
+impl DimUnfocused {
+    fn reload_shader(&mut self) {
+        if let Some(ref path) = self.shader_file {
+            let host_path = PathBuf::from("/host").join(path);
+            if let Ok(contents) = std::fs::read_to_string(&host_path) {
+                self.shader_script = contents;
+                // Re-send to all currently dimmed panes
+                for &(id, is_plugin) in &self.dimmed_panes {
+                    let pane_id = if is_plugin {
+                        PaneId::Plugin(id)
+                    } else {
+                        PaneId::Terminal(id)
+                    };
+                    set_pane_shader(pane_id, Some(self.shader_script.clone()));
+                }
+            }
+        }
+    }
 }
 
 impl ZellijPlugin for DimUnfocused {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
-        let fg = configuration.get("fg").map(|s| s.as_str()).unwrap_or("#dcdfe4");
-        let bg = configuration.get("bg").map(|s| s.as_str()).unwrap_or("#282c34");
-        let dim: f32 = configuration.get("dim")
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0.4);
+        // If shader_file is set, load from file (with live-reload).
+        // Otherwise use the built-in default shader.
+        if let Some(path) = configuration.get("shader_file") {
+            self.shader_file = Some(PathBuf::from(path));
+        }
 
-        let fg_rgb = parse_hex(fg).unwrap_or((220, 223, 228));
-        let bg_rgb = parse_hex(bg).unwrap_or((40, 44, 52));
-
-        // Dim fg: blend toward bg (wash out text)
-        let dimmed_fg = blend(fg_rgb, bg_rgb, dim);
-        // Dim bg: darken by blending toward black
-        let dimmed_bg = blend(bg_rgb, (0, 0, 0), dim * 0.5);
-
-        self.dim_fg = to_hex(dimmed_fg.0, dimmed_fg.1, dimmed_fg.2);
-        self.dim_bg = to_hex(dimmed_bg.0, dimmed_bg.1, dimmed_bg.2);
+        self.shader_script = default_shader();
 
         request_permission(&[
             PermissionType::ReadApplicationState,
@@ -59,12 +91,29 @@ impl ZellijPlugin for DimUnfocused {
         subscribe(&[
             EventType::PaneUpdate,
             EventType::PermissionRequestResult,
+            EventType::FileSystemUpdate,
+            EventType::FileSystemCreate,
         ]);
+
+        // Try loading from file (overrides default if present)
+        self.reload_shader();
+
+        if self.shader_file.is_some() {
+            watch_filesystem();
+        }
     }
 
     fn update(&mut self, event: Event) -> bool {
         match event {
             Event::PermissionRequestResult(PermissionStatus::Granted) => {},
+            Event::FileSystemUpdate(paths) | Event::FileSystemCreate(paths) => {
+                if let Some(ref shader_path) = self.shader_file {
+                    let host_path = PathBuf::from("/host").join(shader_path);
+                    if paths.iter().any(|(p, _)| p == &host_path) {
+                        self.reload_shader();
+                    }
+                }
+            },
             Event::PaneUpdate(pane_manifest) => {
                 let mut currently_visible: std::collections::HashSet<(u32, bool)> =
                     std::collections::HashSet::new();
@@ -85,14 +134,12 @@ impl ZellijPlugin for DimUnfocused {
 
                         if pane.is_focused {
                             if self.dimmed_panes.remove(&pane_key) {
-                                set_pane_color(pane_id, None, None);
+                                set_pane_shader(pane_id, None);
                             }
-                        } else {
-                            self.dimmed_panes.insert(pane_key);
-                            set_pane_color(
+                        } else if self.dimmed_panes.insert(pane_key) {
+                            set_pane_shader(
                                 pane_id,
-                                Some(self.dim_fg.clone()),
-                                Some(self.dim_bg.clone()),
+                                Some(self.shader_script.clone()),
                             );
                         }
                     }

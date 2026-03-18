@@ -30,14 +30,21 @@
     pluginCargoVendored = pkgs.rustPlatform.importCargoLock {
       lockFile = ./Cargo.lock;
     };
+    patchedZellijSrc = pkgs.stdenv.mkDerivation {
+      name = "zellij-src-patched";
+      src = zellij-src;
+      phases = ["unpackPhase" "patchPhase" "installPhase"];
+      patches = [./set-pane-palette.patch];
+      installPhase = "cp -r . $out";
+    };
     zellijCargoVendored = pkgs.rustPlatform.importCargoLock {
-      lockFile = zellij-src + "/Cargo.lock";
+      lockFile = patchedZellijSrc + "/Cargo.lock";
     };
   in {
     packages.${system} = rec {
       zellij = pkgs.zellij.overrideAttrs (old: {
         version = "0.44.0-unstable";
-        src = zellij-src;
+        src = patchedZellijSrc;
         cargoDeps = zellijCargoVendored;
         postPatch = ''
           substituteInPlace Cargo.toml \
@@ -60,7 +67,7 @@
 
         buildPhase = ''
           export HOME=$TMPDIR
-          ln -s ${zellij-src} zellij-src
+          ln -s ${patchedZellijSrc} zellij-src
           ln -s ${pluginCargoVendored} vendor
           mkdir -p .cargo
           cat > .cargo/config.toml <<'TOML'

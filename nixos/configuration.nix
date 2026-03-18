@@ -202,6 +202,30 @@ $REMOTE_ENTRY"
       '';
     })
     (writeShellApplication {
+      name = "claude-session";
+      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.claude-code ];
+      text = ''
+        pick=$(printf 'New session\nResume session' | fzf --prompt="Claude> " --height=~50% --reverse) || exit 0
+        if [ "$pick" = "Resume session" ]; then
+          exec claude --resume
+        else
+          exec claude
+        fi
+      '';
+    })
+    (writeShellApplication {
+      name = "gemini-session";
+      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.gemini-cli ];
+      text = ''
+        pick=$(printf 'New session\nResume session' | fzf --prompt="Gemini> " --height=~50% --reverse) || exit 0
+        if [ "$pick" = "Resume session" ]; then
+          exec gemini --resume latest
+        else
+          exec gemini
+        fi
+      '';
+    })
+    (writeShellApplication {
       name = "code-session";
       runtimeInputs = [ zellij-main ];
       text = ''
@@ -265,8 +289,8 @@ $REMOTE_ENTRY"
           "exec:zsh -c 'cd \"\$(zoxide query -i)\" && exec zsh'	[Nav] Jump to directory"
           "exec:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
           "exec:code-session	[Dev] Coding session"
-          "exec:claude	[Dev] Claude Code"
-          "exec:gemini	[Dev] Gemini CLI"
+          "exec:claude-session	[Dev] Claude Code"
+          "exec:gemini-session	[Dev] Gemini CLI"
           "exec:codex	[Dev] Codex CLI"
           "exec:lazygit	[Git] Git UI (lazygit)"
           "run:gh pr list	[Git] List pull requests"
@@ -594,7 +618,7 @@ $REMOTE_ENTRY"
 
       # Auto-attach to zellij session (or start one) unless already inside zellij
       if [ -z "$ZELLIJ" ]; then
-        session-picker && exit
+        session-picker; exit
       fi
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
