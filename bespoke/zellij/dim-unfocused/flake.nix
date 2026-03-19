@@ -25,7 +25,7 @@
       overlays = [(import rust-overlay)];
     };
     rustToolchain = pkgs.rust-bin.stable.latest.default.override {
-      targets = ["wasm32-wasip1"];
+      targets = ["wasm32-wasip1" "wasm32-unknown-unknown"];
     };
     pluginCargoVendored = pkgs.rustPlatform.importCargoLock {
       lockFile = ./Cargo.lock;
@@ -39,6 +39,30 @@
     };
     zellijCargoVendored = pkgs.rustPlatform.importCargoLock {
       lockFile = patchedZellijSrc + "/Cargo.lock";
+    };
+    shaderWasm = pkgs.stdenv.mkDerivation {
+      pname = "dim-shader";
+      version = "0.1.0";
+      src = ./shader;
+      nativeBuildInputs = [rustToolchain];
+      buildPhase = ''
+        export HOME=$TMPDIR
+        mkdir -p .cargo
+        cat > .cargo/config.toml <<'TOML'
+        [source.crates-io]
+        replace-with = "vendored-sources"
+
+        [source.vendored-sources]
+        directory = "vendor"
+        TOML
+
+        cargo build --target wasm32-unknown-unknown --release --offline 2>/dev/null || \
+        cargo build --target wasm32-unknown-unknown --release
+      '';
+      installPhase = ''
+        mkdir -p $out
+        cp target/wasm32-unknown-unknown/release/dim_shader.wasm $out/
+      '';
     };
   in {
     packages.${system} = rec {
@@ -60,7 +84,7 @@
           path = ./.;
           filter = path: type:
             let name = builtins.baseNameOf path;
-            in name != "flake.nix" && name != "flake.lock" && name != "target" && name != "zellij-src" && name != "result";
+            in name != "flake.nix" && name != "flake.lock" && name != "target" && name != "zellij-src" && name != "result" && name != "shader";
         };
 
         nativeBuildInputs = [rustToolchain];
@@ -78,6 +102,7 @@
           directory = "vendor"
           TOML
 
+          export SHADER_WASM_PATH="${shaderWasm}/dim_shader.wasm"
           cargo build --target wasm32-wasip1 --release --offline
         '';
 
