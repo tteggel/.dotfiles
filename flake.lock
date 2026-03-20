@@ -302,11 +302,11 @@
     "zellij-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1774025402,
-        "narHash": "sha256-TK7gOgix5sdMqoWUQvkxBSlCNK5MjuouBmNU90Deyzk=",
+        "lastModified": 1774028386,
+        "narHash": "sha256-wv+Qqc+9C9SgNdr6iPJnJXtsAQkLgWaUnvzqAn0+9MA=",
         "owner": "tteggel",
         "repo": "zellij",
-        "rev": "99c0aaf9845e065a576f0c5b61c69187208324c3",
+        "rev": "5f0c8235c66c4056d9a1707b3605ecd3314a57ce",
         "type": "github"
       },
       "original": {
