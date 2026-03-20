@@ -1,5 +1,5 @@
 {
-  description = "Zellij (from main) + dim-unfocused plugin";
+  description = "Zellij (from fork with pane shader support) + dim-unfocused plugin";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zellij-src = {
-      url = "github:zellij-org/zellij/main";
+      url = "github:tteggel/zellij/pane-shaders";
       flake = false;
     };
   };
@@ -30,15 +30,8 @@
     pluginCargoVendored = pkgs.rustPlatform.importCargoLock {
       lockFile = ./Cargo.lock;
     };
-    patchedZellijSrc = pkgs.stdenv.mkDerivation {
-      name = "zellij-src-patched";
-      src = zellij-src;
-      phases = ["unpackPhase" "patchPhase" "installPhase"];
-      patches = [./set-pane-palette.patch];
-      installPhase = "cp -r . $out";
-    };
     zellijCargoVendored = pkgs.rustPlatform.importCargoLock {
-      lockFile = patchedZellijSrc + "/Cargo.lock";
+      lockFile = zellij-src + "/Cargo.lock";
     };
     shaderWasm = pkgs.stdenv.mkDerivation {
       pname = "dim-shader";
@@ -68,7 +61,7 @@
     packages.${system} = rec {
       zellij = pkgs.zellij.overrideAttrs (old: {
         version = "0.44.0-unstable";
-        src = patchedZellijSrc;
+        src = zellij-src;
         cargoDeps = zellijCargoVendored;
         postPatch = ''
           substituteInPlace Cargo.toml \
@@ -91,7 +84,7 @@
 
         buildPhase = ''
           export HOME=$TMPDIR
-          ln -s ${patchedZellijSrc} zellij-src
+          ln -s ${zellij-src} zellij-src
           ln -s ${pluginCargoVendored} vendor
           mkdir -p .cargo
           cat > .cargo/config.toml <<'TOML'

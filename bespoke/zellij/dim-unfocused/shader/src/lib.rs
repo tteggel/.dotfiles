@@ -231,33 +231,117 @@ fn atanf(x: f32) -> f32 {
     x * (1.0 - x2 * (0.3333333 - x2 * (0.2 - x2 * 0.142857)))
 }
 
+// --- Uniforms ---
+//
+// The host writes a uniforms block at WASM memory offset 0 before each call.
+// Layout: 32 x i32 = 128 bytes.
+//
+// Offset  Field
+// 0       pane_width
+// 4       pane_height
+// 8       cursor_x          (terminal text cursor)
+// 12      cursor_y
+// 16      mouse_x           (-1 if not hovering)
+// 20      mouse_y
+// 24      time_ms
+// 28      pane_id
+// 32      is_focused         (0 or 1)
+// 36      scroll_offset
+// 40      pane_x             (pane position on screen)
+// 44      pane_y
+// 48      screen_width
+// 52      screen_height
+// 56      pane_count
+// 60      has_selection       (0 or 1)
+// 64      sel_start_x
+// 68      sel_start_y
+// 72      sel_end_x
+// 76      sel_end_y
+// 80      prev_cursor_x
+// 84      prev_cursor_y
+// 88      prev_mouse_x
+// 92      prev_mouse_y
+// 96-127  reserved
+
+struct Uniforms {
+    w: f32,
+    h: f32,
+    cursor_x: f32,
+    cursor_y: f32,
+    mouse_x: f32,
+    mouse_y: f32,
+    time: f32,
+    pane_id: i32,
+    is_focused: bool,
+    scroll_offset: f32,
+    pane_x: f32,
+    pane_y: f32,
+    screen_w: f32,
+    screen_h: f32,
+    pane_count: i32,
+    has_selection: bool,
+    sel_start_x: f32,
+    sel_start_y: f32,
+    sel_end_x: f32,
+    sel_end_y: f32,
+    prev_cursor_x: f32,
+    prev_cursor_y: f32,
+    prev_mouse_x: f32,
+    prev_mouse_y: f32,
+}
+
+// Uniforms are written by the host at this offset to avoid clobbering
+// the WASM module's stack/static data at low addresses.
+const UNIFORMS_OFFSET: usize = 65408;
+
+fn read_uniforms() -> Uniforms {
+    unsafe {
+        let o = UNIFORMS_OFFSET;
+        let time_ms = read_i32(o + 24);
+        Uniforms {
+            w: maxf(read_i32(o) as f32, 1.0),
+            h: maxf(read_i32(o + 4) as f32, 1.0),
+            cursor_x: read_i32(o + 8) as f32,
+            cursor_y: read_i32(o + 12) as f32,
+            mouse_x: read_i32(o + 16) as f32,
+            mouse_y: read_i32(o + 20) as f32,
+            // Reduce time to keep f32 precision in sinf().
+            // 10_000_000 ms ≈ 2.8 hours; t * 0.0015 stays under 15 000.
+            time: (time_ms % 10_000_000) as f32,
+            pane_id: read_i32(o + 28),
+            is_focused: read_i32(o + 32) != 0,
+            scroll_offset: read_i32(o + 36) as f32,
+            pane_x: read_i32(o + 40) as f32,
+            pane_y: read_i32(o + 44) as f32,
+            screen_w: maxf(read_i32(o + 48) as f32, 1.0),
+            screen_h: maxf(read_i32(o + 52) as f32, 1.0),
+            pane_count: read_i32(o + 56),
+            has_selection: read_i32(o + 60) != 0,
+            sel_start_x: read_i32(o + 64) as f32,
+            sel_start_y: read_i32(o + 68) as f32,
+            sel_end_x: read_i32(o + 72) as f32,
+            sel_end_y: read_i32(o + 76) as f32,
+            prev_cursor_x: read_i32(o + 80) as f32,
+            prev_cursor_y: read_i32(o + 84) as f32,
+            prev_mouse_x: read_i32(o + 88) as f32,
+            prev_mouse_y: read_i32(o + 92) as f32,
+        }
+    }
+}
+
 // --- Shader entry points ---
 
-// Linear memory layout for shade_batch:
-// colors_ptr points to count entries, each 6 x i32 (24 bytes):
-//   [r, g, b, x, y, is_fg]
-// shade_batch reads these, transforms in-place, writes back r,g,b.
-
+// Host writes uniforms at offset 0, then color entries at colors_ptr.
+// Each color entry: 6 x i32 (24 bytes) = [r, g, b, x, y, is_fg].
+// shade_batch transforms r,g,b in-place.
 #[no_mangle]
-pub extern "C" fn shade_batch(
-    colors_ptr: i32,
-    count: i32,
-    w: i32,
-    h: i32,
-    cursor_x: i32,
-    cursor_y: i32,
-    time_ms: i32,
-) {
+pub extern "C" fn shade_batch(colors_ptr: i32, count: i32) {
+    let u = read_uniforms();
     let ptr = colors_ptr as usize;
     let count = count as usize;
-    let w_f = w as f32;
-    let h_f = h as f32;
-    let cx = cursor_x as f32;
-    let cy = cursor_y as f32;
-    let t = time_ms as f32;
 
     for i in 0..count {
-        let base = ptr + i * 24; // 6 * 4 bytes per entry
+        let base = ptr + i * 24;
         unsafe {
             let r = read_i32(base) as f32;
             let g = read_i32(base + 4) as f32;
@@ -266,7 +350,7 @@ pub extern "C" fn shade_batch(
             let y = read_i32(base + 16) as f32;
             let is_fg = read_i32(base + 20) != 0;
 
-            let (nr, ng, nb) = shade(r, g, b, x, y, w_f, h_f, cx, cy, t, is_fg);
+            let (nr, ng, nb) = shade(r, g, b, x, y, is_fg, &u);
 
             write_i32(base, nr as i32);
             write_i32(base + 4, ng as i32);
@@ -278,34 +362,25 @@ pub extern "C" fn shade_batch(
 // Invalidation state — safe because WASM is single-threaded.
 static mut LAST_BREATH: f32 = 0.0;
 
+// Host writes uniforms at offset 0 (including prev_cursor/prev_mouse).
 // Returns count of rows needing re-render.
 // Writes row indices to out_ptr. Returns 0 = no animation needed.
 #[no_mangle]
-pub extern "C" fn invalidate(
-    out_ptr: i32,
-    max_rows: i32,
-    _w: i32,
-    h: i32,
-    t_ms: i32,
-    cx: i32,
-    cy: i32,
-    prev_cx: i32,
-    prev_cy: i32,
-) -> i32 {
+pub extern "C" fn invalidate(out_ptr: i32, max_rows: i32) -> i32 {
+    let u = read_uniforms();
     let out = out_ptr as usize;
     let max = max_rows as usize;
-    let rows = if (h as usize) < max { h as usize } else { max };
+    let h = u.h as usize;
+    let rows = if h < max { h } else { max };
 
-    // Current breathing value (must match shade())
-    let breath = sinf(t_ms as f32 * 0.0015) * 0.5 + 0.5;
+    let breath = sinf(u.time * 0.0015) * 0.5 + 0.5;
     let prev_breath = unsafe { LAST_BREATH };
 
-    let cursor_moved = cx != prev_cx || cy != prev_cy;
+    let cursor_moved = u.cursor_x as i32 != u.prev_cursor_x as i32
+        || u.cursor_y as i32 != u.prev_cursor_y as i32;
+    let mouse_moved = u.mouse_x as i32 != u.prev_mouse_x as i32
+        || u.mouse_y as i32 != u.prev_mouse_y as i32;
 
-    // Breathing threshold: only full-refresh when the breath value has
-    // shifted enough to produce a visible change. The vignette modulation
-    // is ±0.04 and glare is ±0.10, so a breath delta of 0.03 gives
-    // ~0.003 vignette / ~0.006 glare change — just at the perceptible edge.
     let breath_delta = absf(breath - prev_breath);
     let breath_dirty = breath_delta > 0.03;
 
@@ -313,62 +388,70 @@ pub extern "C" fn invalidate(
         unsafe { LAST_BREATH = breath; }
     }
 
-    if !cursor_moved && !breath_dirty {
+    if !cursor_moved && !mouse_moved && !breath_dirty {
         return 0;
     }
 
-    if breath_dirty && !cursor_moved {
-        // Full refresh for breathing — every effect row changes slightly
+    // Full refresh for breathing — every row changes slightly
+    if breath_dirty && !cursor_moved && !mouse_moved {
         for i in 0..rows {
             unsafe { write_i32(out + i * 4, i as i32); }
         }
         return rows as i32;
     }
 
-    // Cursor moved — emit rows within glow radius of old + new position.
-    // Glow radius: cdist < 1.0 when |ly - cy| < h/6 (from the 6.0 scaling factor)
-    let glow_radius = (h / 6 + 1) as usize;
-
-    // Collect unique dirty rows into a bitset (stack-allocated, max 512 rows)
-    // For larger panes, fall back to full refresh.
+    // For large panes, fall back to full refresh
     if rows > 512 {
         for i in 0..rows {
             unsafe { write_i32(out + i * 4, i as i32); }
         }
         return rows as i32;
     }
+
     let mut dirty = [false; 512];
+    let glow_radius = (h / 6 + 1) as usize;
 
-    // Mark rows near old cursor position
-    let old_cy = prev_cy as usize;
-    let start = if old_cy >= glow_radius { old_cy - glow_radius } else { 0 };
-    let end = if old_cy + glow_radius < rows { old_cy + glow_radius } else { rows - 1 };
-    for r in start..=end {
-        dirty[r] = true;
-    }
-
-    // Mark rows near new cursor position
-    let new_cy = cy as usize;
-    let start = if new_cy >= glow_radius { new_cy - glow_radius } else { 0 };
-    let end = if new_cy + glow_radius < rows { new_cy + glow_radius } else { rows - 1 };
-    for r in start..=end {
-        dirty[r] = true;
-    }
-
-    // If breathing also dirty, mark everything
-    if breath_dirty {
-        for r in 0..rows {
+    // Mark rows near a y position
+    let mark_near = |dirty: &mut [bool; 512], cy: usize| {
+        let start = if cy >= glow_radius { cy - glow_radius } else { 0 };
+        let end = if cy + glow_radius < rows { cy + glow_radius } else { rows.saturating_sub(1) };
+        let mut r = start;
+        while r <= end {
             dirty[r] = true;
+            r += 1;
+        }
+    };
+
+    if cursor_moved {
+        mark_near(&mut dirty, u.prev_cursor_y as usize);
+        mark_near(&mut dirty, u.cursor_y as usize);
+    }
+
+    if mouse_moved {
+        if u.prev_mouse_y >= 0.0 {
+            mark_near(&mut dirty, u.prev_mouse_y as usize);
+        }
+        if u.mouse_y >= 0.0 {
+            mark_near(&mut dirty, u.mouse_y as usize);
         }
     }
 
-    // Write out dirty row indices
+    if breath_dirty {
+        let mut r = 0;
+        while r < rows {
+            dirty[r] = true;
+            r += 1;
+        }
+    }
+
     let mut count = 0usize;
-    for r in 0..rows {
+    let mut r = 0;
+    while r < rows {
         if dirty[r] {
             unsafe { write_i32(out + count * 4, r as i32); }
             count += 1;
         }
+        r += 1;
     }
     count as i32
 }
@@ -383,42 +466,50 @@ unsafe fn write_i32(addr: usize, val: i32) {
 
 fn shade(
     r: f32, g: f32, b: f32,
-    x: f32, y: f32, w: f32, h: f32,
-    cx: f32, cy: f32, t: f32,
+    x: f32, y: f32,
     is_fg: bool,
+    u: &Uniforms,
 ) -> (f32, f32, f32) {
     let (l, c, hue) = rgb_to_oklch(r, g, b);
 
     // Pane-local coordinates
-    let lx = x % maxf(w, 1.0);
-    let ly = y % maxf(h, 1.0);
+    let lx = x % u.w;
+    let ly = y % u.h;
 
     // --- Breathing: slow pulsation driven by time ---
-    // ~4 second cycle (0.25 Hz)
-    let breath = sinf(t * 0.0015) * 0.5 + 0.5; // 0..1
+    let breath = sinf(u.time * 0.0015) * 0.5 + 0.5;
 
     // --- Vignette: edge darkening with subtle breathing ---
-    let nx = lx / maxf(w, 1.0);
-    let ny = ly / maxf(h, 1.0);
+    let nx = lx / u.w;
+    let ny = ly / u.h;
     let vx = (nx - 0.5) * 2.0;
     let vy = (ny - 0.5) * 2.0;
     let vdist = sqrtf(vx * vx + vy * vy);
-    let vig_strength = 0.38 + breath * 0.04; // breathes between 0.38-0.42
+    let vig_strength = 0.38 + breath * 0.04;
     let vignette = clamp(1.2 - vdist * vig_strength, 0.55, 1.0);
 
     // --- Glare: elliptical highlight near top-right, warm tint ---
-    let gx = (w * 0.8 - lx) / maxf(w, 1.0);
-    let gy = (ly - h * 0.15) * 2.5 / maxf(h, 1.0);
+    let gx = (u.w * 0.8 - lx) / u.w;
+    let gy = (ly - u.h * 0.15) * 2.5 / u.h;
     let gdist = sqrtf(gx * gx * 0.6 + gy * gy);
     let glare_base = clamp(1.0 - gdist / 0.8, 0.0, 1.0);
-    let glare_intensity = 0.50 + breath * 0.10; // breathes between 0.50-0.60
+    let glare_intensity = 0.50 + breath * 0.10;
     let glare = glare_base * glare_base * glare_base * glare_intensity;
-    // Warm shift: push hue toward amber (70 deg) in glare zone
     let hue = mix(hue, 70.0, glare * 0.5);
 
-    // --- Cursor glow: subtle brightening near cursor position ---
-    let cdx = (lx - cx) / maxf(w, 1.0) * 6.0;
-    let cdy = (ly - cy) / maxf(h, 1.0) * 6.0;
+    // --- Mouse glow: brightening near mouse when hovering ---
+    let mouse_glow = if u.mouse_x >= 0.0 {
+        let mdx = (lx - u.mouse_x) / u.w * 6.0;
+        let mdy = (ly - u.mouse_y) / u.h * 6.0;
+        let mdist = sqrtf(mdx * mdx + mdy * mdy);
+        clamp(1.0 - mdist, 0.0, 1.0) * 0.08
+    } else {
+        0.0
+    };
+
+    // --- Cursor glow: subtle brightening near terminal cursor ---
+    let cdx = (lx - u.cursor_x) / u.w * 6.0;
+    let cdy = (ly - u.cursor_y) / u.h * 6.0;
     let cdist = sqrtf(cdx * cdx + cdy * cdy);
     let cursor_glow = clamp(1.0 - cdist, 0.0, 1.0) * 0.08;
 
@@ -429,8 +520,9 @@ fn shade(
     let n = absf(((x * 12.9898 + y * 78.233) * 43758.5453) % 1.0);
     let noise = (n - 0.5) * 0.035;
 
-    // --- Combine ---
-    let nl = l * vignette * scanline + noise + cursor_glow;
+    // --- Combine: use max of mouse and cursor glow ---
+    let glow = maxf(mouse_glow, cursor_glow);
+    let nl = l * vignette * scanline + noise + glow;
 
     if is_fg {
         let nc = c * 0.18;
