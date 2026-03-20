@@ -5344,18 +5344,22 @@ index 35b2d92..ccdc312 100644
  use unicode_width::UnicodeWidthChar;
  use zellij_utils::data::{HighlightLayer, HighlightStyle, RegexHighlight, Style};
  use zellij_utils::errors::prelude::*;
-@@ -534,6 +535,7 @@ pub struct Grid {
+@@ -534,6 +535,8 @@ pub struct Grid {
      // key: plugin_id (u32), inner vec: (pattern, compiled) pairs
      pub hover_position: Option<Position>, // pane-relative cursor cell; None when outside pane
      pub cached_hover_tooltip: Option<String>,
 +    pub pane_shader: Option<Arc<crate::output::ShaderInstance>>,
++    pub prev_shader_cursor: Option<(usize, usize)>,
  }
 
  impl Grid {
-@@ -542,6 +544,23 @@ impl Grid {
+@@ -542,6 +544,26 @@ impl Grid {
          self.pane_default_bg = bg.as_ref().and_then(|s| xparse_color(s.as_bytes()));
          self.output_buffer.update_all_lines();
      }
++    pub fn cursor_position(&self) -> (usize, usize) {
++        (self.cursor.x, self.cursor.y)
++    }
 +    pub fn set_pane_shader(&mut self, shader_wasm: Option<Vec<u8>>) {
 +        self.pane_shader = shader_wasm.and_then(|wasm_bytes| {
 +            match crate::output::ShaderInstance::new(&wasm_bytes) {
@@ -5376,11 +5380,12 @@ index 35b2d92..ccdc312 100644
      pub fn get_pane_default_color_strings(&self) -> (Option<String>, Option<String>) {
          (
              self.pane_default_fg.and_then(ansi_code_to_color_string),
-@@ -817,6 +837,7 @@ impl Grid {
+@@ -817,6 +837,8 @@ impl Grid {
              plugin_highlights: HashMap::new(),
              hover_position: None,
              cached_hover_tooltip: None,
 +            pane_shader: None,
++            prev_shader_cursor: None,
          }
      }
      pub fn render_full_viewport(&mut self) {
@@ -5400,7 +5405,7 @@ diff --git a/zellij-server/src/panes/terminal_pane.rs b/zellij-server/src/panes/
 index d4b4329..dc8218b 100644
 --- a/zellij-server/src/panes/terminal_pane.rs
 +++ b/zellij-server/src/panes/terminal_pane.rs
-@@ -324,6 +324,13 @@ impl Pane for TerminalPane {
+@@ -324,6 +324,37 @@ impl Pane for TerminalPane {
      fn get_pane_default_colors(&self) -> (Option<String>, Option<String>) {
          self.grid.get_pane_default_color_strings()
      }
@@ -5410,6 +5415,30 @@ index d4b4329..dc8218b 100644
 +    }
 +    fn has_shader_animation(&self) -> bool {
 +        self.grid.pane_shader.as_ref().map_or(false, |s| s.has_animation())
++    }
++    fn tick_shader_animation(&mut self) -> bool {
++        let shader = match self.grid.pane_shader {
++            Some(ref s) if s.has_animation() => s,
++            _ => return false,
++        };
++        let t_ms = std::time::SystemTime::now()
++            .duration_since(std::time::UNIX_EPOCH)
++            .unwrap_or_default()
++            .as_millis() as u32;
++        let (cx, cy) = self.grid.cursor_position();
++        let (prev_cx, prev_cy) = self.grid.prev_shader_cursor.unwrap_or((cx, cy));
++        let dirty_rows = shader.invalidate(
++            self.grid.width, self.grid.height, t_ms,
++            cx, cy, prev_cx, prev_cy,
++        );
++        self.grid.prev_shader_cursor = Some((cx, cy));
++        if dirty_rows.is_empty() {
++            return false;
++        }
++        for row in &dirty_rows {
++            self.grid.output_buffer.update_line(*row);
++        }
++        true
 +    }
      fn render(
          &mut self,
@@ -5479,7 +5508,7 @@ index 565aa8b..7899a38 100644
 +                    // Animation tick: if any shader panes need re-render, schedule another frame
 +                    let mut has_animation = false;
 +                    for tab in screen.get_tabs_mut().values_mut() {
-+                        if tab.mark_shader_panes_for_rerender() {
++                        if tab.tick_shader_animations() {
 +                            has_animation = true;
 +                        }
 +                    }
@@ -5508,7 +5537,7 @@ index 565aa8b..7899a38 100644
 +                    // re-render shader panes with updated time values.
 +                    let all_tabs = screen.get_tabs_mut();
 +                    for tab in all_tabs.values_mut() {
-+                        tab.mark_shader_panes_for_rerender();
++                        tab.tick_shader_animations();
 +                    }
 +                }
 +                screen.render(None)?;
@@ -5520,16 +5549,18 @@ diff --git a/zellij-server/src/tab/mod.rs b/zellij-server/src/tab/mod.rs
 index bcefc51..046f3bc 100644
 --- a/zellij-server/src/tab/mod.rs
 +++ b/zellij-server/src/tab/mod.rs
-@@ -327,6 +327,8 @@ pub trait Pane {
+@@ -327,6 +327,10 @@ pub trait Pane {
      fn get_pane_default_colors(&self) -> (Option<String>, Option<String>) {
          (None, None)
      }
 +    fn set_pane_shader(&mut self, _shader_wasm: Option<Vec<u8>>) {}
 +    fn has_shader_animation(&self) -> bool { false }
++    /// Tick the shader animation. Returns true if any rows were invalidated.
++    fn tick_shader_animation(&mut self) -> bool { false }
 
      fn right_boundary_x_coords(&self) -> usize {
          self.x() + self.cols()
-@@ -2591,6 +2592,40 @@ impl Tab {
+@@ -2591,6 +2592,45 @@ impl Tab {
          }
          Ok(())
      }
@@ -5548,24 +5579,29 @@ index bcefc51..046f3bc 100644
 +        }
 +        Ok(())
 +    }
-+    /// Mark all shader panes as needing re-render (for animation).
-+    /// Returns true if any animated shader panes exist.
-+    pub fn mark_shader_panes_for_rerender(&mut self) -> bool {
++    /// Tick shader animations. Calls invalidate() on each shader pane
++    /// and marks only the returned rows dirty. Returns true if any
++    /// pane produced dirty rows (i.e., animation should continue).
++    pub fn tick_shader_animations(&mut self) -> bool {
 +        let animated: Vec<PaneId> = self.tiled_panes
 +            .get_panes()
 +            .chain(self.floating_panes.get_panes())
 +            .filter(|(_, pane)| pane.has_shader_animation())
 +            .map(|(id, _)| *id)
 +            .collect();
-+        let has_animation = !animated.is_empty();
++        let mut any_dirty = false;
 +        for pid in animated {
 +            if let Some(pane) = self.tiled_panes.get_pane_mut(pid) {
-+                pane.set_should_render(true);
++                if pane.tick_shader_animation() {
++                    any_dirty = true;
++                }
 +            } else if let Some(pane) = self.floating_panes.get_mut(&pid) {
-+                pane.set_should_render(true);
++                if pane.tick_shader_animation() {
++                    any_dirty = true;
++                }
 +            }
 +        }
-+        has_animation
++        any_dirty
 +    }
      pub fn has_pane_with_pid(&self, pid: &PaneId) -> bool {
          self.tiled_panes.panes_contain(pid)

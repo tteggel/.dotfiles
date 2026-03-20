@@ -275,6 +275,9 @@ pub extern "C" fn shade_batch(
     }
 }
 
+// Invalidation state — safe because WASM is single-threaded.
+static mut LAST_BREATH: f32 = 0.0;
+
 // Returns count of rows needing re-render.
 // Writes row indices to out_ptr. Returns 0 = no animation needed.
 #[no_mangle]
@@ -283,25 +286,88 @@ pub extern "C" fn invalidate(
     max_rows: i32,
     _w: i32,
     h: i32,
-    _t_ms: i32,
+    t_ms: i32,
     cx: i32,
     cy: i32,
     prev_cx: i32,
     prev_cy: i32,
 ) -> i32 {
-    // Always animate: the glare breathes with time.
-    // Return all rows (simple strategy — the shader changes globally).
     let out = out_ptr as usize;
     let max = max_rows as usize;
-    let rows = h as usize;
-    let count = if rows < max { rows } else { max };
+    let rows = if (h as usize) < max { h as usize } else { max };
 
-    // If cursor moved, invalidate all rows (glare shifts).
-    // Otherwise still invalidate all rows because of breathing.
-    let _ = (cx, cy, prev_cx, prev_cy); // used for future selective invalidation
-    for i in 0..count {
-        unsafe {
-            write_i32(out + i * 4, i as i32);
+    // Current breathing value (must match shade())
+    let breath = sinf(t_ms as f32 * 0.0015) * 0.5 + 0.5;
+    let prev_breath = unsafe { LAST_BREATH };
+
+    let cursor_moved = cx != prev_cx || cy != prev_cy;
+
+    // Breathing threshold: only full-refresh when the breath value has
+    // shifted enough to produce a visible change. The vignette modulation
+    // is ±0.04 and glare is ±0.10, so a breath delta of 0.03 gives
+    // ~0.003 vignette / ~0.006 glare change — just at the perceptible edge.
+    let breath_delta = absf(breath - prev_breath);
+    let breath_dirty = breath_delta > 0.03;
+
+    if breath_dirty {
+        unsafe { LAST_BREATH = breath; }
+    }
+
+    if !cursor_moved && !breath_dirty {
+        return 0;
+    }
+
+    if breath_dirty && !cursor_moved {
+        // Full refresh for breathing — every effect row changes slightly
+        for i in 0..rows {
+            unsafe { write_i32(out + i * 4, i as i32); }
+        }
+        return rows as i32;
+    }
+
+    // Cursor moved — emit rows within glow radius of old + new position.
+    // Glow radius: cdist < 1.0 when |ly - cy| < h/6 (from the 6.0 scaling factor)
+    let glow_radius = (h / 6 + 1) as usize;
+
+    // Collect unique dirty rows into a bitset (stack-allocated, max 512 rows)
+    // For larger panes, fall back to full refresh.
+    if rows > 512 {
+        for i in 0..rows {
+            unsafe { write_i32(out + i * 4, i as i32); }
+        }
+        return rows as i32;
+    }
+    let mut dirty = [false; 512];
+
+    // Mark rows near old cursor position
+    let old_cy = prev_cy as usize;
+    let start = if old_cy >= glow_radius { old_cy - glow_radius } else { 0 };
+    let end = if old_cy + glow_radius < rows { old_cy + glow_radius } else { rows - 1 };
+    for r in start..=end {
+        dirty[r] = true;
+    }
+
+    // Mark rows near new cursor position
+    let new_cy = cy as usize;
+    let start = if new_cy >= glow_radius { new_cy - glow_radius } else { 0 };
+    let end = if new_cy + glow_radius < rows { new_cy + glow_radius } else { rows - 1 };
+    for r in start..=end {
+        dirty[r] = true;
+    }
+
+    // If breathing also dirty, mark everything
+    if breath_dirty {
+        for r in 0..rows {
+            dirty[r] = true;
+        }
+    }
+
+    // Write out dirty row indices
+    let mut count = 0usize;
+    for r in 0..rows {
+        if dirty[r] {
+            unsafe { write_i32(out + count * 4, r as i32); }
+            count += 1;
         }
     }
     count as i32
