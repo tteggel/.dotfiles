@@ -244,14 +244,17 @@ pub extern "C" fn shade_batch(
     count: i32,
     w: i32,
     h: i32,
-    _cursor_x: i32,
-    _cursor_y: i32,
-    _time_ms: i32,
+    cursor_x: i32,
+    cursor_y: i32,
+    time_ms: i32,
 ) {
     let ptr = colors_ptr as usize;
     let count = count as usize;
     let w_f = w as f32;
     let h_f = h as f32;
+    let cx = cursor_x as f32;
+    let cy = cursor_y as f32;
+    let t = time_ms as f32;
 
     for i in 0..count {
         let base = ptr + i * 24; // 6 * 4 bytes per entry
@@ -263,7 +266,7 @@ pub extern "C" fn shade_batch(
             let y = read_i32(base + 16) as f32;
             let is_fg = read_i32(base + 20) != 0;
 
-            let (nr, ng, nb) = shade(r, g, b, x, y, w_f, h_f, is_fg);
+            let (nr, ng, nb) = shade(r, g, b, x, y, w_f, h_f, cx, cy, t, is_fg);
 
             write_i32(base, nr as i32);
             write_i32(base + 4, ng as i32);
@@ -272,21 +275,36 @@ pub extern "C" fn shade_batch(
     }
 }
 
-// Optional: returns count of rows needing re-render.
-// For now, returns 0 (no animation). Can be extended later for cursor-tracking effects.
+// Returns count of rows needing re-render.
+// Writes row indices to out_ptr. Returns 0 = no animation needed.
 #[no_mangle]
 pub extern "C" fn invalidate(
-    _out_ptr: i32,
-    _max_rows: i32,
+    out_ptr: i32,
+    max_rows: i32,
     _w: i32,
-    _h: i32,
+    h: i32,
     _t_ms: i32,
-    _cx: i32,
-    _cy: i32,
-    _prev_cx: i32,
-    _prev_cy: i32,
+    cx: i32,
+    cy: i32,
+    prev_cx: i32,
+    prev_cy: i32,
 ) -> i32 {
-    0
+    // Always animate: the glare breathes with time.
+    // Return all rows (simple strategy — the shader changes globally).
+    let out = out_ptr as usize;
+    let max = max_rows as usize;
+    let rows = h as usize;
+    let count = if rows < max { rows } else { max };
+
+    // If cursor moved, invalidate all rows (glare shifts).
+    // Otherwise still invalidate all rows because of breathing.
+    let _ = (cx, cy, prev_cx, prev_cy); // used for future selective invalidation
+    for i in 0..count {
+        unsafe {
+            write_i32(out + i * 4, i as i32);
+        }
+    }
+    count as i32
 }
 
 unsafe fn read_i32(addr: usize) -> i32 {
@@ -297,29 +315,46 @@ unsafe fn write_i32(addr: usize, val: i32) {
     core::ptr::write(addr as *mut i32, val);
 }
 
-fn shade(r: f32, g: f32, b: f32, x: f32, y: f32, w: f32, h: f32, is_fg: bool) -> (f32, f32, f32) {
+fn shade(
+    r: f32, g: f32, b: f32,
+    x: f32, y: f32, w: f32, h: f32,
+    cx: f32, cy: f32, t: f32,
+    is_fg: bool,
+) -> (f32, f32, f32) {
     let (l, c, hue) = rgb_to_oklch(r, g, b);
 
     // Pane-local coordinates
     let lx = x % maxf(w, 1.0);
     let ly = y % maxf(h, 1.0);
 
-    // --- Vignette: edge darkening ---
+    // --- Breathing: slow pulsation driven by time ---
+    // ~4 second cycle (0.25 Hz)
+    let breath = sinf(t * 0.0015) * 0.5 + 0.5; // 0..1
+
+    // --- Vignette: edge darkening with subtle breathing ---
     let nx = lx / maxf(w, 1.0);
     let ny = ly / maxf(h, 1.0);
     let vx = (nx - 0.5) * 2.0;
     let vy = (ny - 0.5) * 2.0;
     let vdist = sqrtf(vx * vx + vy * vy);
-    let vignette = clamp(1.2 - vdist * 0.4, 0.55, 1.0);
+    let vig_strength = 0.38 + breath * 0.04; // breathes between 0.38-0.42
+    let vignette = clamp(1.2 - vdist * vig_strength, 0.55, 1.0);
 
     // --- Glare: elliptical highlight near top-right, warm tint ---
     let gx = (w * 0.8 - lx) / maxf(w, 1.0);
     let gy = (ly - h * 0.15) * 2.5 / maxf(h, 1.0);
     let gdist = sqrtf(gx * gx * 0.6 + gy * gy);
-    let glare = clamp(1.0 - gdist / 0.8, 0.0, 1.0);
-    let glare = glare * glare * glare * 0.55;
+    let glare_base = clamp(1.0 - gdist / 0.8, 0.0, 1.0);
+    let glare_intensity = 0.50 + breath * 0.10; // breathes between 0.50-0.60
+    let glare = glare_base * glare_base * glare_base * glare_intensity;
     // Warm shift: push hue toward amber (70 deg) in glare zone
     let hue = mix(hue, 70.0, glare * 0.5);
+
+    // --- Cursor glow: subtle brightening near cursor position ---
+    let cdx = (lx - cx) / maxf(w, 1.0) * 6.0;
+    let cdy = (ly - cy) / maxf(h, 1.0) * 6.0;
+    let cdist = sqrtf(cdx * cdx + cdy * cdy);
+    let cursor_glow = clamp(1.0 - cdist, 0.0, 1.0) * 0.08;
 
     // --- Scanlines: faint darkening on alternating rows ---
     let scanline = if (y as i32) % 2 == 0 { 0.97 } else { 1.0 };
@@ -329,7 +364,7 @@ fn shade(r: f32, g: f32, b: f32, x: f32, y: f32, w: f32, h: f32, is_fg: bool) ->
     let noise = (n - 0.5) * 0.035;
 
     // --- Combine ---
-    let nl = l * vignette * scanline + noise;
+    let nl = l * vignette * scanline + noise + cursor_glow;
 
     if is_fg {
         let nc = c * 0.18;
