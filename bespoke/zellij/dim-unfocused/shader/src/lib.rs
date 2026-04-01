@@ -359,102 +359,10 @@ pub extern "C" fn shade_batch(colors_ptr: i32, count: i32) {
     }
 }
 
-// Invalidation state — safe because WASM is single-threaded.
-static mut LAST_BREATH: f32 = 0.0;
-
-// Host writes uniforms at offset 0 (including prev_cursor/prev_mouse).
-// Returns count of rows needing re-render.
-// Writes row indices to out_ptr. Returns 0 = no animation needed.
-#[no_mangle]
-pub extern "C" fn invalidate(out_ptr: i32, max_rows: i32) -> i32 {
-    let u = read_uniforms();
-    let out = out_ptr as usize;
-    let max = max_rows as usize;
-    let h = u.h as usize;
-    let rows = if h < max { h } else { max };
-
-    let breath = sinf(u.time * 0.0015) * 0.5 + 0.5;
-    let prev_breath = unsafe { LAST_BREATH };
-
-    let cursor_moved = u.cursor_x as i32 != u.prev_cursor_x as i32
-        || u.cursor_y as i32 != u.prev_cursor_y as i32;
-    let mouse_moved = u.mouse_x as i32 != u.prev_mouse_x as i32
-        || u.mouse_y as i32 != u.prev_mouse_y as i32;
-
-    let breath_delta = absf(breath - prev_breath);
-    let breath_dirty = breath_delta > 0.03;
-
-    if breath_dirty {
-        unsafe { LAST_BREATH = breath; }
-    }
-
-    if !cursor_moved && !mouse_moved && !breath_dirty {
-        return 0;
-    }
-
-    // Full refresh for breathing — every row changes slightly
-    if breath_dirty && !cursor_moved && !mouse_moved {
-        for i in 0..rows {
-            unsafe { write_i32(out + i * 4, i as i32); }
-        }
-        return rows as i32;
-    }
-
-    // For large panes, fall back to full refresh
-    if rows > 512 {
-        for i in 0..rows {
-            unsafe { write_i32(out + i * 4, i as i32); }
-        }
-        return rows as i32;
-    }
-
-    let mut dirty = [false; 512];
-    let glow_radius = (h / 6 + 1) as usize;
-
-    // Mark rows near a y position
-    let mark_near = |dirty: &mut [bool; 512], cy: usize| {
-        let start = if cy >= glow_radius { cy - glow_radius } else { 0 };
-        let end = if cy + glow_radius < rows { cy + glow_radius } else { rows.saturating_sub(1) };
-        let mut r = start;
-        while r <= end {
-            dirty[r] = true;
-            r += 1;
-        }
-    };
-
-    if cursor_moved {
-        mark_near(&mut dirty, u.prev_cursor_y as usize);
-        mark_near(&mut dirty, u.cursor_y as usize);
-    }
-
-    if mouse_moved {
-        if u.prev_mouse_y >= 0.0 {
-            mark_near(&mut dirty, u.prev_mouse_y as usize);
-        }
-        if u.mouse_y >= 0.0 {
-            mark_near(&mut dirty, u.mouse_y as usize);
-        }
-    }
-
-    if breath_dirty {
-        let mut r = 0;
-        while r < rows {
-            dirty[r] = true;
-            r += 1;
-        }
-    }
-
-    let mut count = 0usize;
-    let mut r = 0;
-    while r < rows {
-        if dirty[r] {
-            unsafe { write_i32(out + count * 4, r as i32); }
-            count += 1;
-        }
-        r += 1;
-    }
-    count as i32
-}
+// invalidate() intentionally omitted — animation causes cursor flicker
+// due to Zellij's hide/show cursor cycle on every render frame.
+// The static shader still applies on every render triggered by terminal
+// output, pane switches, or mouse movement.
 
 unsafe fn read_i32(addr: usize) -> i32 {
     core::ptr::read(addr as *const i32)
