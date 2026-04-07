@@ -1,0 +1,16 @@
+# Downloaded media
+video.mp4
+storyboard.mhtml
+thumb_*.jpg
+
+# Generated outputs
+debug_frames/
+debug_thumbnail.png
+ocr_result.txt
+verify_result.txt
+
+# Temp crops
+crt_crop.png
+crt_tight_crop.png
+left_panel.png
+right_panel.png
