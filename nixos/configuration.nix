@@ -68,6 +68,7 @@ in {
       google-cloud-sdk.components.gke-gcloud-auth-plugin
     ])
     kubectl
+    firebase-tools
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
     inputs.llm-agents.packages.x86_64-linux.codex
@@ -394,12 +395,16 @@ $REMOTE_ENTRY"
     })
     (writeShellApplication {
       name = "gcloud-reauth";
-      runtimeInputs = [ (google-cloud-sdk.withExtraComponents [
-        google-cloud-sdk.components.gke-gcloud-auth-plugin
-      ]) ];
+      runtimeInputs = [ 
+        (google-cloud-sdk.withExtraComponents [
+          google-cloud-sdk.components.gke-gcloud-auth-plugin
+        ]) 
+        firebase-tools
+      ];
       text = ''
         gcloud auth login
         gcloud auth application-default login
+        firebase login --reauth
         echo "Reauth complete."
       '';
     })
