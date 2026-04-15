@@ -17,6 +17,7 @@
     ".config/gh"
     ".config/claude"
     ".claude"
+    ".gemini"
     ".zsh_history"
     ".zoxide.db"
     ".zoxide.db.zo"
@@ -243,9 +244,9 @@ $REMOTE_ENTRY"
       text = ''
         pick=$(printf 'New session\nResume session' | fzf --prompt="Gemini> " --height=~50% --reverse) || exit 0
         if [ "$pick" = "Resume session" ]; then
-          exec gemini --resume latest
+          exec gemini --resume latest --model gemini-3.1-pro
         else
-          exec gemini
+          exec gemini --model gemini-3.1-pro
         fi
       '';
     })
@@ -638,6 +639,7 @@ $REMOTE_ENTRY"
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/starship.toml
       export ZELLIJ_CONFIG_DIR=/etc/zellij
+      export CLAUDE_CODE_EFFORT_LEVEL=max
       export BROWSER=open-browser
       export EDITOR=micro
       export USE_GKE_GCLOUD_AUTH_PLUGIN=True
@@ -743,6 +745,18 @@ $REMOTE_ENTRY"
 
   system.activationScripts.wezterm.text = ''
     cp ${../config/wezterm.lua} /mnt/c/Users/thom/.wezterm.lua
+  '';
+
+  system.activationScripts.claude-settings.text = ''
+    mkdir -p /home/thom/.claude
+    cp ${../config/claude/settings.json} /home/thom/.claude/settings.json
+    chown thom:users /home/thom/.claude/settings.json
+  '';
+
+  system.activationScripts.gemini-settings.text = ''
+    mkdir -p /home/thom/.gemini
+    cp ${../config/gemini/settings.json} /home/thom/.gemini/settings.json
+    chown thom:users /home/thom/.gemini/settings.json
   '';
 
   services.openssh = {

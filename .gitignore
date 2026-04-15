@@ -1,0 +1,19 @@
+# Home directory dotfiles that leak in because the repo lives in ~
+.bash_profile
+.bashrc
+.profile
+.zprofile
+.zshrc
+.gitconfig
+.gitmodules
+.ripgreprc
+
+# IDE / editor
+.idea
+.vscode
+
+# Tool config
+.mcp.json
+
+# Claude Code
+.claude/

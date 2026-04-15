@@ -2,10 +2,10 @@ layout {
     pane split_direction="vertical" {
         pane stacked=true size="50%" {
             pane command="claude" name="Claude" {
-                args "code" "--resume"
+                args "--resume"
             }
             pane command="gemini" name="Gemini" {
-                args "--resume"
+                args "--resume" "latest" "--model" "gemini-3.1-pro"
             }
         }
         pane stacked=true size="50%" {
