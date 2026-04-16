@@ -12,10 +12,10 @@ jobs:
       contents: read
     steps:
     - uses: actions/checkout@v6
+    - uses: DeterminateSystems/determinate-nix-action@main
     - uses: cachix/cachix-action@v12
       with:
         name: numtide
-    - uses: DeterminateSystems/determinate-nix-action@main
     - run: nix build .#nixosConfigurations.thixos.config.system.build.tarballBuilder
     - run: sudo ./result/bin/nixos-wsl-tarball-builder thixos.wsl
     - uses: anothrNick/github-tag-action@master
