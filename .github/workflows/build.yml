@@ -12,6 +12,9 @@ jobs:
       contents: read
     steps:
     - uses: actions/checkout@v6
+    - uses: cachix/cachix-action@v12
+      with:
+        name: numtide
     - uses: DeterminateSystems/determinate-nix-action@main
     - uses: DeterminateSystems/nix-flake-checker-action@main
     - run: nix flake check
