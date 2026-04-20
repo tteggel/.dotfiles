@@ -17,3 +17,7 @@
 
 # Claude Code
 .claude/
+
+# Nix build results
+result
+result-*
