@@ -20,7 +20,12 @@ mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 mkdir -p ~/src/github.com/tteggel && \
 nix-shell -p git --run "git clone https://github.com/tteggel/.dotfiles.git ~/src/github.com/tteggel/.dotfiles && \
-nix run home-manager/master -- switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix -b backup"
+MINIMAL_ENV=1 nix run home-manager/master -- switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix -b backup"
+```
+
+If you used the minimal install, run the full install afterwards to build out the full environment (which will now pull instantly from the binary cache!):
+```shell
+home-manager switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
 
 ## Update

@@ -9,6 +9,7 @@
     ".sudo_as_admin_successful" ".init-gh-completed" ".zcompdump*"
     ".zsh_sessions" ".wget-hsts" "src"
   ];
+  isMinimal = builtins.getEnv "MINIMAL_ENV" != "";
 in {
   home.stateVersion = "25.05"; # Match NixOS stateVersion
 
@@ -32,15 +33,10 @@ in {
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta lazygit difftastic
-    zellij-main
+    kubectl firebase-tools micro starship
     (google-cloud-sdk.withExtraComponents [
       google-cloud-sdk.components.gke-gcloud-auth-plugin
     ])
-    kubectl firebase-tools
-    inputs.llm-agents.packages.x86_64-linux.claude-code
-    inputs.llm-agents.packages.x86_64-linux.gemini-cli
-    inputs.llm-agents.packages.x86_64-linux.codex
-    micro
     (writeShellApplication {
       name = "open-browser";
       text = builtins.readFile ../scripts/open-browser.sh;
@@ -48,32 +44,6 @@ in {
     (writeShellApplication {
       name = "zed";
       text = builtins.readFile ../scripts/zed.sh;
-    })
-    starship
-    (writeShellApplication {
-      name = "session-picker";
-      runtimeInputs = [ zellij-main fzf zoxide gh git ];
-      text = builtins.readFile ../scripts/session-picker.sh;
-    })
-    (writeShellApplication {
-      name = "claude-session";
-      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.claude-code ];
-      text = builtins.readFile ../scripts/claude-session.sh;
-    })
-    (writeShellApplication {
-      name = "gemini-session";
-      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.gemini-cli ];
-      text = builtins.readFile ../scripts/gemini-session.sh;
-    })
-    (writeShellApplication {
-      name = "code-session";
-      runtimeInputs = [ zellij-main ];
-      text = builtins.readFile ../scripts/code-session.sh;
-    })
-    (writeShellApplication {
-      name = "command-palette";
-      runtimeInputs = [ fzf zellij-main fd zoxide ];
-      text = builtins.readFile ../scripts/command-palette.sh;
     })
     (writeShellApplication {
       name = "gcloud-reauth";
@@ -107,6 +77,36 @@ in {
       name = "init-gh";
       runtimeInputs = [ gh ];
       text = builtins.readFile ../scripts/init-gh.sh;
+    })
+  ] ++ lib.optionals (!isMinimal) [
+    zellij-main
+    inputs.llm-agents.packages.x86_64-linux.claude-code
+    inputs.llm-agents.packages.x86_64-linux.gemini-cli
+    inputs.llm-agents.packages.x86_64-linux.codex
+    (writeShellApplication {
+      name = "session-picker";
+      runtimeInputs = [ zellij-main fzf zoxide gh git ];
+      text = builtins.readFile ../scripts/session-picker.sh;
+    })
+    (writeShellApplication {
+      name = "claude-session";
+      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.claude-code ];
+      text = builtins.readFile ../scripts/claude-session.sh;
+    })
+    (writeShellApplication {
+      name = "gemini-session";
+      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.gemini-cli ];
+      text = builtins.readFile ../scripts/gemini-session.sh;
+    })
+    (writeShellApplication {
+      name = "code-session";
+      runtimeInputs = [ zellij-main ];
+      text = builtins.readFile ../scripts/code-session.sh;
+    })
+    (writeShellApplication {
+      name = "command-palette";
+      runtimeInputs = [ fzf zellij-main fd zoxide ];
+      text = builtins.readFile ../scripts/command-palette.sh;
     })
   ];
 
