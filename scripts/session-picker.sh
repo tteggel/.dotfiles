@@ -121,17 +121,20 @@ $(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.u
         GH_ENTRY="[+] Clone GitHub repo (Ctrl+G)"
         REMOTE_ENTRY="[+] Clone remote      (Ctrl+U)"
         SSH_ENTRY="[+] Connect to remote (Ctrl+S)"
+        GCP_ENTRY="[+] Connect to GCP    (Ctrl+P)"
 
         menu="${no_client}${has_client}$NEW_ENTRY
 $GH_ENTRY
 $REMOTE_ENTRY
-$SSH_ENTRY"
+$SSH_ENTRY
+$GCP_ENTRY"
 
         pick=$(echo "$menu" | fzf --prompt="Zellij session> " --height=~50% --reverse \
           --bind "ctrl-n:become(echo '$NEW_ENTRY')" \
           --bind "ctrl-g:become(echo '$GH_ENTRY')" \
           --bind "ctrl-u:become(echo '$REMOTE_ENTRY')" \
-          --bind "ctrl-s:become(echo '$SSH_ENTRY')") || exit 1
+          --bind "ctrl-s:become(echo '$SSH_ENTRY')" \
+          --bind "ctrl-p:become(echo '$GCP_ENTRY')") || exit 1
 
         if echo "$pick" | grep -q "New session"; then
           new_session
@@ -141,6 +144,8 @@ $SSH_ENTRY"
           clone_remote
         elif echo "$pick" | grep -q "Connect to remote"; then
           connect_remote
+        elif echo "$pick" | grep -q "Connect to GCP"; then
+          exec gcloud-iap-ssh
         else
           session_name=$(echo "$pick" | awk '{print $1}')
           exec zellij attach "$session_name"
