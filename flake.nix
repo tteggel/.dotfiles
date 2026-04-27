@@ -72,6 +72,20 @@
           }
         ];
       };
+      "agent@nix" = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+          config.allowUnfree = true;
+        };
+        extraSpecialArgs = { inherit inputs outputs; };
+        modules = [
+          ./home/agent.nix
+          {
+            home.username = builtins.getEnv "USER";
+            home.homeDirectory = builtins.getEnv "HOME";
+          }
+        ];
+      };
     };
   };
 }
