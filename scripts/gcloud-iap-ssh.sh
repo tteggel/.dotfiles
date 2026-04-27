@@ -22,7 +22,7 @@ fi
 # Format for fzf: Name, Zone, Status
 formatted=$(echo "$instances" | awk '{printf "%-35s %-20s [%s]\n", $1, $2, $3}')
 
-selected=$(echo "$formatted" | fzf --prompt="IAP SSH> " --height=~50% --reverse < /dev/tty) || exit 0
+selected=$(echo "$formatted" | fzf --prompt="IAP SSH> " --height=~50% --reverse) || exit 0
 
 if [ -z "$selected" ]; then
   exit 0

@@ -110,12 +110,12 @@ case "$type" in
     exec bash -c "$payload"
     ;;
   exec)
-    cd "$LAUNCH_CWD"
+    cd "$LAUNCH_CWD" || exit
     # shellcheck disable=SC2294
     eval "exec $payload"
     ;;
   run)
-    cd "$LAUNCH_CWD"
+    cd "$LAUNCH_CWD" || exit
     eval "$payload" || true
     wait_for_key
     ;;
