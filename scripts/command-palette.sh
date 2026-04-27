@@ -60,6 +60,7 @@ commands=(
   "exec:gh run watch	[Git] Watch CI/CD run"
   "exec:gcloud-switch	[GCP] Switch project"
   "exec:gcloud-reauth	[GCP] Re-authenticate"
+  "exec:gcloud-iap-ssh	[GCP] IAP SSH into instance"
   "run:kubectl get pods	[K8s] List pods"
   "exec:zsh -c 'kubectl get pods --no-headers -o custom-columns=:metadata.name | fzf | xargs -r kubectl logs -f'	[K8s] Tail pod logs"
   "run:hygiene-inspection	[Sys] Hygiene inspection"

@@ -64,6 +64,13 @@ in {
       text = builtins.readFile ../scripts/gcloud-switch.sh;
     })
     (writeShellApplication {
+      name = "gcloud-iap-ssh";
+      runtimeInputs = [ (google-cloud-sdk.withExtraComponents [
+        google-cloud-sdk.components.gke-gcloud-auth-plugin
+      ]) fzf ];
+      text = builtins.readFile ../scripts/gcloud-iap-ssh.sh;
+    })
+    (writeShellApplication {
       name = "hygiene-inspection";
       runtimeInputs = [
         fd git gh
