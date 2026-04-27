@@ -67,8 +67,19 @@ $(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.u
         }
 
         connect_remote() {
-          printf "SSH Host (e.g. user@host): "
-          read -r host </dev/tty || true
+          local hosts
+          hosts=$(awk '/^Host / {for(i=2; i<=NF; i++) if ($i !~ /[*?]/) print $i}' ~/.ssh/config 2>/dev/null | sort -u)
+          
+          if [ -z "$hosts" ]; then
+            printf "SSH Host (e.g. user@host): "
+            read -r host </dev/tty || true
+          else
+            local out
+            out=$(printf "%s\n" "$hosts" | fzf --prompt="SSH Host (or type custom)> " --height=~50% --reverse --print-query) || true
+            [ -z "$out" ] && return 1
+            host=$(echo "$out" | tail -1)
+          fi
+          
           [ -z "$host" ] && return 1
           exec ssh "$host"
         }
