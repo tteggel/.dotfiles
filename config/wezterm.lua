@@ -13,6 +13,16 @@ config.wsl_domains = {
 }
 config.default_domain = 'WSL:NixOS'
 
+config.ssh_domains = {
+  {
+    -- This name will show up in the WezTerm launcher
+    name = 'SSH:Ubuntu',
+    -- This assumes you will create an entry called 'ubuntu-remote' in your ~/.ssh/config
+    remote_address = 'ubuntu-remote',
+    username = 'thom',
+  },
+}
+
 config.font = wezterm.font 'ZedMono NF'
 config.font_size = 11.0
 config.color_scheme = 'OneDark (base16)'
@@ -58,6 +68,9 @@ end)
 local act = wezterm.action
 local passthrough = act.DisableDefaultAssignment
 config.keys = {
+  -- Open WezTerm launcher to choose domains
+  { key = 'L', mods = 'ALT|SHIFT', action = act.ShowLauncher },
+
   { key = 'h', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'j', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'k', mods = 'CTRL|SHIFT', action = passthrough },
