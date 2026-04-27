@@ -1,5 +1,8 @@
 { config, pkgs, inputs, lib, ... }: let
   flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+  bespoke-zellij = inputs.dim-unfocused.packages.x86_64-linux;
+  zellij-main = bespoke-zellij.zellij;
+  dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   expectedDotfiles = [
     ".cache" ".local" ".zsh_history" ".zoxide.db" ".zoxide.db.zo"
     ".zcompdump*" ".zsh_sessions" "src"
@@ -23,15 +26,47 @@ in {
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta difftastic micro starship
+    zellij-main
+    inputs.llm-agents.packages.x86_64-linux.claude-code
+    inputs.llm-agents.packages.x86_64-linux.gemini-cli
+    inputs.llm-agents.packages.x86_64-linux.codex
     (writeShellApplication {
       name = "init-yolo";
       runtimeInputs = [ gh ];
       text = builtins.readFile ../scripts/init-yolo.sh;
     })
+    (writeShellApplication {
+      name = "session-picker";
+      runtimeInputs = [ zellij-main fzf zoxide gh git ];
+      text = builtins.readFile ../scripts/session-picker.sh;
+    })
+    (writeShellApplication {
+      name = "claude-session";
+      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.claude-code ];
+      text = builtins.readFile ../scripts/claude-session.sh;
+    })
+    (writeShellApplication {
+      name = "gemini-session";
+      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.gemini-cli ];
+      text = builtins.readFile ../scripts/gemini-session.sh;
+    })
+    (writeShellApplication {
+      name = "code-session";
+      runtimeInputs = [ zellij-main ];
+      text = builtins.readFile ../scripts/code-session.sh;
+    })
+    (writeShellApplication {
+      name = "command-palette";
+      runtimeInputs = [ fzf zellij-main fd zoxide ];
+      text = builtins.readFile ../scripts/command-palette.sh;
+    })
   ];
 
   xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";
   xdg.configFile."starship.toml".source = ../config/starship.toml;
+  xdg.configFile."zellij/config.kdl".source = ../config/zellij/config.kdl;
+  xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
+  xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
   programs.zsh = {
     enable = true;
@@ -47,6 +82,8 @@ in {
       setopt SHARE_HISTORY
 
       export STARSHIP_CONFIG=~/.config/starship.toml
+      export ZELLIJ_CONFIG_DIR=~/.config/zellij
+      export CLAUDE_CODE_EFFORT_LEVEL=max
       export EDITOR=micro
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       
@@ -61,6 +98,11 @@ in {
       fi
 
       eval "$(starship init zsh)"
+
+      # Auto-attach to zellij session (or start one) unless already inside zellij
+      if [ -z "$ZELLIJ" ]; then
+        session-picker; exit
+      fi
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
 
