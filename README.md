@@ -10,9 +10,11 @@ sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos --op
 ## Install (Ubuntu / Non-NixOS Standalone)
 Make sure Nix is installed on your system.
 ```shell
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 mkdir -p ~/src/github.com/tteggel && \
 nix-shell -p git --run "git clone https://github.com/tteggel/.dotfiles.git ~/src/github.com/tteggel/.dotfiles && \
-nix --extra-experimental-features 'nix-command flakes' run home-manager/master -- switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix"
+nix run home-manager/master -- switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix -b backup"
 ```
 
 ## Update
