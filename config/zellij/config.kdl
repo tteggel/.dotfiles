@@ -85,6 +85,9 @@ keybinds clear-defaults=true {
         // Scroll
         bind "Ctrl Shift s" { SwitchToMode "scroll"; }
 
+        // URLs
+        bind "Ctrl Shift u" { Run "url-picker" { floating true; close_on_exit true; skip_confirm true; }; }
+
         // Session picker
         bind "Ctrl Shift o" { Run "session-picker" { floating true; close_on_exit true; skip_confirm true; }; }
 

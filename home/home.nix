@@ -116,6 +116,11 @@ in {
       runtimeInputs = [ fzf zellij-main fd zoxide ];
       text = builtins.readFile ../scripts/command-palette.sh;
     })
+    (writeShellApplication {
+      name = "url-picker";
+      runtimeInputs = [ fzf zellij-main ];
+      text = builtins.readFile ../scripts/url-picker.sh;
+    })
   ];
 
   xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";
