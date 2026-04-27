@@ -1,12 +1,22 @@
 #!/usr/bin/env bash
+LOG="/tmp/zellij-debug.log"
+echo "--- url-picker ran at $(date) ---" >> "$LOG"
 
 # Use the dump file created by Zellij's DumpScreen action
 tmp="/tmp/zellij-url-dump.txt"
 
+echo "Checking dump file: $tmp" >> "$LOG"
 # If it doesn't exist for some reason, fallback to dumping the current screen
 if [ ! -f "$tmp" ]; then
+  echo "Dump file not found! Dumping screen manually." >> "$LOG"
   tmp=$(mktemp)
   zellij action dump-screen "$tmp"
+fi
+
+if [ -f "$tmp" ]; then
+  echo "Dump file size: $(wc -c < "$tmp") bytes" >> "$LOG"
+else
+  echo "Dump file STILL not found after dump-screen." >> "$LOG"
 fi
 
 # Extract URLs, meticulously stitching lines together to handle terminal wrapping
@@ -14,6 +24,8 @@ fi
 # 2. tr: removes all newlines, flattening the screen into one long string
 # 3. grep: strictly extracts the URL regex
 urls=$(sed -e 's/ *$//' "$tmp" | tr -d '\n' | grep -oE '(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]')
+
+echo "Extracted URLs length: ${#urls}" >> "$LOG"
 
 if [ -z "$urls" ]; then
   echo "No URLs found on screen."
