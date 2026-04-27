@@ -96,15 +96,18 @@ $(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.u
         NEW_ENTRY="[+] New session       (Ctrl+N)"
         GH_ENTRY="[+] Clone GitHub repo (Ctrl+G)"
         REMOTE_ENTRY="[+] Clone remote      (Ctrl+U)"
+        SSH_ENTRY="[+] Connect to remote (Ctrl+S)"
 
         menu="${no_client}${has_client}$NEW_ENTRY
 $GH_ENTRY
-$REMOTE_ENTRY"
+$REMOTE_ENTRY
+$SSH_ENTRY"
 
         pick=$(echo "$menu" | fzf --prompt="Zellij session> " --height=~50% --reverse \
           --bind "ctrl-n:become(echo '$NEW_ENTRY')" \
           --bind "ctrl-g:become(echo '$GH_ENTRY')" \
-          --bind "ctrl-u:become(echo '$REMOTE_ENTRY')") || exit 1
+          --bind "ctrl-u:become(echo '$REMOTE_ENTRY')" \
+          --bind "ctrl-s:become(echo '$SSH_ENTRY')") || exit 1
 
         if echo "$pick" | grep -q "New session"; then
           new_session
@@ -112,6 +115,8 @@ $REMOTE_ENTRY"
           clone_gh_repo
         elif echo "$pick" | grep -q "Clone remote"; then
           clone_remote
+        elif echo "$pick" | grep -q "Connect to remote"; then
+          exec ssh ubuntu-remote
         else
           session_name=$(echo "$pick" | awk '{print $1}')
           exec zellij attach "$session_name"
