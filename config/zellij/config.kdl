@@ -42,7 +42,7 @@ serialize_pane_viewport true
 
 // Background plugins
 load_plugins {
-    "file:/etc/zellij/plugins/dim-unfocused.wasm" {
+    "file:~/.config/zellij/plugins/dim-unfocused.wasm" {
         fg "#dcdfe4"
         bg "#282c34"
         dim "0.4"

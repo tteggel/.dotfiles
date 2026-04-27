@@ -120,7 +120,7 @@ The plugin requires `ReadApplicationState` and `ChangeApplicationState`. Permiss
 If permissions aren't working:
 1. Check if the cache file exists and has the right plugin path
 2. Check logs for "permission" messages
-3. The plugin path must match exactly (e.g., `/etc/zellij/plugins/dim-unfocused.wasm`)
+3. The plugin path must match exactly (e.g., `~/.config/zellij/plugins/dim-unfocused.wasm`)
 
 ### Animation not updating visually
 

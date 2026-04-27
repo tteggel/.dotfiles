@@ -4,7 +4,7 @@
           local dir="$1"
           local name
           name=$(basename "$dir")
-          cd "$dir" && exec zellij -s "$name" -n /etc/zellij/layouts/code.kdl
+          cd "$dir" && exec zellij -s "$name" -n ~/.config/zellij/layouts/code.kdl
         }
 
         new_session() {

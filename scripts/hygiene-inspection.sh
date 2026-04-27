@@ -11,7 +11,7 @@ issue() { printf '%s  ISSUE:%s %s\n' "$RED" "$NC" "$1"; issues=$((issues + 1)); 
 warn()  { printf '%s  WARN:%s  %s\n' "$YELLOW" "$NC" "$1"; warnings=$((warnings + 1)); }
 section() { printf '\n%s%s%s\n' "$BOLD" "$1" "$NC"; }
 
-ALLOWLIST="/etc/hygiene-expected-dotfiles"
+ALLOWLIST="$HOME/.config/hygiene-expected-dotfiles"
 
 # --- Unmanaged dotfiles ---
 section "Home directory"

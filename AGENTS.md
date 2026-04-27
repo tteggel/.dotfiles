@@ -33,15 +33,18 @@ The `dim-unfocused` sub-flake (at `bespoke/zellij/dim-unfocused/`) has its own i
 ### Deploying changes
 
 ```bash
-# From the repo root:
-nswitch    # alias defined in configuration.nix — runs nixos-rebuild switch
+# For NixOS
+sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
+
+# For Standalone / Ubuntu
+home-manager switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
 
-## configuration.nix
+## configuration.nix and home.nix
 
-This is the heart of the system. It defines:
+This is the heart of the system. `nixos/configuration.nix` sets up OS-level features, while `home/home.nix` defines the user environment:
 
-### Custom shell scripts (~half the file)
+### Custom shell scripts (in home.nix)
 
 The configuration embeds several substantial shell applications as `writeShellApplication` derivations:
 
@@ -66,7 +69,7 @@ Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, difftastic), 
 
 ### Config file management
 
-Files from `config/` are symlinked into `/etc/` or `~/.config/` via `environment.etc`. The WezTerm config is copied to the Windows filesystem.
+Files from `config/` are symlinked into `~/.config/` via Home Manager's `xdg.configFile`. The WezTerm config is copied to the Windows filesystem via NixOS activation scripts (NixOS only).
 
 ## Working with this repo
 
