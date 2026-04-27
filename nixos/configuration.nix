@@ -47,10 +47,6 @@
   home-manager.extraSpecialArgs = { inherit inputs outputs; };
   home-manager.users.thom = import ../home/home.nix;
 
-  system.activationScripts.wezterm.text = ''
-    cp ${../config/wezterm.lua} /mnt/c/Users/thom/.wezterm.lua
-  '';
-
   services.openssh = {
     enable = true;
     settings = {
