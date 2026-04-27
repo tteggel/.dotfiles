@@ -14,7 +14,7 @@ in {
   home.stateVersion = "25.05"; # Match NixOS stateVersion
 
   nix = {
-    package = pkgs.nix;
+    package = lib.mkDefault pkgs.nix;
     settings = {
       experimental-features = "nix-command flakes";
       flake-registry = "";
