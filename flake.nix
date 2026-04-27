@@ -42,6 +42,20 @@
           }
         ];
       };
+      yoloixos = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs outputs;};
+        system = "x86_64-linux";
+        modules = [
+          nixos-wsl.nixosModules.default
+          home-manager.nixosModules.home-manager
+          ./nixos/yoloixos.nix
+          {
+            system.stateVersion = "25.05";
+            wsl.enable = true;
+            wsl.defaultUser = "agent";
+          }
+        ];
+      };
     };
     homeConfigurations = {
       "thom@nix" = home-manager.lib.homeManagerConfiguration {
