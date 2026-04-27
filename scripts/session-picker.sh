@@ -66,6 +66,13 @@ $(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.u
           fi
         }
 
+        connect_remote() {
+          printf "SSH Host (e.g. user@host): "
+          read -r host
+          [ -z "$host" ] && return 1
+          exec ssh "$host"
+        }
+
         sessions=$(zellij list-sessions -n -s 2>/dev/null || true)
 
         if [ -z "$sessions" ]; then
@@ -116,7 +123,7 @@ $SSH_ENTRY"
         elif echo "$pick" | grep -q "Clone remote"; then
           clone_remote
         elif echo "$pick" | grep -q "Connect to remote"; then
-          exec ssh ubuntu-remote
+          connect_remote
         else
           session_name=$(echo "$pick" | awk '{print $1}')
           exec zellij attach "$session_name"
