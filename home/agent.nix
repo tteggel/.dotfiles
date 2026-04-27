@@ -68,6 +68,16 @@ in {
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
+  programs.bash = {
+    enable = true;
+    initExtra = ''
+      # Auto-launch zsh for interactive sessions
+      if [ -t 1 ] && [ -n "$BASH_VERSION" ] && [ "$0" = "-bash" -o "$0" = "bash" ]; then
+        exec zsh -l
+      fi
+    '';
+  };
+
   programs.zsh = {
     enable = true;
     enableCompletion = true;
