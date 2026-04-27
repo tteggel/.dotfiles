@@ -43,6 +43,7 @@ commands=(
   "session:zellij action quit	[Session] Quit Zellij"
   "exec:session-picker	[Session] Switch session	Ctrl+Shift+O"
   "exec:zsh -c 'cd \"\$(zoxide query -i)\" && exec zsh'	[Nav] Jump to directory"
+  "exec:zsh -i -c yy	[Nav] Yazi file explorer	Ctrl+E"
   "exec:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
   "exec:code-session	[Dev] Coding session"
   "exec:claude-session	[Dev] Claude Code"

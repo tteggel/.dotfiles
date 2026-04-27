@@ -1,0 +1,8 @@
+os:
+  editCommand: "zed"
+  editCommandTemplate: "{{editor}} {{filename}}"
+gui:
+  theme:
+    activeBorderColor:
+      - '#61afef'
+      - bold

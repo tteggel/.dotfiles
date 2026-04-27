@@ -33,7 +33,7 @@ in {
   '';
 
   home.packages = with pkgs; [
-    wget gh jq eza bat fd ripgrep fzf zoxide delta lazygit difftastic
+    wget gh jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
     kubectl firebase-tools micro starship
     (google-cloud-sdk.withExtraComponents [
       google-cloud-sdk.components.gke-gcloud-auth-plugin
@@ -111,10 +111,9 @@ in {
     })
   ];
 
-  xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "
-" expectedDotfiles + "
-";
+  xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";
   xdg.configFile."starship.toml".source = ../config/starship.toml;
+  xdg.configFile."lazygit/config.yml".source = ../config/lazygit/config.yml;
   xdg.configFile."zellij/config.kdl".source = ../config/zellij/config.kdl;
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
@@ -151,6 +150,16 @@ in {
       fi
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
+
+      # Yazi wrapper for cwd syncing
+      function yy() {
+        local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+        yazi "$@" --cwd-file="$tmp"
+        if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+          builtin cd -- "$cwd"
+        fi
+        rm -f -- "$tmp"
+      }
 
       # Set pane title to repo:branch or cwd (picked up by Zellij)
       _set_pane_title() {
