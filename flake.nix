@@ -1,6 +1,11 @@
 {
   description = "Thomnix WSL2";
 
+  nixConfig = {
+    extra-substituters = [ "https://cache.numtide.com" ];
+    extra-trusted-public-keys = [ "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=" ];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
@@ -40,9 +45,18 @@
     };
     homeConfigurations = {
       "thom@nix" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+          config.allowUnfree = true;
+        };
         extraSpecialArgs = { inherit inputs outputs; };
-        modules = [ ./home/home.nix ];
+        modules = [
+          ./home/home.nix
+          {
+            home.username = builtins.getEnv "USER";
+            home.homeDirectory = builtins.getEnv "HOME";
+          }
+        ];
       };
     };
   };

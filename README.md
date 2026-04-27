@@ -14,7 +14,7 @@ mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 mkdir -p ~/src/github.com/tteggel && \
 nix-shell -p git --run "git clone https://github.com/tteggel/.dotfiles.git ~/src/github.com/tteggel/.dotfiles && \
-nix run home-manager/master -- switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix -b backup"
+nix run home-manager/master -- switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix -b backup"
 ```
 
 ## Update
@@ -23,5 +23,5 @@ nix run home-manager/master -- switch --flake ~/src/github.com/tteggel/.dotfiles
 sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 
 # For Ubuntu Standalone
-home-manager switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
+home-manager switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```

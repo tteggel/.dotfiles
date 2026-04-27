@@ -1,4 +1,5 @@
-{ config, pkgs, inputs, ... }: let
+{ config, pkgs, inputs, lib, ... }: let
+  flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
   bespoke-zellij = inputs.dim-unfocused.packages.x86_64-linux;
   zellij-main = bespoke-zellij.zellij;
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
@@ -9,9 +10,22 @@
     ".zsh_sessions" ".wget-hsts" "src"
   ];
 in {
-  home.username = "thom";
-  home.homeDirectory = "/home/thom";
   home.stateVersion = "25.05"; # Match NixOS stateVersion
+
+  nix = {
+    package = pkgs.nix;
+    settings = {
+      experimental-features = "nix-command flakes";
+      flake-registry = "";
+    };
+    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
+  };
+
+  home.activation.wezterm = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    if [ -d /mnt/c/Users/thom ]; then
+      cp ${../config/wezterm.lua} /mnt/c/Users/thom/.wezterm.lua
+    fi
+  '';
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta lazygit difftastic
