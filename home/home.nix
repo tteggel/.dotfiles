@@ -19,6 +19,7 @@ in {
       flake-registry = "";
     };
     registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
+    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
   home.activation.wezterm = lib.hm.dag.entryAfter ["writeBoundary"] ''
