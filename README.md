@@ -12,7 +12,7 @@ Make sure Nix is installed on your system.
 ```shell
 mkdir -p ~/src/github.com/tteggel && \
 nix-shell -p git --run "git clone https://github.com/tteggel/.dotfiles.git ~/src/github.com/tteggel/.dotfiles && \
-nix run home-manager/master -- switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix --option experimental-features 'nix-command flakes'"
+nix --extra-experimental-features 'nix-command flakes' run home-manager/master -- switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix"
 ```
 
 ## Update
