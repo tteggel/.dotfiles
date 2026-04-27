@@ -62,8 +62,8 @@ commands=(
   "run:kubectl get pods	[K8s] List pods"
   "exec:zsh -c 'kubectl get pods --no-headers -o custom-columns=:metadata.name | fzf | xargs -r kubectl logs -f'	[K8s] Tail pod logs"
   "run:hygiene-inspection	[Sys] Hygiene inspection"
-  "system:Rebuild system:if command -v nixos-rebuild >/dev/null 2>&1; then sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos; else home-manager switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix; fi	[Sys] Rebuild system"
-  "system:Update system:git -C ~/src/github.com/tteggel/.dotfiles diff --quiet flake.lock || { echo 'Error: flake.lock has uncommitted changes'; exit 1; } && nix flake update --flake ~/src/github.com/tteggel/.dotfiles && if command -v nixos-rebuild >/dev/null 2>&1; then sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos; else home-manager switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix; fi && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push	[Sys] Update system"
+  "system:Rebuild system:if command -v nixos-rebuild >/dev/null 2>&1; then sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos; else nix run github:nix-community/home-manager -- switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix; fi	[Sys] Rebuild system"
+  "system:Update system:git -C ~/src/github.com/tteggel/.dotfiles diff --quiet flake.lock || { echo 'Error: flake.lock has uncommitted changes'; exit 1; } && nix flake update --flake ~/src/github.com/tteggel/.dotfiles && if command -v nixos-rebuild >/dev/null 2>&1; then sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos; else nix run github:nix-community/home-manager -- switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix; fi && git -C ~/src/github.com/tteggel/.dotfiles add flake.lock && git -C ~/src/github.com/tteggel/.dotfiles commit -m 'Update flake inputs' && git -C ~/src/github.com/tteggel/.dotfiles push	[Sys] Update system"
 )
 
 # Right-align keybinding hints

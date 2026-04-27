@@ -60,8 +60,9 @@ done < <(timeout 10 fd --type d --hidden --no-ignore --glob '.git' "$HOME/src" 2
 
 # --- Imperative nix packages ---
 section "Nix"
-if [ -d "$HOME/.nix-profile/bin" ] || nix-env -q 2>/dev/null | grep -q .; then
-  issue "Imperative nix packages found (use flake instead)"
+nix_env_out=$(nix-env -q 2>/dev/null | grep -v '^home-manager-path$' || true)
+if [ -n "$nix_env_out" ]; then
+  issue "Imperative nix packages found (use flake instead): $nix_env_out"
 fi
 
 # --- User crontabs ---

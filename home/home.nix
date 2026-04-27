@@ -4,10 +4,11 @@
   zellij-main = bespoke-zellij.zellij;
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   expectedDotfiles = [
-    ".ssh" ".cache" ".local" ".config/gcloud" ".config/gh" ".config/claude"
-    ".claude" ".gemini" ".zsh_history" ".zoxide.db" ".zoxide.db.zo"
-    ".sudo_as_admin_successful" ".init-gh-completed" ".zcompdump*"
-    ".zsh_sessions" ".wget-hsts" "src"
+    ".ssh" ".cache" ".local" ".config" ".claude" ".gemini"
+    ".zsh_history" ".zoxide.db" ".zoxide.db.zo" ".sudo_as_admin_successful"
+    ".init-gh-completed" ".zcompdump*" ".zsh_sessions" ".wget-hsts" "src"
+    ".nix-profile" ".nix-defexpr" ".nix-channels"
+    ".bashrc" ".bash_logout" ".bash_history" ".profile"
   ];
   isMinimal = builtins.getEnv "MINIMAL_ENV" != "";
 in {
