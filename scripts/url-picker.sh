@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 
-# Dump the current screen from Zellij
-tmp=$(mktemp)
-zellij action dump-screen "$tmp"
+# Use the dump file created by Zellij's DumpScreen action
+tmp="/tmp/zellij-url-dump.txt"
+
+# If it doesn't exist for some reason, fallback to dumping the current screen
+if [ ! -f "$tmp" ]; then
+  tmp=$(mktemp)
+  zellij action dump-screen "$tmp"
+fi
 
 # Extract URLs, meticulously stitching lines together to handle terminal wrapping
 # 1. sed: removes trailing spaces from all lines (terminal padding)
