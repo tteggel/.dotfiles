@@ -73,7 +73,6 @@ config.keys = {
   { key = 't', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'p', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 's', mods = 'CTRL|SHIFT', action = passthrough },
-  { key = 'u', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'g', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'q', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'z', mods = 'CTRL|SHIFT', action = passthrough },

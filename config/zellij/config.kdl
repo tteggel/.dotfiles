@@ -31,9 +31,11 @@ mouse_mode true
 
 // Copy behavior
 copy_on_select true
-// Removed copy_command entirely so Zellij falls back to its native OSC 52.
-// This guarantees copy/paste works backwards across SSH/GCP tunnels and 
-// into strictly isolated WSL environments.
+copy_command "osc52-copy"
+// osc52-copy emits OSC 52 directly to /dev/tty so the host terminal
+// (WezTerm) updates the Windows clipboard. Works across SSH/GCP IAP
+// tunnels and isolated WSL environments where wayland/X11/clip.exe
+// are unavailable (e.g. yoloixos with wsl.interop disabled).
 
 // Scrollback
 scroll_buffer_size 10000
@@ -83,9 +85,6 @@ keybinds clear-defaults=true {
 
         // Scroll
         bind "Ctrl Shift s" { SwitchToMode "scroll"; }
-
-        // URLs
-        bind "Ctrl Shift u" { DumpScreen "/tmp/zellij-url-dump.txt"; Run "url-picker" { floating true; close_on_exit true; skip_confirm true; }; }
 
         // Session picker
         bind "Ctrl Shift o" { Run "session-picker" { floating true; close_on_exit true; skip_confirm true; }; }
