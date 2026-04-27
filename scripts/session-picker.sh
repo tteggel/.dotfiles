@@ -16,7 +16,7 @@
           repos=$(gh repo list --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.updatedAt) | reverse | .[].nameWithOwner' 2>&1) || {
             echo "Failed to fetch repos: $repos" >&2
             echo "Check 'gh auth status'" >&2
-            read -r -n 1
+            read -r -n 1 </dev/tty || true
             return 1
           }
 
@@ -51,7 +51,7 @@ $(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.u
 
         clone_remote() {
           printf "Remote URL: "
-          read -r url
+          read -r url </dev/tty || true
           [ -z "$url" ] && return 1
 
           # Extract repo name from URL
@@ -68,7 +68,7 @@ $(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.u
 
         connect_remote() {
           printf "SSH Host (e.g. user@host): "
-          read -r host
+          read -r host </dev/tty || true
           [ -z "$host" ] && return 1
           exec ssh "$host"
         }

@@ -97,7 +97,7 @@ payload="${entry#*:}"
 
 wait_for_key() {
   printf '\n\033[2m(press any key to close)\033[0m'
-  read -rsn1
+  read -rsn1 </dev/tty || true
 }
 
 case "$type" in
