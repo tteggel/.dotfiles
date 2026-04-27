@@ -7,11 +7,15 @@ end
 
 config.wsl_domains = {
   {
-    name = 'WSL:NixOS',
+    name = 'WSL:thixos',
     distribution = 'NixOS',
   },
+  {
+    name = 'WSL:yoloixos',
+    distribution = 'yoloixos',
+  },
 }
-config.default_domain = 'WSL:NixOS'
+config.default_domain = 'WSL:thixos'
 
 config.font = wezterm.font 'ZedMono NF'
 config.font_size = 11.0
@@ -55,9 +59,11 @@ wezterm.on('gui-startup', function(cmd)
 end)
 
 -- Disable WezTerm's own Ctrl+Shift bindings so they pass through to Zellij
+-- Map Alt+L to show the domain launcher
 local act = wezterm.action
 local passthrough = act.DisableDefaultAssignment
 config.keys = {
+  { key = 'l', mods = 'ALT', action = act.ShowLauncherArgs { flags = 'FUZZY|DOMAINS' } },
   { key = 'h', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'j', mods = 'CTRL|SHIFT', action = passthrough },
   { key = 'k', mods = 'CTRL|SHIFT', action = passthrough },

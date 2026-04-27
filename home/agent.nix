@@ -23,6 +23,11 @@ in {
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta difftastic micro starship
+    (writeShellApplication {
+      name = "init-yolo";
+      runtimeInputs = [ gh ];
+      text = builtins.readFile ../scripts/init-yolo.sh;
+    })
   ];
 
   xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";
@@ -45,6 +50,8 @@ in {
       export EDITOR=micro
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       
+      init-yolo
+
       if [ -z "$GITHUB_TOKEN" ]; then
         echo -e "\033[0;33mWarning: GITHUB_TOKEN is not set. Git auth will fail.\033[0m"
       fi
@@ -52,6 +59,14 @@ in {
       eval "$(starship init zsh)"
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
+      
+      # Auto-cd into the cloned repo if it's the only thing in src
+      if [ "$PWD" = "$HOME" ] && [ -d "$HOME/src" ]; then
+        repos=("$HOME/src"/*)
+        if [ ''${#repos[@]} -eq 1 ] && [ -d "''${repos[0]}" ]; then
+          cd "''${repos[0]}"
+        fi
+      fi
     '';
     shellAliases = {
       ls = "eza";
