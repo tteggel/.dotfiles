@@ -25,7 +25,7 @@ MINIMAL_ENV=1 nix run home-manager/master -- switch --impure --flake ~/src/githu
 
 If you used the minimal install, run the full install afterwards to build out the full environment (which will now pull instantly from the binary cache!):
 ```shell
-nix run github:nix-community/home-manager -- switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
+nix run github:nix-community/home-manager -- switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
 
 ## Update
@@ -34,5 +34,5 @@ nix run github:nix-community/home-manager -- switch --impure --flake ~/src/githu
 sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 
 # For Ubuntu Standalone
-nix run github:nix-community/home-manager -- switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
+nix run github:nix-community/home-manager -- switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
