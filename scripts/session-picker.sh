@@ -75,12 +75,18 @@ $(gh repo list "$org" --limit 50 --json nameWithOwner,updatedAt --jq 'sort_by(.u
             read -r host </dev/tty || true
           else
             local out
-            out=$(printf "%s\n" "$hosts" | fzf --prompt="SSH Host (or type custom)> " --height=~50% --reverse --print-query) || true
+            out=$(printf "%s\n" "$hosts" | fzf --prompt="SSH Host (or type custom)> " --height=~50% --reverse --print-query --bind "enter:accept-or-print-query" </dev/tty) || true
             [ -z "$out" ] && return 1
-            host=$(echo "$out" | tail -1)
+            host=$(echo "$out" | tail -1 | tr -d '\r' | xargs)
           fi
           
           [ -z "$host" ] && return 1
+          
+          clear
+          echo "========================================"
+          echo "Connecting to: $host"
+          echo "========================================"
+          
           exec ssh "$host"
         }
 
