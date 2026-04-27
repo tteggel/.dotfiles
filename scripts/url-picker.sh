@@ -26,7 +26,7 @@ url_count=$(echo "$unique_urls" | wc -l)
 if [ "$url_count" -eq 1 ]; then
   url="$unique_urls"
 else
-  url=$(echo "$unique_urls" | fzf --prompt="Open URL> " --height=~50% --reverse </dev/tty) || true
+  url=$(echo "$unique_urls" | fzf --prompt="Open URL> " --height=~50% --reverse) || true
 fi
 
 rm -f "$tmp"
