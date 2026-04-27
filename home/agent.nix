@@ -26,10 +26,19 @@ in {
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta difftastic micro starship
+    lazygit yazi
     zellij-main
     inputs.llm-agents.packages.x86_64-linux.claude-code
     inputs.llm-agents.packages.x86_64-linux.gemini-cli
     inputs.llm-agents.packages.x86_64-linux.codex
+    (writeShellApplication {
+      name = "open-browser";
+      text = builtins.readFile ../scripts/open-browser.sh;
+    })
+    (writeShellApplication {
+      name = "zed";
+      text = builtins.readFile ../scripts/zed.sh;
+    })
     (writeShellApplication {
       name = "init-yolo";
       runtimeInputs = [ gh ];
@@ -64,6 +73,7 @@ in {
 
   xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";
   xdg.configFile."starship.toml".source = ../config/starship.toml;
+  xdg.configFile."lazygit/config.yml".source = ../config/lazygit/config.yml;
   xdg.configFile."zellij/config.kdl".source = ../config/zellij/config.kdl;
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
@@ -95,6 +105,7 @@ in {
       export ZELLIJ_CONFIG_DIR=~/.config/zellij
       export CLAUDE_CODE_EFFORT_LEVEL=max
       export EDITOR=micro
+      export BROWSER=open-browser
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       
       init-yolo
@@ -115,6 +126,16 @@ in {
       fi
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
+
+      # Yazi wrapper for cwd syncing
+      function yy() {
+        local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+        yazi "$@" --cwd-file="$tmp"
+        if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+          builtin cd -- "$cwd"
+        fi
+        rm -f -- "$tmp"
+      }
 
       echo -e "\033[1;31m"
       echo "             _       _               "
