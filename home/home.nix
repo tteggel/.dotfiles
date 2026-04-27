@@ -117,8 +117,8 @@ in {
       text = builtins.readFile ../scripts/command-palette.sh;
     })
     (writeShellApplication {
-      name = "osc52-copy";
-      text = builtins.readFile ../scripts/osc52-copy.sh;
+      name = "clipboard-copy";
+      text = builtins.readFile ../scripts/clipboard-copy.sh;
     })
   ];
 

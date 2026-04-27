@@ -31,11 +31,10 @@ mouse_mode true
 
 // Copy behavior
 copy_on_select true
-copy_command "osc52-copy"
-// osc52-copy emits OSC 52 directly to /dev/tty so the host terminal
-// (WezTerm) updates the Windows clipboard. Works across SSH/GCP IAP
-// tunnels and isolated WSL environments where wayland/X11/clip.exe
-// are unavailable (e.g. yoloixos with wsl.interop disabled).
+copy_command "clipboard-copy"
+// clipboard-copy prefers clip.exe via WSL interop (thixos) and falls
+// back to OSC 52 to /dev/tty for environments without interop
+// (yoloixos with wsl.interop disabled, or remote IAP sessions).
 
 // Scrollback
 scroll_buffer_size 10000
