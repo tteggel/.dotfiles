@@ -8,7 +8,13 @@ sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos --op
 ```
 
 ## Install (Ubuntu / Non-NixOS Standalone)
-Make sure Nix is installed on your system.
+Make sure Nix is installed on your system. If using the multi-user Nix daemon, you'll need to add yourself as a trusted user to allow binary caches:
+```shell
+echo "trusted-users = root $USER" | sudo tee -a /etc/nix/nix.conf
+sudo systemctl restart nix-daemon
+```
+
+Then configure user-specific Nix settings and clone the repo:
 ```shell
 mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
