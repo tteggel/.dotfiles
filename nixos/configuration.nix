@@ -39,6 +39,7 @@
       isNormalUser = true;
       extraGroups = ["wheel"];
       shell = pkgs.zsh;
+      linger = true;
     };
   };
 
