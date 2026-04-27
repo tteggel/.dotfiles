@@ -31,10 +31,10 @@ mouse_mode true
 
 // Copy behavior
 copy_on_select true
-copy_clipboard "system"
-// Removed copy_command "clip.exe" to enable native OSC 52 propagation.
-// This allows seamless copy/paste back to the host OS across SSH, 
-// GCP IAP tunnels, and strictly isolated WSL environments.
+copy_command "osc52-copy"
+// Uses our custom script to force native OSC 52 emission directly to /dev/tty.
+// This guarantees copy/paste works backwards across SSH/GCP tunnels and 
+// into strictly isolated WSL environments where wayland/interop is disabled.
 
 // Scrollback
 scroll_buffer_size 10000
