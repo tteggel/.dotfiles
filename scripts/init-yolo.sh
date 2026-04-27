@@ -43,8 +43,11 @@ echo "$token" | gh auth login --with-token || {
   exit 1
 }
 
-# Persist the token to the environment so the warning in zshrc doesn't trigger, 
-# and so gh and git can use it seamlessly in this session.
+# Persist the token to a secure file so zshrc can source it on every launch
+mkdir -p "$HOME/.config"
+echo "export GITHUB_TOKEN=\"$token\"" > "$HOME/.config/github-token.env"
+chmod 600 "$HOME/.config/github-token.env"
+
 export GITHUB_TOKEN="$token"
 
 echo ""

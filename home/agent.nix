@@ -52,6 +52,10 @@ in {
       
       init-yolo
 
+      if [ -f "$HOME/.config/github-token.env" ]; then
+        source "$HOME/.config/github-token.env"
+      fi
+
       if [ -z "$GITHUB_TOKEN" ]; then
         echo -e "\033[0;33mWarning: GITHUB_TOKEN is not set. Git auth will fail.\033[0m"
       fi
