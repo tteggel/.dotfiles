@@ -59,6 +59,15 @@ in {
       eval "$(starship init zsh)"
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
+
+      echo -e "\033[1;31m"
+      echo "             _       _               "
+      echo " _   _  ___ | | ___ (_)_  _____  ___ "
+      echo "| | | |/ _ \\| |/ _ \\| \\ \\/ / _ \\/ __|"
+      echo "| |_| | (_) | | (_) | |>  < (_) \\__ \\"
+      echo " \__, |\___/|_|\___/|_/_/\\_\___/|___/"
+      echo " |___/                               "
+      echo -e "\033[0m"
       
       # Auto-cd into the cloned repo if it's the only thing in src
       if [ "$PWD" = "$HOME" ] && [ -d "$HOME/src" ]; then

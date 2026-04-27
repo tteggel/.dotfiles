@@ -151,6 +151,14 @@ in {
       eval "$(fzf --zsh)"
       eval "$(zoxide init zsh)"
 
+      echo -e "\033[1;34m"
+      echo " _   _     _               "
+      echo "| |_| |__ (_)_  _____  ___ "
+      echo "| __| '_ \| \ \/ / _ \/ __|"
+      echo "| |_| | | | |>  < (_) \__ \\"
+      echo " \__|_| |_|_/_/\_\___/|___/"
+      echo -e "\033[0m"
+
       # Yazi wrapper for cwd syncing
       function yy() {
         local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
