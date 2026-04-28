@@ -12,6 +12,8 @@
   ];
   isMinimal = builtins.getEnv "MINIMAL_ENV" != "";
 in {
+  imports = [ ./shell.nix ];
+
   home.stateVersion = "25.05"; # Match NixOS stateVersion
 
   nix = {
@@ -28,7 +30,8 @@ in {
 
   home.activation.windowsterminal = lib.hm.dag.entryAfter ["writeBoundary"] ''
     if [ -d /mnt/c/Users/thom ]; then
-      cp ${../config/windows-terminal.json} /mnt/c/Users/thom/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json
+      ${pkgs.gnused}/bin/sed 's/\x1b/\\u001b/g' ${../config/windows-terminal.json} \
+        > /mnt/c/Users/thom/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json
     fi
   '';
 
@@ -138,23 +141,7 @@ in {
   home.file.".claude/settings.json".source = ../config/claude/settings.json;
   home.file.".gemini/settings.json".source = ../config/gemini/settings.json;
 
-  programs.bash = {
-    enable = true;
-    initExtra = ''
-      # Auto-launch zsh for interactive sessions
-      if [ -t 1 ] && [ -n "$BASH_VERSION" ] && [ "$0" = "-bash" -o "$0" = "bash" ]; then
-        exec zsh -l
-      fi
-    '';
-  };
-
   programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
-    history.size = 10000;
-    history.path = "$HOME/.zsh_history";
     initContent = ''
       setopt HIST_FCNTL_LOCK
       setopt HIST_IGNORE_DUPS
@@ -242,15 +229,6 @@ in {
       bindkey '\e[1;2D' backward-word          # Shift+Left
       bindkey '\e[1;2C' forward-word           # Shift+Right
     '';
-    shellAliases = {
-      ls = "eza";
-      ll = "eza -l --git";
-      la = "eza -la --git";
-      lt = "eza -T --git-ignore";
-      cat = "bat --paging=never";
-      grep = "rg";
-      find = "fd";
-    };
   };
 
   programs.direnv = {
