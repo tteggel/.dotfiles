@@ -6,7 +6,11 @@
 #
 # Topology:
 #   local zellij attach <-> http://localhost:LOCAL_PORT
-#                       <-IAP-> VM:8082 (zellij web --daemonize, 127.0.0.1)
+#                       <-IAP-> VM:8082 (zellij web --daemonize, 0.0.0.0)
+#
+# Note: zellij web binds 0.0.0.0 because IAP TCP forwarding terminates on
+# the VM's primary network interface, not loopback. The IAP firewall rule
+# (source 35.235.240.0/20) provides access control.
 #
 # Bootstrap-over-SSH discovers (and creates if missing) a long-lived
 # auth token, lists remote sessions, and writes a cache file the
@@ -145,21 +149,59 @@ if ! command -v zellij >/dev/null 2>&1; then
   echo "Install Zellij >=0.43 with web_server_capability before retrying." >&2
   exit 64
 fi
-status_out=\$(zellij web --status --port ${REMOTE_PORT} 2>&1 || true)
-if ! printf '%s\n' "\$status_out" | grep -qiE 'running|listening|active|started|http'; then
-  daemonize_rc=0
-  daemonize_out=\$(zellij web --daemonize --port ${REMOTE_PORT} 2>&1) || daemonize_rc=\$?
-  if [ "\$daemonize_rc" -ne 0 ]; then
-    if printf '%s\n' "\$daemonize_out" | grep -qi 'address already in use'; then
-      : # port already bound; assume zellij web is running there (idempotent)
-    else
-      echo "ERROR: zellij web --daemonize failed on \$(hostname) (port ${REMOTE_PORT})." >&2
-      printf '%s\n' "\$daemonize_out" >&2
-      exit 65
-    fi
-  else
+probe_port() {
+  (echo > /dev/tcp/127.0.0.1/${REMOTE_PORT}) 2>/dev/null
+}
+# Returns "ADDR:PORT" of an existing listener (preferring non-loopback), or empty.
+existing_bind() {
+  (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) \
+    | awk -v port=":${REMOTE_PORT}\$" '\$4 ~ port {print \$4}' \
+    | sort -u
+}
+daemonize_out=""
+bind_addr=\$(existing_bind | grep -v '^127\.' | head -1 || true)
+loopback_only=0
+if [ -z "\$bind_addr" ] && existing_bind | grep -q '^127\.'; then
+  loopback_only=1
+fi
+if [ "\$loopback_only" = "1" ]; then
+  # IAP can't reach a loopback-only listener. Stop it so we can rebind to 0.0.0.0.
+  zellij web --stop >/dev/null 2>&1 || true
+  for _ in 1 2 3 4 5; do
+    probe_port || break
     sleep 1
+  done
+fi
+if ! probe_port || [ "\$loopback_only" = "1" ]; then
+  daemonize_rc=0
+  daemonize_out=\$(zellij web --daemonize --ip 0.0.0.0 --port ${REMOTE_PORT} 2>&1) || daemonize_rc=\$?
+  if [ "\$daemonize_rc" -ne 0 ] && ! printf '%s\n' "\$daemonize_out" | grep -qi 'address already in use'; then
+    echo "ERROR: zellij web --daemonize failed on \$(hostname) (port ${REMOTE_PORT})." >&2
+    printf '%s\n' "\$daemonize_out" >&2
+    exit 65
   fi
+fi
+listening=0
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  if probe_port; then
+    listening=1
+    break
+  fi
+  sleep 1
+done
+if [ "\$listening" -eq 0 ]; then
+  echo "ERROR: nothing listening on port ${REMOTE_PORT} on \$(hostname) after bootstrap." >&2
+  echo "  zellij version: \$(zellij --version 2>&1 || true)" >&2
+  if [ -n "\$daemonize_out" ]; then
+    echo "  zellij web --daemonize output:" >&2
+    printf '    %s\n' "\$daemonize_out" >&2
+  fi
+  status_out=\$(zellij web --status --port ${REMOTE_PORT} 2>&1 || true)
+  echo "  zellij web --status output:" >&2
+  printf '    %s\n' "\$status_out" >&2
+  echo "  listeners on this host:" >&2
+  (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null || true) | sed 's/^/    /' >&2
+  exit 66
 fi
 echo "---SESSIONS-BEGIN---"
 zellij list-sessions -n -s 2>/dev/null || true
@@ -266,7 +308,7 @@ tunnel_pid=$!
 trap 'kill "$tunnel_pid" 2>/dev/null || true; wait 2>/dev/null || true; rm -f "$tunnel_log"' EXIT INT TERM
 
 ready=0
-for _ in $(seq 1 80); do
+for _ in $(seq 1 120); do
   if (echo > "/dev/tcp/127.0.0.1/$LOCAL_PORT") 2>/dev/null; then
     ready=1
     break
@@ -274,7 +316,7 @@ for _ in $(seq 1 80); do
   if ! kill -0 "$tunnel_pid" 2>/dev/null; then
     break
   fi
-  sleep 0.25
+  sleep 0.5
 done
 if [ "$ready" -ne 1 ]; then
   echo "IAP tunnel failed to come up on port $LOCAL_PORT." >&2

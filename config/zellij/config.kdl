@@ -39,6 +39,13 @@ scroll_buffer_size 10000
 session_serialization true
 serialize_pane_viewport true
 
+// Web server: bind to all interfaces so IAP TCP forwarding can reach it
+// on the VM's primary interface. Access control is enforced by the GCP
+// firewall rule (source 35.235.240.0/20 -> tcp:8082). Port pinned so the
+// IAP bootstrap script and firewall rule stay in sync.
+web_server_ip "0.0.0.0"
+web_server_port 8082
+
 // Background plugins
 load_plugins {
     "file:~/.config/zellij/plugins/dim-unfocused.wasm" {
