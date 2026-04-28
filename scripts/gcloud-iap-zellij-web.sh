@@ -6,11 +6,9 @@
 #
 # Topology:
 #   local zellij attach <-> http://localhost:LOCAL_PORT
-#                       <-IAP-> VM:8082 (zellij web --daemonize, 0.0.0.0)
+#                       <-SSH(IAP)-> VM:127.0.0.1:8082 (zellij web --daemonize, 127.0.0.1)
 #
-# Note: zellij web binds 0.0.0.0 because IAP TCP forwarding terminates on
-# the VM's primary network interface, not loopback. The IAP firewall rule
-# (source 35.235.240.0/20) provides access control.
+# Note: zellij web binds to 127.0.0.1 because we use SSH port forwarding over IAP.
 #
 # Bootstrap-over-SSH discovers (and creates if missing) a long-lived
 # auth token, lists remote sessions, and writes a cache file the
@@ -152,29 +150,10 @@ fi
 probe_port() {
   (echo > /dev/tcp/127.0.0.1/${REMOTE_PORT}) 2>/dev/null
 }
-# Returns "ADDR:PORT" of an existing listener (preferring non-loopback), or empty.
-existing_bind() {
-  (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) \
-    | awk -v port=":${REMOTE_PORT}\$" '\$4 ~ port {print \$4}' \
-    | sort -u
-}
 daemonize_out=""
-bind_addr=\$(existing_bind | grep -v '^127\.' | head -1 || true)
-loopback_only=0
-if [ -z "\$bind_addr" ] && existing_bind | grep -q '^127\.'; then
-  loopback_only=1
-fi
-if [ "\$loopback_only" = "1" ]; then
-  # IAP can't reach a loopback-only listener. Stop it so we can rebind to 0.0.0.0.
-  zellij web --stop >/dev/null 2>&1 || true
-  for _ in 1 2 3 4 5; do
-    probe_port || break
-    sleep 1
-  done
-fi
-if ! probe_port || [ "\$loopback_only" = "1" ]; then
+if ! probe_port; then
   daemonize_rc=0
-  daemonize_out=\$(zellij web --daemonize --ip 0.0.0.0 --port ${REMOTE_PORT} 2>&1) || daemonize_rc=\$?
+  daemonize_out=\$(zellij web --daemonize --ip 127.0.0.1 --port ${REMOTE_PORT} 2>&1) || daemonize_rc=\$?
   if [ "\$daemonize_rc" -ne 0 ] && ! printf '%s\n' "\$daemonize_out" | grep -qi 'address already in use'; then
     echo "ERROR: zellij web --daemonize failed on \$(hostname) (port ${REMOTE_PORT})." >&2
     printf '%s\n' "\$daemonize_out" >&2
@@ -298,12 +277,13 @@ if [ "$LOCAL_PORT" -eq 0 ]; then
   fi
 fi
 
-echo "Starting IAP tunnel localhost:$LOCAL_PORT -> $INSTANCE:$REMOTE_PORT..."
+echo "Starting SSH port forwarding localhost:$LOCAL_PORT -> $INSTANCE:127.0.0.1:$REMOTE_PORT via IAP..."
 tunnel_log=$(mktemp -t zellij-iap.XXXXXX)
-gcloud compute start-iap-tunnel "$INSTANCE" "$REMOTE_PORT" \
+gcloud compute ssh "$INSTANCE" \
   --project="$PROJECT" \
   --zone="$ZONE" \
-  --local-host-port="localhost:$LOCAL_PORT" >"$tunnel_log" 2>&1 &
+  --tunnel-through-iap \
+  -- -N -L "$LOCAL_PORT:127.0.0.1:$REMOTE_PORT" >"$tunnel_log" 2>&1 &
 tunnel_pid=$!
 trap 'kill "$tunnel_pid" 2>/dev/null || true; wait 2>/dev/null || true; rm -f "$tunnel_log"' EXIT INT TERM
 
@@ -319,9 +299,9 @@ for _ in $(seq 1 120); do
   sleep 0.5
 done
 if [ "$ready" -ne 1 ]; then
-  echo "IAP tunnel failed to come up on port $LOCAL_PORT." >&2
+  echo "SSH tunnel failed to come up on port $LOCAL_PORT." >&2
   if ! kill -0 "$tunnel_pid" 2>/dev/null; then
-    echo "(gcloud start-iap-tunnel exited before the tunnel was ready)" >&2
+    echo "(gcloud compute ssh exited before the tunnel was ready)" >&2
   fi
   if [ -s "$tunnel_log" ]; then
     echo "--- gcloud output ---" >&2
