@@ -140,8 +140,11 @@ if ! command -v zellij >/dev/null 2>&1; then
   echo "Install Zellij >=0.43 with web_server_capability before retrying." >&2
   exit 64
 fi
-if ! zellij web --status 2>&1 | grep -qiE 'running|listening|active|started'; then
-  zellij web --daemonize >/dev/null 2>&1
+if ! zellij web --status --port ${REMOTE_PORT} 2>&1 | grep -qiE 'running|listening|active|started'; then
+  if ! zellij web --daemonize --port ${REMOTE_PORT} >/dev/null; then
+    echo "ERROR: zellij web --daemonize failed on \$(hostname) (port ${REMOTE_PORT})." >&2
+    exit 65
+  fi
   sleep 1
 fi
 echo "---SESSIONS-BEGIN---"
