@@ -37,7 +37,7 @@ The `dim-unfocused` sub-flake (at `bespoke/zellij/dim-unfocused/`) has its own i
 sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 
 # For Standalone / Ubuntu
-home-manager switch --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
+home-manager switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
 
 ## configuration.nix and home.nix

@@ -25,8 +25,10 @@ MINIMAL_ENV=1 nix run home-manager/master -- switch --impure --flake ~/src/githu
 
 If you used the minimal install, run the full install afterwards to build out the full environment (which will now pull instantly from the binary cache!):
 ```shell
-nix run github:nix-community/home-manager -- switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
+home-manager switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
+
+After the first switch the `home-manager` CLI is on your PATH (pinned to the same flake input as the configuration), so subsequent updates skip the `nix run` GitHub fetch.
 
 ## Update
 ```shell
@@ -34,7 +36,7 @@ nix run github:nix-community/home-manager -- switch --impure -b backup --flake ~
 sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 
 # For Ubuntu Standalone
-nix run github:nix-community/home-manager -- switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
+home-manager switch --impure --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
 
 ## YOLO Mode (Autonomous Agents)
@@ -59,9 +61,9 @@ If you are running on a raw Ubuntu machine where we cannot enforce WSL boundarie
 
 To migrate your current standalone user to the YOLO profile:
 ```shell
-nix run github:nix-community/home-manager -- switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#agent@nix
+home-manager switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#agent@nix
 ```
 To migrate back to the full developer environment:
 ```shell
-nix run github:nix-community/home-manager -- switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
+home-manager switch --impure -b backup --flake ~/src/github.com/tteggel/.dotfiles#thom@nix
 ```
