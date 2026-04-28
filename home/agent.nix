@@ -103,6 +103,7 @@ in {
 
       export STARSHIP_CONFIG=~/.config/starship.toml
       export ZELLIJ_CONFIG_DIR=~/.config/zellij
+      export COLORTERM=truecolor
       export CLAUDE_CODE_EFFORT_LEVEL=max
       export EDITOR=micro
       export BROWSER=open-browser
