@@ -46,16 +46,16 @@
     "zellij-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1774043574,
-        "narHash": "sha256-wv+Qqc+9C9SgNdr6iPJnJXtsAQkLgWaUnvzqAn0+9MA=",
+        "lastModified": 1777392340,
+        "narHash": "sha256-IEBXYBC6sJXkTc5y4bwsYspiASm7qgx6+xs8Ds7ibkk=",
         "owner": "tteggel",
         "repo": "zellij",
-        "rev": "6509e50600b0aaa4ea88b00318602f0988838874",
+        "rev": "a46706cb2126a4a949ca9297938e0d396c289bc5",
         "type": "github"
       },
       "original": {
         "owner": "tteggel",
-        "ref": "pane-shaders",
+        "ref": "pane-shaders-static",
         "repo": "zellij",
         "type": "github"
       }

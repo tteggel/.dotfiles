@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zellij-src = {
-      url = "github:tteggel/zellij/pane-shaders";
+      url = "github:tteggel/zellij/pane-shaders-static";
       flake = false;
     };
   };

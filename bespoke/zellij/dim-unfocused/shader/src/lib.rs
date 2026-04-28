@@ -86,10 +86,6 @@ fn clamp(x: f32, lo: f32, hi: f32) -> f32 {
     }
 }
 
-fn mix(a: f32, b: f32, t: f32) -> f32 {
-    a + (b - a) * t
-}
-
 fn absf(x: f32) -> f32 {
     if x < 0.0 { -x } else { x }
 }
@@ -103,11 +99,9 @@ fn sqrtf(x: f32) -> f32 {
     if x <= 0.0 {
         return 0.0;
     }
-    // Use bit manipulation for initial guess
     let i = x.to_bits();
     let i = 0x1FBD1DF5 + (i >> 1);
     let mut y = f32::from_bits(i);
-    // Newton iterations
     y = 0.5 * (y + x / y);
     y = 0.5 * (y + x / y);
     y = 0.5 * (y + x / y);
@@ -121,18 +115,15 @@ fn cbrtf(x: f32) -> f32 {
     }
     let sign = if x < 0.0 { -1.0f32 } else { 1.0f32 };
     let x = absf(x);
-    // Initial guess via bit manipulation
     let i = x.to_bits();
     let i = i / 3 + 0x2A508C2F;
     let mut y = f32::from_bits(i);
-    // Halley iterations for cbrt
     y = y - (y * y * y - x) / (3.0 * y * y);
     y = y - (y * y * y - x) / (3.0 * y * y);
     y = y - (y * y * y - x) / (3.0 * y * y);
     sign * y
 }
 
-// Approximate pow(base, exp) = exp2(exp * log2(base))
 fn powf(base: f32, exp: f32) -> f32 {
     if base <= 0.0 {
         return 0.0;
@@ -140,23 +131,19 @@ fn powf(base: f32, exp: f32) -> f32 {
     exp2f(exp * log2f(base))
 }
 
-// Approximate log2 using bit manipulation + polynomial
 fn log2f(x: f32) -> f32 {
     if x <= 0.0 {
-        return -1e30; // -infinity substitute
+        return -1e30;
     }
     let bits = x.to_bits();
     let exponent = ((bits >> 23) & 0xFF) as i32 - 127;
-    // Normalize mantissa to [1, 2)
     let m_bits = (bits & 0x007FFFFF) | 0x3F800000;
     let m = f32::from_bits(m_bits);
-    // Minimax polynomial for log2(m) where m in [1, 2)
     let a = m - 1.0;
     let log2_m = a * (1.4426950408 - a * (0.7213475 - a * 0.4808983));
     exponent as f32 + log2_m
 }
 
-// Approximate exp2 using bit manipulation
 fn exp2f(x: f32) -> f32 {
     if x < -126.0 {
         return 0.0;
@@ -164,31 +151,23 @@ fn exp2f(x: f32) -> f32 {
     if x > 127.0 {
         return f32::MAX;
     }
-    // Split x into integer and fractional parts
     let xi = x as i32 - if x < 0.0 { 1 } else { 0 };
     let xf = x - xi as f32;
-    // Polynomial approximation of 2^xf for xf in [0, 1)
     let two_xf = 1.0 + xf * (0.6931472 + xf * (0.2402265 + xf * (0.0555041 + xf * 0.009618)));
-    // Combine with integer exponent
     let bits = ((xi + 127) as u32) << 23;
     f32::from_bits(bits) * two_xf
 }
 
-// Approximate sin/cos via polynomial
 fn sinf(x: f32) -> f32 {
-    // Reduce to [-pi, pi]
     let mut x = x;
     const TWO_PI: f32 = 2.0 * core::f32::consts::PI;
-    // Round to nearest integer
     let n = (x / TWO_PI) as i32;
     x = x - (n as f32) * TWO_PI;
-    // Bring into [-pi, pi]
     if x > core::f32::consts::PI {
         x -= TWO_PI;
     } else if x < -core::f32::consts::PI {
         x += TWO_PI;
     }
-    // Bhaskara-style or Taylor
     let x2 = x * x;
     let x3 = x2 * x;
     let x5 = x3 * x2;
@@ -221,117 +200,40 @@ fn atan2f(y: f32, x: f32) -> f32 {
 }
 
 fn atanf(x: f32) -> f32 {
-    // Range reduction: atan(x) for |x| > 1 => pi/2 - atan(1/x)
     if absf(x) > 1.0 {
         let sign = if x > 0.0 { 1.0 } else { -1.0 };
         return sign * core::f32::consts::FRAC_PI_2 - atanf(1.0 / x);
     }
-    // Polynomial approximation for |x| <= 1
     let x2 = x * x;
     x * (1.0 - x2 * (0.3333333 - x2 * (0.2 - x2 * 0.142857)))
 }
 
 // --- Uniforms ---
 //
-// The host writes a uniforms block at WASM memory offset 0 before each call.
-// Layout: 32 x i32 = 128 bytes.
-//
-// Offset  Field
-// 0       pane_width
-// 4       pane_height
-// 8       cursor_x          (terminal text cursor)
-// 12      cursor_y
-// 16      mouse_x           (-1 if not hovering)
-// 20      mouse_y
-// 24      time_ms
-// 28      pane_id
-// 32      is_focused         (0 or 1)
-// 36      scroll_offset
-// 40      pane_x             (pane position on screen)
-// 44      pane_y
-// 48      screen_width
-// 52      screen_height
-// 56      pane_count
-// 60      has_selection       (0 or 1)
-// 64      sel_start_x
-// 68      sel_start_y
-// 72      sel_end_x
-// 76      sel_end_y
-// 80      prev_cursor_x
-// 84      prev_cursor_y
-// 88      prev_mouse_x
-// 92      prev_mouse_y
-// 96-127  reserved
+// Only pane_width and pane_height are read by this static shader.
+// The host still writes a full uniforms block at WASM memory offset 65408
+// (128 bytes); fields beyond the two we use are ignored.
 
 struct Uniforms {
     w: f32,
     h: f32,
-    cursor_x: f32,
-    cursor_y: f32,
-    mouse_x: f32,
-    mouse_y: f32,
-    time: f32,
-    pane_id: i32,
-    is_focused: bool,
-    scroll_offset: f32,
-    pane_x: f32,
-    pane_y: f32,
-    screen_w: f32,
-    screen_h: f32,
-    pane_count: i32,
-    has_selection: bool,
-    sel_start_x: f32,
-    sel_start_y: f32,
-    sel_end_x: f32,
-    sel_end_y: f32,
-    prev_cursor_x: f32,
-    prev_cursor_y: f32,
-    prev_mouse_x: f32,
-    prev_mouse_y: f32,
 }
 
-// Uniforms are written by the host at this offset to avoid clobbering
-// the WASM module's stack/static data at low addresses.
 const UNIFORMS_OFFSET: usize = 65408;
 
 fn read_uniforms() -> Uniforms {
     unsafe {
         let o = UNIFORMS_OFFSET;
-        let time_ms = read_i32(o + 24);
         Uniforms {
             w: maxf(read_i32(o) as f32, 1.0),
             h: maxf(read_i32(o + 4) as f32, 1.0),
-            cursor_x: read_i32(o + 8) as f32,
-            cursor_y: read_i32(o + 12) as f32,
-            mouse_x: read_i32(o + 16) as f32,
-            mouse_y: read_i32(o + 20) as f32,
-            // Reduce time to keep f32 precision in sinf().
-            // 10_000_000 ms ≈ 2.8 hours; t * 0.0015 stays under 15 000.
-            time: (time_ms % 10_000_000) as f32,
-            pane_id: read_i32(o + 28),
-            is_focused: read_i32(o + 32) != 0,
-            scroll_offset: read_i32(o + 36) as f32,
-            pane_x: read_i32(o + 40) as f32,
-            pane_y: read_i32(o + 44) as f32,
-            screen_w: maxf(read_i32(o + 48) as f32, 1.0),
-            screen_h: maxf(read_i32(o + 52) as f32, 1.0),
-            pane_count: read_i32(o + 56),
-            has_selection: read_i32(o + 60) != 0,
-            sel_start_x: read_i32(o + 64) as f32,
-            sel_start_y: read_i32(o + 68) as f32,
-            sel_end_x: read_i32(o + 72) as f32,
-            sel_end_y: read_i32(o + 76) as f32,
-            prev_cursor_x: read_i32(o + 80) as f32,
-            prev_cursor_y: read_i32(o + 84) as f32,
-            prev_mouse_x: read_i32(o + 88) as f32,
-            prev_mouse_y: read_i32(o + 92) as f32,
         }
     }
 }
 
 // --- Shader entry points ---
 
-// Host writes uniforms at offset 0, then color entries at colors_ptr.
+// Host writes uniforms at offset 65408, then color entries at colors_ptr.
 // Each color entry: 6 x i32 (24 bytes) = [r, g, b, x, y, is_fg].
 // shade_batch transforms r,g,b in-place.
 #[no_mangle]
@@ -359,10 +261,9 @@ pub extern "C" fn shade_batch(colors_ptr: i32, count: i32) {
     }
 }
 
-// invalidate() intentionally omitted — animation causes cursor flicker
-// due to Zellij's hide/show cursor cycle on every render frame.
-// The static shader still applies on every render triggered by terminal
-// output, pane switches, or mouse movement.
+// invalidate() intentionally not exported. The simplified fork drops
+// animation-tick plumbing entirely; the shader runs once per render and
+// produces a static result.
 
 unsafe fn read_i32(addr: usize) -> i32 {
     core::ptr::read(addr as *const i32)
@@ -380,69 +281,27 @@ fn shade(
 ) -> (f32, f32, f32) {
     let (l, c, hue) = rgb_to_oklch(r, g, b);
 
-    // Pane-local coordinates
+    // Pane-local coordinates.
     let lx = x % u.w;
     let ly = y % u.h;
 
-    // --- Breathing: slow pulsation driven by time ---
-    let breath = sinf(u.time * 0.0015) * 0.5 + 0.5;
-
-    // --- Vignette: edge darkening with subtle breathing ---
+    // Vignette: subtle edge darkening.
     let nx = lx / u.w;
     let ny = ly / u.h;
     let vx = (nx - 0.5) * 2.0;
     let vy = (ny - 0.5) * 2.0;
     let vdist = sqrtf(vx * vx + vy * vy);
-    let vig_strength = 0.38 + breath * 0.04;
-    let vignette = clamp(1.2 - vdist * vig_strength, 0.55, 1.0);
+    let vignette = clamp(1.2 - vdist * 0.4, 0.55, 1.0);
 
-    // --- Glare: elliptical highlight near top-right, warm tint ---
-    let gx = (u.w * 0.8 - lx) / u.w;
-    let gy = (ly - u.h * 0.15) * 2.5 / u.h;
-    let gdist = sqrtf(gx * gx * 0.6 + gy * gy);
-    let glare_base = clamp(1.0 - gdist / 0.8, 0.0, 1.0);
-    let glare_intensity = 0.50 + breath * 0.10;
-    let glare = glare_base * glare_base * glare_base * glare_intensity;
-    let hue = mix(hue, 70.0, glare * 0.5);
-
-    // --- Mouse glow: brightening near mouse when hovering ---
-    let mouse_glow = if u.mouse_x >= 0.0 {
-        let mdx = (lx - u.mouse_x) / u.w * 6.0;
-        let mdy = (ly - u.mouse_y) / u.h * 6.0;
-        let mdist = sqrtf(mdx * mdx + mdy * mdy);
-        clamp(1.0 - mdist, 0.0, 1.0) * 0.08
-    } else {
-        0.0
-    };
-
-    // --- Cursor glow: subtle brightening near terminal cursor ---
-    let cdx = (lx - u.cursor_x) / u.w * 6.0;
-    let cdy = (ly - u.cursor_y) / u.h * 6.0;
-    let cdist = sqrtf(cdx * cdx + cdy * cdy);
-    let cursor_glow = clamp(1.0 - cdist, 0.0, 1.0) * 0.08;
-
-    // --- Scanlines: faint darkening on alternating rows ---
-    let scanline = if (y as i32) % 2 == 0 { 0.97 } else { 1.0 };
-
-    // --- Noise: pseudo-random per-cell grain ---
-    let n = absf(((x * 12.9898 + y * 78.233) * 43758.5453) % 1.0);
-    let noise = (n - 0.5) * 0.035;
-
-    // --- Combine: use max of mouse and cursor glow ---
-    let glow = maxf(mouse_glow, cursor_glow);
-    let nl = l * vignette * scanline + noise + glow;
+    let nl = clamp(l * vignette, 0.0, 1.0);
 
     if is_fg {
         let nc = c * 0.18;
-        let nl = clamp(mix(nl, 1.0, glare), 0.0, 1.0);
-        let nc = nc * (1.0 - glare);
-        let (or, og, ob) = oklch_to_rgb(nl, nc, hue);
-        (clamp(or, 0.0, 255.0), clamp(og, 0.0, 255.0), clamp(ob, 0.0, 255.0))
+        let (or_, og, ob) = oklch_to_rgb(nl, nc, hue);
+        (clamp(or_, 0.0, 255.0), clamp(og, 0.0, 255.0), clamp(ob, 0.0, 255.0))
     } else {
         let nc = c * 0.25;
-        let nl = clamp(mix(nl, 0.85, glare), 0.0, 1.0);
-        let nc = nc * (1.0 - glare * 0.8);
-        let (or, og, ob) = oklch_to_rgb(nl, nc, hue);
-        (clamp(or, 0.0, 255.0), clamp(og, 0.0, 255.0), clamp(ob, 0.0, 255.0))
+        let (or_, og, ob) = oklch_to_rgb(nl, nc, hue);
+        (clamp(or_, 0.0, 255.0), clamp(og, 0.0, 255.0), clamp(ob, 0.0, 255.0))
     }
 }
