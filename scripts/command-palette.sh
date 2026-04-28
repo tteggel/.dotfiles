@@ -58,6 +58,7 @@ commands=(
   "exec:gh issue create	[Git] Create issue"
   "run:gh run list	[Git] CI/CD runs"
   "exec:gh run watch	[Git] Watch CI/CD run"
+  "exec:zsh -c 'printf \"Repository for PAT: \"; read repo; ~/src/github.com/tteggel/.dotfiles/scripts/gh-sandbox-token.sh \"\$repo\"'	[Git] Create Sandbox PAT"
   "exec:gcloud-switch	[GCP] Switch project"
   "exec:gcloud-reauth	[GCP] Re-authenticate"
   "exec:gcloud-iap-zellij-web	[GCP] Connect to Zellij session via IAP"

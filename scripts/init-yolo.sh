@@ -27,6 +27,20 @@ echo "This environment is strictly isolated. You must"
 echo "provide a Fine-Grained Personal Access Token (PAT)"
 echo "with Repo-scoped access to clone and push code."
 echo ""
+printf "Repository to clone (e.g. owner/repo): "
+read -r repo < /dev/tty
+
+if [ -z "$repo" ]; then
+  echo "Repository is required. Aborting."
+  sleep 2
+  exit 1
+fi
+
+echo ""
+# Generate the pre-filled PAT creation link
+"$HOME/src/github.com/tteggel/.dotfiles/scripts/gh-sandbox-token.sh" "$repo"
+echo ""
+
 printf "GitHub PAT: "
 read -rs token < /dev/tty
 echo ""
@@ -49,16 +63,6 @@ echo "export GITHUB_TOKEN=\"$token\"" > "$HOME/.config/github-token.env"
 chmod 600 "$HOME/.config/github-token.env"
 
 export GITHUB_TOKEN="$token"
-
-echo ""
-printf "Repository to clone (e.g. owner/repo): "
-read -r repo < /dev/tty
-
-if [ -z "$repo" ]; then
-  echo "Repository is required. Aborting."
-  sleep 2
-  exit 1
-fi
 
 name=$(basename "$repo")
 target="$HOME/src/$name"
