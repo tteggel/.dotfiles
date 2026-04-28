@@ -36,7 +36,7 @@ in {
   '';
 
   home.packages = with pkgs; [
-    wget gh jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
+    wget jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
     kubectl firebase-tools micro starship
     (google-cloud-sdk.withExtraComponents [
       google-cloud-sdk.components.gke-gcloud-auth-plugin
@@ -235,6 +235,8 @@ in {
     enable = true;
     nix-direnv.enable = true;
   };
+
+  programs.gh.enable = true;
 
   programs.git = {
     enable = true;
