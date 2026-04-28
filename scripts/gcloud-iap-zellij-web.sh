@@ -257,12 +257,13 @@ if [ "$LOCAL_PORT" -eq 0 ]; then
 fi
 
 echo "Starting IAP tunnel localhost:$LOCAL_PORT -> $INSTANCE:$REMOTE_PORT..."
+tunnel_log=$(mktemp -t zellij-iap.XXXXXX)
 gcloud compute start-iap-tunnel "$INSTANCE" "$REMOTE_PORT" \
   --project="$PROJECT" \
   --zone="$ZONE" \
-  --local-host-port="localhost:$LOCAL_PORT" >/dev/null 2>&1 &
+  --local-host-port="localhost:$LOCAL_PORT" >"$tunnel_log" 2>&1 &
 tunnel_pid=$!
-trap 'kill "$tunnel_pid" 2>/dev/null || true; wait 2>/dev/null || true' EXIT INT TERM
+trap 'kill "$tunnel_pid" 2>/dev/null || true; wait 2>/dev/null || true; rm -f "$tunnel_log"' EXIT INT TERM
 
 ready=0
 for _ in $(seq 1 80); do
@@ -270,10 +271,23 @@ for _ in $(seq 1 80); do
     ready=1
     break
   fi
+  if ! kill -0 "$tunnel_pid" 2>/dev/null; then
+    break
+  fi
   sleep 0.25
 done
 if [ "$ready" -ne 1 ]; then
   echo "IAP tunnel failed to come up on port $LOCAL_PORT." >&2
+  if ! kill -0 "$tunnel_pid" 2>/dev/null; then
+    echo "(gcloud start-iap-tunnel exited before the tunnel was ready)" >&2
+  fi
+  if [ -s "$tunnel_log" ]; then
+    echo "--- gcloud output ---" >&2
+    cat "$tunnel_log" >&2
+    echo "---------------------" >&2
+  else
+    echo "(gcloud produced no output)" >&2
+  fi
   pause_on_error
   exit 1
 fi
