@@ -323,7 +323,7 @@ echo "  Session:   $SESSION"
 echo "========================================"
 
 attach_rc=0
-zellij attach -c "http://localhost:$LOCAL_PORT/$SESSION" \
+zellij attach "http://localhost:$LOCAL_PORT/$SESSION" \
   --token "$token" \
   --remember || attach_rc=$?
 
