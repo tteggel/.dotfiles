@@ -123,10 +123,15 @@ if [ -z "$ZONE" ]; then
 fi
 
 token_file="$tokens_dir/$(cache_key "$PROJECT" "$INSTANCE")"
+token_name_file="$tokens_dir/$(cache_key "$PROJECT" "$INSTANCE").name"
 host_file="$hosts_dir/$(cache_key "$PROJECT" "$INSTANCE")"
-token_name="iap-$(hostname -s 2>/dev/null || hostname)"
 
-[ "$REFRESH_TOKEN" -eq 1 ] && rm -f "$token_file"
+old_token_name=""
+[ -s "$token_name_file" ] && old_token_name=$(cat "$token_name_file")
+
+if [ "$REFRESH_TOKEN" -eq 1 ]; then
+  rm -f "$token_file" "$token_name_file"
+fi
 
 # One SSH round-trip: ensure web server, mint token if needed, list sessions.
 need_token=1
@@ -140,19 +145,30 @@ if ! command -v zellij >/dev/null 2>&1; then
   echo "Install Zellij >=0.43 with web_server_capability before retrying." >&2
   exit 64
 fi
-if ! zellij web --status --port ${REMOTE_PORT} 2>&1 | grep -qiE 'running|listening|active|started'; then
-  if ! zellij web --daemonize --port ${REMOTE_PORT} >/dev/null; then
-    echo "ERROR: zellij web --daemonize failed on \$(hostname) (port ${REMOTE_PORT})." >&2
-    exit 65
+status_out=\$(zellij web --status --port ${REMOTE_PORT} 2>&1 || true)
+if ! printf '%s\n' "\$status_out" | grep -qiE 'running|listening|active|started|http'; then
+  daemonize_rc=0
+  daemonize_out=\$(zellij web --daemonize --port ${REMOTE_PORT} 2>&1) || daemonize_rc=\$?
+  if [ "\$daemonize_rc" -ne 0 ]; then
+    if printf '%s\n' "\$daemonize_out" | grep -qi 'address already in use'; then
+      : # port already bound; assume zellij web is running there (idempotent)
+    else
+      echo "ERROR: zellij web --daemonize failed on \$(hostname) (port ${REMOTE_PORT})." >&2
+      printf '%s\n' "\$daemonize_out" >&2
+      exit 65
+    fi
+  else
+    sleep 1
   fi
-  sleep 1
 fi
 echo "---SESSIONS-BEGIN---"
 zellij list-sessions -n -s 2>/dev/null || true
 echo "---SESSIONS-END---"
 if [ "$need_token" = "1" ]; then
-  zellij web --revoke-token "${token_name}" >/dev/null 2>&1 || true
-  zellij web --create-token --token-name "${token_name}"
+  if [ -n "${old_token_name}" ]; then
+    zellij web --revoke-token "${old_token_name}" >/dev/null 2>&1 || true
+  fi
+  zellij web --create-token
 fi
 REMOTE
 )
@@ -173,19 +189,20 @@ remote_sessions=$(printf '%s\n' "$bootstrap_out" \
   | grep -v '^$' || true)
 
 if [ "$need_token" -eq 1 ]; then
-  token=$(printf '%s\n' "$bootstrap_out" \
+  name_value=$(printf '%s\n' "$bootstrap_out" \
     | awk '/---SESSIONS-END---/{seen=1; next} seen' \
-    | grep -iE '^[[:space:]]*token:[[:space:]]' \
-    | grep -ivE 'token name' \
-    | awk '{print $NF}' \
+    | grep -E '^[A-Za-z_][A-Za-z0-9_-]*:[[:space:]]+[A-Fa-f0-9-]+' \
     | tail -1)
-  if [ -z "$token" ]; then
+  if [ -z "$name_value" ]; then
     echo "Could not parse token from remote output:" >&2
     printf '%s\n' "$bootstrap_out" >&2
     pause_on_error
     exit 1
   fi
+  new_token_name=$(printf '%s\n' "$name_value" | awk -F': *' '{print $1}')
+  token=$(printf '%s\n' "$name_value" | awk -F': *' '{print $2}')
   (umask 077 && printf '%s' "$token" > "$token_file")
+  (umask 077 && printf '%s' "$new_token_name" > "$token_name_file")
 fi
 token=$(cat "$token_file")
 
