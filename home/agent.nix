@@ -69,10 +69,6 @@ in {
       runtimeInputs = [ fzf zellij-main fd zoxide ];
       text = builtins.readFile ../scripts/command-palette.sh;
     })
-    (writeShellApplication {
-      name = "clipboard-copy";
-      text = builtins.readFile ../scripts/clipboard-copy.sh;
-    })
   ];
 
   xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";

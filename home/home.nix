@@ -117,8 +117,14 @@ in {
       text = builtins.readFile ../scripts/command-palette.sh;
     })
     (writeShellApplication {
-      name = "clipboard-copy";
-      text = builtins.readFile ../scripts/clipboard-copy.sh;
+      name = "gcloud-iap-zellij-web";
+      runtimeInputs = [
+        (google-cloud-sdk.withExtraComponents [
+          google-cloud-sdk.components.gke-gcloud-auth-plugin
+        ])
+        fzf zellij-main
+      ];
+      text = builtins.readFile ../scripts/gcloud-iap-zellij-web.sh;
     })
   ];
 
