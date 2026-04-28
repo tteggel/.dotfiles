@@ -67,7 +67,7 @@ if ! gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/nu
   exit 1
 fi
 
-[ -z "$PROJECT" ] && PROJECT=$(gcloud config get-value project 2>/dev/null)
+[ -z "$PROJECT" ] && PROJECT=$(gcloud config get-value project 2>/dev/null || true)
 
 cache_root="${XDG_CACHE_HOME:-$HOME/.cache}/zellij-web"
 hosts_dir="$cache_root/hosts"
@@ -84,7 +84,7 @@ if [ -z "$INSTANCE" ]; then
   instances=$(gcloud compute instances list \
     --project="$PROJECT" \
     --filter='status=RUNNING' \
-    --format='value(name,zone)' 2>/dev/null)
+    --format='value(name,zone)' || true)
 
   if [ -z "$instances" ]; then
     echo "No running instances in project $PROJECT." >&2
@@ -113,7 +113,7 @@ if [ -z "$ZONE" ]; then
   ZONE=$(gcloud compute instances list \
     --project="$PROJECT" \
     --filter="name=$INSTANCE" \
-    --format='value(zone)' 2>/dev/null | head -1)
+    --format='value(zone)' | head -1 || true)
 fi
 
 if [ -z "$ZONE" ]; then

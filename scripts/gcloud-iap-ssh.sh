@@ -11,7 +11,7 @@ current_project=$(gcloud config get-value project 2>/dev/null)
 echo "Fetching GCP instances for project: $current_project..."
 
 # Fetch instances with name, zone, and status
-instances=$(gcloud compute instances list --format="value(name,zone,status)" 2>/dev/null)
+instances=$(gcloud compute instances list --format="value(name,zone,status)")
 
 if [ -z "$instances" ]; then
   echo "No instances found in project $current_project or failed to fetch." >&2
