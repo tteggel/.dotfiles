@@ -144,7 +144,7 @@ NEWREMOTE_LABEL="[+] New remote session  (Ctrl+W)"
 GH_LABEL="[+] Clone GitHub repo   (Ctrl+G)"
 CLONE_LABEL="[+] Clone remote        (Ctrl+U)"
 SSH_LABEL="[+] Connect to remote   (Ctrl+S)"
-IAP_LABEL="[+] GCP IAP shell       (Ctrl+I)"
+IAP_LABEL="[+] GCP IAP shell"
 
 cmd_lines=""
 cmd_lines+="cmd:new"$'\t'"$NEW_LABEL"$'\n'
@@ -169,8 +169,7 @@ pick=$(printf '%s' "$display" | fzf --prompt="Zellij session> " --height=~50% --
   --bind "ctrl-w:become(echo cmd:newremote)" \
   --bind "ctrl-g:become(echo cmd:clonegh)" \
   --bind "ctrl-u:become(echo cmd:cloneremote)" \
-  --bind "ctrl-s:become(echo cmd:ssh)" \
-  --bind "ctrl-i:become(echo cmd:iap)") || exit 1
+  --bind "ctrl-s:become(echo cmd:ssh)") || exit 1
 
 id="${pick%%$'\t'*}"
 [ -z "$id" ] && exit 0

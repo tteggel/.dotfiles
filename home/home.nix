@@ -26,9 +26,9 @@ in {
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
-  home.activation.wezterm = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  home.activation.windowsterminal = lib.hm.dag.entryAfter ["writeBoundary"] ''
     if [ -d /mnt/c/Users/thom ]; then
-      cp ${../config/wezterm.lua} /mnt/c/Users/thom/.wezterm.lua
+      cp ${../config/windows-terminal.json} /mnt/c/Users/thom/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json
     fi
   '';
 

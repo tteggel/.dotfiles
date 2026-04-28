@@ -5,7 +5,7 @@ The previous iteration of this plan presented a superficial mapping of IDE keybi
 
 **Critical flaws identified in the previous draft:**
 1.  **Naive WSL Pathing:** Simply invoking Windows `zed.exe` from WSL with Unix paths will fail silently or open empty buffers. Complete path translation (`wslpath -w`) is mandatory for all file arguments.
-2.  **Terminal Input Illusions:** Terminals do not inherently distinguish `Ctrl+Shift+P` from `Ctrl+P` without explicit escape sequence configuration (e.g., Kitty Keyboard Protocol). Assuming this works out-of-the-box in Zellij/WezTerm is a rookie mistake. We must ensure WezTerm is emitting the correct CSI u sequences, or choose a safe fallback.
+2.  **Terminal Input Illusions:** Terminals do not inherently distinguish `Ctrl+Shift+P` from `Ctrl+P` without explicit escape sequence configuration (e.g., Kitty Keyboard Protocol). Assuming this works out-of-the-box in Zellij/Windows Terminal is a rookie mistake. We must ensure Windows Terminal is emitting the correct CSI u sequences, or choose a safe fallback.
 3.  **Brittle Deployment:** Hardcoding `C:\Users\thom\...` in NixOS activation scripts is fragile and violates declarative paradigms. It assumes the user environment instead of dynamically resolving it.
 4.  **Suboptimal Exits:** Yazi as a file explorer is useless if exiting doesn't change the parent shell's working directory. The previous plan missed the shell wrapper entirely.
 
@@ -45,20 +45,20 @@ To use Windows Zed flawlessly as our `$EDITOR` (including `git commit --wait`), 
 *   **Config Deployment:** We will utilize `$WSL_USERPROFILE` or standard `wslpath` logic in activation scripts to deploy Windows-side configurations rather than hardcoded paths.
 
 ## 2. Advanced Terminal & Multiplexer Keybindings
-To achieve true IDE-standard bindings, we must account for terminal limitations. WezTerm must be configured to pass extended keyboard events, and Zellij must be configured to receive them.
+To achieve true IDE-standard bindings, we must account for terminal limitations. Windows Terminal must be configured to pass extended keyboard events, and Zellij must be configured to receive them.
 
 ### Zellij Configuration (`config/zellij/config.kdl`)
 We prioritize workflow fluidity and strictly eliminate binding collisions.
 *   **File Picker (`Ctrl+P`)**: Launches a dedicated fzf script integrating `bat` previews, piping the selection to our new `zed` wrapper.
-*   **Command Palette (`Alt+P` or `Ctrl+Shift+P`)**: *Note: We will configure WezTerm to ensure `Ctrl+Shift+P` is passed correctly, or default to `Alt+P` for maximum compatibility.*
+*   **Command Palette (`Alt+P` or `Ctrl+Shift+P`)**: *Note: We will configure Windows Terminal to ensure `Ctrl+Shift+P` is passed correctly, or default to `Alt+P` for maximum compatibility.*
 *   **Contextual Panes**: 
     *   `Ctrl+W`: Close pane (matches Zed tab close).
     *   `Ctrl+HJKL`: Seamless pane navigation.
     *   `Ctrl+N`: New pane (matches Zed new file).
 *   **Freed Keys**: `Ctrl+S`, `Ctrl+F`, `Ctrl+Q`, `Ctrl+D` are strictly unbound in Zellij to allow passthrough to Zed/Micro/Shell.
 
-### WezTerm Prerequisite (`config/wezterm.lua`)
-Ensure WezTerm enables CSI u or extended keys if `Ctrl+Shift+P` is strictly required.
+### Windows Terminal Prerequisite (`config/windows-terminal.json`)
+Ensure Windows Terminal enables CSI u or extended keys if `Ctrl+Shift+P` is strictly required.
 
 ## 3. Toolchain Deep-Dive
 

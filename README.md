@@ -51,7 +51,7 @@ The `yoloixos` environment is a completely separate WSL distro with no `C:\` mou
    ```shell
    wsl --import yoloixos .\yoloixos .\result\tarball\nixos-wsl-x86_64-linux.tar.gz
    ```
-3. Boot into it directly or use `Alt+L` in WezTerm to launch the `WSL:yoloixos` domain!
+3. Boot into it directly or use `Alt+L` in Windows Terminal to launch the `WSL:yoloixos` profile!
 
 ### On Standalone Ubuntu (Profile Switching)
 If you are running on a raw Ubuntu machine where we cannot enforce WSL boundaries, you can still switch your user profile to the restricted `agent` tooling profile. 

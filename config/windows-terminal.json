@@ -1,0 +1,65 @@
+{
+    "$help": "https://aka.ms/terminal-documentation",
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "launchMode": "maximizedFocus",
+    "alwaysShowTabs": false,
+    "showTabsInTitlebar": true,
+    "showTerminalTitleInTitleBar": false,
+    "confirmCloseAllTabs": false,
+    "defaultProfile": "thixos",
+    "profiles": {
+        "defaults": {
+            "font": {
+                "face": "ZedMono NF",
+                "size": 11.0
+            },
+            "colorScheme": "One Half Dark",
+            "padding": "4",
+            "scrollbarState": "hidden",
+            "historySize": 10000
+        },
+        "list": [
+            {
+                "hidden": false,
+                "name": "thixos",
+                "commandline": "wsl.exe -d thixos"
+            },
+            {
+                "hidden": false,
+                "name": "yoloixos",
+                "commandline": "wsl.exe -d yoloixos"
+            }
+        ]
+    },
+    "actions": [
+        {
+            "iterateOn": "profiles",
+            "icon": "${profile.icon}",
+            "name": "${profile.name}",
+            "command": { "action": "newTab", "profile": "${profile.name}" }
+        },
+        { "command": "unbound", "keys": "ctrl+shift+h" },
+        { "command": "unbound", "keys": "ctrl+shift+j" },
+        { "command": "unbound", "keys": "ctrl+shift+k" },
+        { "command": "unbound", "keys": "ctrl+shift+l" },
+        { "command": "unbound", "keys": "ctrl+shift+n" },
+        { "command": "unbound", "keys": "ctrl+shift+w" },
+        { "command": "unbound", "keys": "ctrl+shift+t" },
+        { "command": "unbound", "keys": "ctrl+shift+p" },
+        { "command": "unbound", "keys": "ctrl+shift+s" },
+        { "command": "unbound", "keys": "ctrl+shift+g" },
+        { "command": "unbound", "keys": "ctrl+shift+q" },
+        { "command": "unbound", "keys": "ctrl+shift+z" },
+        { "command": "unbound", "keys": "ctrl+shift+=" },
+        { "command": "unbound", "keys": "ctrl+shift+-" },
+        { "command": "unbound", "keys": "ctrl+shift+[" },
+        { "command": "unbound", "keys": "ctrl+shift+]" },
+        { "command": "unbound", "keys": "ctrl+shift+1" },
+        { "command": "unbound", "keys": "ctrl+shift+2" },
+        { "command": "unbound", "keys": "ctrl+shift+3" },
+        { "command": "unbound", "keys": "ctrl+shift+4" },
+        { "command": "unbound", "keys": "ctrl+shift+5" },
+        { "command": "unbound", "keys": "ctrl+shift+space" },
+        { "command": "commandPalette", "keys": "alt+l" }
+    ]
+}

@@ -13,7 +13,7 @@ NixOS configuration for `thixos`, a WSL2-based development machine.
 ├── config/
 │   ├── zellij/            # Zellij config, layouts, plugin config
 │   ├── starship.toml      # Shell prompt
-│   └── wezterm.lua        # Terminal emulator (runs on Windows, copied via symlink)
+│   └── windows-terminal.json # Terminal emulator (runs on Windows, copied via script)
 ├── bespoke/
 │   └── zellij/
 │       └── dim-unfocused/ # Custom Zellij build + shader plugin (has its own AGENTS.md)
@@ -69,7 +69,7 @@ Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, difftastic), 
 
 ### Config file management
 
-Files from `config/` are symlinked into `~/.config/` via Home Manager's `xdg.configFile`. The WezTerm config is copied to the Windows filesystem via NixOS activation scripts (NixOS only).
+Files from `config/` are symlinked into `~/.config/` via Home Manager's `xdg.configFile`. The Windows Terminal config is copied to the Windows filesystem via NixOS activation scripts (NixOS only).
 
 ## Working with this repo
 
