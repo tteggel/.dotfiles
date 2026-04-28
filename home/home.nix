@@ -221,7 +221,7 @@ in {
       bindkey '\e[3~'   delete-char            # Delete
       bindkey '\e[3;5~' kill-word              # Ctrl+Delete
       bindkey '\e^?'    backward-kill-word     # Alt+Backspace
-      bindkey '\e^H'    backward-kill-word     # Ctrl+Backspace
+      bindkey '^H'      backward-kill-word     # Ctrl+Backspace (WT sends bare ^H)
 
       # History
       bindkey '\e[1;2A' up-line-or-history     # Shift+Up
