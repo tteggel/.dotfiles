@@ -6,3 +6,9 @@ gui:
     activeBorderColor:
       - '#61afef'
       - bold
+git:
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
+    - colorArg: always
+      pager: env GIT_CONFIG_PARAMETERS="'delta.side-by-side=false'" delta --dark --paging=never

@@ -5,7 +5,7 @@ layout {
                 args "--resume"
             }
             pane command="gemini" name="Gemini" {
-                args "--resume" "latest" "--model" "gemini-3.1-pro"
+                args "--resume" "latest"
             }
         }
         pane stacked=true size="50%" {
