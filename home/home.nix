@@ -29,10 +29,11 @@ in {
   };
 
   home.activation.windowsterminal = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    if [ -d /mnt/c/Users/thom ]; then
+    for wt_dir in /mnt/c/Users/*/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState; do
+      [ -d "$wt_dir" ] || continue
       ${pkgs.gnused}/bin/sed 's/\x1b/\\u001b/g' ${../config/windows-terminal.json} \
-        > /mnt/c/Users/thom/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json
-    fi
+        > "$wt_dir/settings.json"
+    done
   '';
 
   home.packages = with pkgs; [

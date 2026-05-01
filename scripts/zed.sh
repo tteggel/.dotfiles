@@ -8,8 +8,13 @@ if ! command -v wslpath >/dev/null 2>&1; then
   fi
 fi
 
-# Find zed.exe via WSL interop PATH
-ZED_EXE="$(command -v zed.exe 2>/dev/null || echo "/mnt/c/Users/thom/AppData/Local/Programs/Zed/zed.exe")"
+# Find zed.exe via WSL interop PATH, or fall back to scanning Windows user dirs
+ZED_EXE="$(command -v zed.exe 2>/dev/null || true)"
+if [ -z "$ZED_EXE" ]; then
+  for candidate in /mnt/c/Users/*/AppData/Local/Programs/Zed/zed.exe; do
+    [ -x "$candidate" ] && ZED_EXE="$candidate" && break
+  done
+fi
 
 args=()
 for arg in "$@"; do
