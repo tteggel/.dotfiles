@@ -1,3 +1,11 @@
 {
-  "model": "opus[1m]"
+  "model": "opus[1m]",
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "skipAutoPermissionPrompt": true,
+  "statusLine": {
+    "type": "command",
+    "command": "claude-statusline"
+  }
 }

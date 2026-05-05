@@ -106,6 +106,11 @@ in {
       text = builtins.readFile ../scripts/claude-session.sh;
     })
     (writeShellApplication {
+      name = "claude-statusline";
+      runtimeInputs = [ jq ];
+      text = builtins.readFile ../scripts/claude-statusline.sh;
+    })
+    (writeShellApplication {
       name = "gemini-session";
       runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.gemini-cli ];
       text = builtins.readFile ../scripts/gemini-session.sh;
@@ -141,6 +146,7 @@ in {
 
   home.file.".claude/settings.json".source = ../config/claude/settings.json;
   home.file.".gemini/settings.json".source = ../config/gemini/settings.json;
+  home.file.".gemini/experiments.json".source = ../config/gemini/experiments.json;
 
   programs.zsh = {
     initContent = ''
@@ -153,6 +159,7 @@ in {
       export ZELLIJ_CONFIG_DIR=~/.config/zellij
       export COLORTERM=truecolor
       export CLAUDE_CODE_EFFORT_LEVEL=max
+      export GEMINI_EXP="$HOME/.gemini/experiments.json"
       export BROWSER=open-browser
       export EDITOR=micro
       export USE_GKE_GCLOUD_AUTH_PLUGIN=True
