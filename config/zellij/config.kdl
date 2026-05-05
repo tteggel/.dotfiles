@@ -94,6 +94,9 @@ keybinds clear-defaults=true {
         // Command palette
         bind "Ctrl Shift p" { Run "command-palette" { floating true; close_on_exit true; skip_confirm true; }; }
 
+        // Keybindings + env help
+        bind "Ctrl Shift /" { Run "keybinds-help" { floating true; close_on_exit true; skip_confirm true; }; }
+
         // Layouts
         bind "Ctrl Shift Space" { NextSwapLayout; }
     }

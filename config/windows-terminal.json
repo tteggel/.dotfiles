@@ -61,6 +61,7 @@
         { "command": { "action": "sendInput", "input": "[52;6u" }, "keys": "ctrl+shift+4" },
         { "command": { "action": "sendInput", "input": "[53;6u" }, "keys": "ctrl+shift+5" },
         { "command": { "action": "sendInput", "input": "[32;6u" }, "keys": "ctrl+shift+space" },
+        { "command": { "action": "sendInput", "input": "[47;6u" }, "keys": "ctrl+shift+/" },
         { "command": "commandPalette", "keys": "alt+l" }
     ]
 }

@@ -126,6 +126,10 @@ in {
       text = builtins.readFile ../scripts/command-palette.sh;
     })
     (writeShellApplication {
+      name = "keybinds-help";
+      text = builtins.readFile ../scripts/keybinds-help.sh;
+    })
+    (writeShellApplication {
       name = "gcloud-iap-zellij-web";
       runtimeInputs = [
         (google-cloud-sdk.withExtraComponents [

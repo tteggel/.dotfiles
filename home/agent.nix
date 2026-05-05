@@ -76,6 +76,10 @@ in {
       runtimeInputs = [ fzf zellij-main fd zoxide ];
       text = builtins.readFile ../scripts/command-palette.sh;
     })
+    (writeShellApplication {
+      name = "keybinds-help";
+      text = builtins.readFile ../scripts/keybinds-help.sh;
+    })
   ];
 
   xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";
