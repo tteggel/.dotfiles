@@ -1,12 +1,9 @@
 layout {
     pane split_direction="vertical" {
         pane stacked=true size="50%" {
-            pane command="claude" name="Claude" {
-                args "--resume"
-            }
-            pane command="gemini" name="Gemini" {
-                args "--resume" "latest"
-            }
+            pane command="claude" name="Claude"
+            pane command="gemini" name="Gemini"
+            pane command="codex" name="Codex"
         }
         pane stacked=true size="50%" {
             pane command="lazygit" name="Git"
