@@ -3,6 +3,25 @@
   bespoke-zellij = inputs.dim-unfocused.packages.x86_64-linux;
   zellij-main = bespoke-zellij.zellij;
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
+  llm-agents = inputs.llm-agents.packages.x86_64-linux;
+  chromeDevtoolsBrowserUrl = "http://127.0.0.1:9222";
+  claude = pkgs.writeShellApplication {
+    name = "claude";
+    runtimeInputs = [ llm-agents.claude-code ];
+    # `=` form is required: --mcp-config is variadic and would otherwise consume
+    # subsequent positional args as additional config files.
+    text = ''exec claude --mcp-config=${../config/claude/mcp.json} "$@"'';
+  };
+  codex = pkgs.writeShellApplication {
+    name = "codex";
+    runtimeInputs = [ llm-agents.codex ];
+    text = ''
+      exec codex \
+        -c 'mcp_servers.chrome-devtools={command="npx",args=["-y","chrome-devtools-mcp@latest","--browser-url=${chromeDevtoolsBrowserUrl}"],startup_timeout_ms=60000}' \
+        "$@"
+    '';
+  };
+  gemini = llm-agents.gemini-cli;
   expectedDotfiles = [
     ".cache" ".local" ".zsh_history" ".zoxide.db" ".zoxide.db.zo"
     ".zcompdump*" ".zsh_sessions" "src"
@@ -28,11 +47,11 @@ in {
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta difftastic micro starship
-    lazygit yazi
+    lazygit yazi nodejs
     zellij-main
-    inputs.llm-agents.packages.x86_64-linux.claude-code
-    inputs.llm-agents.packages.x86_64-linux.gemini-cli
-    inputs.llm-agents.packages.x86_64-linux.codex
+    claude
+    gemini
+    codex
     (writeShellApplication {
       name = "open-browser";
       text = builtins.readFile ../scripts/open-browser.sh;
@@ -53,7 +72,7 @@ in {
     })
     (writeShellApplication {
       name = "claude-session";
-      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.claude-code ];
+      runtimeInputs = [ fzf claude ];
       text = builtins.readFile ../scripts/claude-session.sh;
     })
     (writeShellApplication {
@@ -63,7 +82,7 @@ in {
     })
     (writeShellApplication {
       name = "gemini-session";
-      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.gemini-cli ];
+      runtimeInputs = [ fzf gemini ];
       text = builtins.readFile ../scripts/gemini-session.sh;
     })
     (writeShellApplication {

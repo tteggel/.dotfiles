@@ -3,6 +3,25 @@
   bespoke-zellij = inputs.dim-unfocused.packages.x86_64-linux;
   zellij-main = bespoke-zellij.zellij;
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
+  llm-agents = inputs.llm-agents.packages.x86_64-linux;
+  chromeDevtoolsBrowserUrl = "http://127.0.0.1:9222";
+  claude = pkgs.writeShellApplication {
+    name = "claude";
+    runtimeInputs = [ llm-agents.claude-code ];
+    # `=` form is required: --mcp-config is variadic and would otherwise consume
+    # subsequent positional args as additional config files.
+    text = ''exec claude --mcp-config=${../config/claude/mcp.json} "$@"'';
+  };
+  codex = pkgs.writeShellApplication {
+    name = "codex";
+    runtimeInputs = [ llm-agents.codex ];
+    text = ''
+      exec codex \
+        -c 'mcp_servers.chrome-devtools={command="npx",args=["-y","chrome-devtools-mcp@latest","--browser-url=${chromeDevtoolsBrowserUrl}"],startup_timeout_ms=60000}' \
+        "$@"
+    '';
+  };
+  gemini = llm-agents.gemini-cli;
   expectedDotfiles = [
     ".ssh" ".cache" ".local" ".config" ".claude" ".gemini"
     ".zsh_history" ".zoxide.db" ".zoxide.db.zo" ".sudo_as_admin_successful"
@@ -44,9 +63,23 @@ in {
     done
   '';
 
+  home.activation.chromeDevtoolsShortcut = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    powershell=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
+    [ -x "$powershell" ] || exit 0
+    for user_dir in /mnt/c/Users/*; do
+      [ -f "$user_dir/NTUSER.DAT" ] || continue
+      [ -w "$user_dir" ] || continue
+      install -d "$user_dir/AppData/Local/chrome-devtools-mcp"
+      install -m 0644 ${../config/windows/install-chrome-devtools-shortcut.ps1} \
+        "$user_dir/AppData/Local/chrome-devtools-mcp/install-shortcut.ps1"
+      ps1_win=$(/sbin/wslpath -w "$user_dir/AppData/Local/chrome-devtools-mcp/install-shortcut.ps1")
+      "$powershell" -NoProfile -ExecutionPolicy Bypass -File "$ps1_win" || true
+    done
+  '';
+
   home.packages = with pkgs; [
     wget jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
-    kubectl firebase-tools micro starship
+    kubectl firebase-tools micro starship nodejs
     (google-cloud-sdk.withExtraComponents [
       google-cloud-sdk.components.gke-gcloud-auth-plugin
     ])
@@ -100,9 +133,9 @@ in {
     })
   ] ++ lib.optionals (!isMinimal) [
     zellij-main
-    inputs.llm-agents.packages.x86_64-linux.claude-code
-    inputs.llm-agents.packages.x86_64-linux.gemini-cli
-    inputs.llm-agents.packages.x86_64-linux.codex
+    claude
+    gemini
+    codex
     (writeShellApplication {
       name = "session-picker";
       runtimeInputs = [ zellij-main fzf zoxide gh git ];
@@ -110,7 +143,7 @@ in {
     })
     (writeShellApplication {
       name = "claude-session";
-      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.claude-code ];
+      runtimeInputs = [ fzf claude ];
       text = builtins.readFile ../scripts/claude-session.sh;
     })
     (writeShellApplication {
@@ -120,7 +153,7 @@ in {
     })
     (writeShellApplication {
       name = "gemini-session";
-      runtimeInputs = [ fzf inputs.llm-agents.packages.x86_64-linux.gemini-cli ];
+      runtimeInputs = [ fzf gemini ];
       text = builtins.readFile ../scripts/gemini-session.sh;
     })
     (writeShellApplication {
