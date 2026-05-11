@@ -36,6 +36,14 @@ in {
     done
   '';
 
+  home.activation.wslconfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    for user_dir in /mnt/c/Users/*; do
+      [ -f "$user_dir/NTUSER.DAT" ] || continue
+      [ -w "$user_dir" ] || continue
+      install -m 0644 ${../config/wslconfig} "$user_dir/.wslconfig"
+    done
+  '';
+
   home.packages = with pkgs; [
     wget jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
     kubectl firebase-tools micro starship
