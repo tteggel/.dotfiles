@@ -23,11 +23,6 @@
                 "hidden": false,
                 "name": "thixos",
                 "commandline": "wsl.exe -d thixos"
-            },
-            {
-                "hidden": false,
-                "name": "yoloixos",
-                "commandline": "wsl.exe -d yoloixos"
             }
         ]
     },

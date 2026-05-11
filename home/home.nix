@@ -131,6 +131,11 @@ in {
       runtimeInputs = [ gh ];
       text = builtins.readFile ../scripts/init-gh.sh;
     })
+    (writeShellApplication {
+      name = "wsl-spawn";
+      runtimeInputs = [ curl coreutils gnugrep ];
+      text = builtins.readFile ../scripts/wsl-spawn.sh;
+    })
   ] ++ lib.optionals (!isMinimal) [
     zellij-main
     claude

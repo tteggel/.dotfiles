@@ -92,6 +92,11 @@ connect_remote() {
   exec ssh "$host"
 }
 
+create_from_seed() {
+  command -v wsl-spawn >/dev/null 2>&1 || { echo "wsl-spawn unavailable" >&2; return 1; }
+  exec wsl-spawn
+}
+
 # Each menu row is: id<TAB>label . The id encodes the action; fzf shows
 # only the label via --with-nth=2.
 
@@ -139,12 +144,25 @@ if [ -d "$ZW_HOSTS_DIR" ]; then
   done
 fi
 
+# Other local WSL distros (skip current). Visible only when Windows interop
+# is registered — i.e. on thixos, not yoloixos.
+wsl_lines=""
+if command -v wsl.exe >/dev/null 2>&1; then
+  while IFS= read -r d; do
+    d=$(printf '%s' "$d" | tr -d '\000\r')
+    [ -z "$d" ] && continue
+    [ "$d" = "${WSL_DISTRO_NAME:-}" ] && continue
+    wsl_lines+="wsl:$d"$'\t'"wsl/$d"$'\n'
+  done < <(WSL_UTF8=1 wsl.exe -l -q 2>/dev/null)
+fi
+
 NEW_LABEL="[+] New session         (Ctrl+N)"
 NEWREMOTE_LABEL="[+] New remote session  (Ctrl+W)"
 GH_LABEL="[+] Clone GitHub repo   (Ctrl+G)"
 CLONE_LABEL="[+] Clone remote        (Ctrl+U)"
 SSH_LABEL="[+] Connect to remote   (Ctrl+S)"
 IAP_LABEL="[+] GCP IAP shell"
+SEED_LABEL="[+] Create from seed    (Ctrl+Y)"
 
 cmd_lines=""
 cmd_lines+="cmd:new"$'\t'"$NEW_LABEL"$'\n'
@@ -153,12 +171,15 @@ cmd_lines+="cmd:clonegh"$'\t'"$GH_LABEL"$'\n'
 cmd_lines+="cmd:cloneremote"$'\t'"$CLONE_LABEL"$'\n'
 cmd_lines+="cmd:ssh"$'\t'"$SSH_LABEL"$'\n'
 cmd_lines+="cmd:iap"$'\t'"$IAP_LABEL"$'\n'
+if command -v wsl-spawn >/dev/null 2>&1; then
+  cmd_lines+="cmd:seed"$'\t'"$SEED_LABEL"$'\n'
+fi
 
-display="${no_client}${has_client}${remote_lines}${cmd_lines}"
+display="${no_client}${has_client}${remote_lines}${wsl_lines}${cmd_lines}"
 
-# Empty state: no local sessions and no remote sessions cached → jump
-# straight to creating one (matches old behaviour).
-if [ -z "$no_client$has_client$remote_lines" ]; then
+# Empty state: no local sessions, no remote sessions cached, no other WSL
+# distros → jump straight to creating one (matches old behaviour).
+if [ -z "$no_client$has_client$remote_lines$wsl_lines" ]; then
   new_session
   exit $?
 fi
@@ -169,7 +190,8 @@ pick=$(printf '%s' "$display" | fzf --prompt="Zellij session> " --height=~50% --
   --bind "ctrl-w:become(echo cmd:newremote)" \
   --bind "ctrl-g:become(echo cmd:clonegh)" \
   --bind "ctrl-u:become(echo cmd:cloneremote)" \
-  --bind "ctrl-s:become(echo cmd:ssh)") || exit 1
+  --bind "ctrl-s:become(echo cmd:ssh)" \
+  --bind "ctrl-y:become(echo cmd:seed)") || exit 1
 
 id="${pick%%$'\t'*}"
 [ -z "$id" ] && exit 0
@@ -181,6 +203,7 @@ case "$id" in
   cmd:cloneremote) clone_remote ;;
   cmd:ssh)         connect_remote ;;
   cmd:iap)         exec gcloud-iap-ssh ;;
+  cmd:seed)        create_from_seed ;;
   local:*)
     name="${id#local:}"
     exec zellij attach "$name"
@@ -189,6 +212,10 @@ case "$id" in
     spec="${id#remote:}"
     IFS='|' read -r p i z s <<<"$spec"
     exec gcloud-iap-zellij-web --project "$p" --instance "$i" --zone "$z" --session "$s"
+    ;;
+  wsl:*)
+    name="${id#wsl:}"
+    exec wsl.exe -d "$name"
     ;;
   *) exit 0 ;;
 esac
