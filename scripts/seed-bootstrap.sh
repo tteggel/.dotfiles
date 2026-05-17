@@ -47,7 +47,7 @@ fi
 
 echo
 echo "Staging $choice (closures from cache.numtide.com)..."
-sudo nixos-rebuild boot --flake "/etc/nixos#$choice"
+sudo nixos-rebuild boot --flake "/etc/seed-source#$choice"
 
 sudo install -m 0644 /dev/null /var/lib/seed-bootstrap.done
 

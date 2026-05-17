@@ -29,7 +29,7 @@ in {
 
   environment.systemPackages = [ seedBootstrap ];
 
-  environment.etc."nixos".source = inputs.self;
+  environment.etc."seed-source".source = inputs.self;
 
   programs.bash.interactiveShellInit = ''
     if [ -t 1 ] && [ ! -f /var/lib/seed-bootstrap.done ] && [ -z "''${SEED_BOOTSTRAP_RAN:-}" ]; then
