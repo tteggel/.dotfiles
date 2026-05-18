@@ -15,6 +15,14 @@
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
     dim-unfocused.url = "path:./bespoke/zellij/dim-unfocused";
+
+    # Agent skills (SKILL.md format, shared by Claude / Codex / Gemini).
+    # Add new GitHub-sourced skills here as `flake = false` inputs, then
+    # reference them from `home/skills.nix`.
+    code-review-skill = {
+      url = "github:awesome-skills/code-review-skill";
+      flake = false;
+    };
   };
 
   outputs = {

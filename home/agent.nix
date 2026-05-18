@@ -29,7 +29,7 @@
     ".bashrc" ".bash_logout" ".bash_history" ".profile"
   ];
 in {
-  imports = [ ./shell.nix ];
+  imports = [ ./shell.nix ./skills.nix ];
 
   home.stateVersion = "25.05";
 

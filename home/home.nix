@@ -31,7 +31,7 @@
   ];
   isMinimal = builtins.getEnv "MINIMAL_ENV" != "";
 in {
-  imports = [ ./shell.nix ];
+  imports = [ ./shell.nix ./skills.nix ];
 
   home.stateVersion = "25.05"; # Match NixOS stateVersion
 

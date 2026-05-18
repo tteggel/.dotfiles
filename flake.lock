@@ -59,6 +59,22 @@
         "type": "github"
       }
     },
+    "code-review-skill": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778305998,
+        "narHash": "sha256-AGDlwfN5YdleVz/ow5ilSz3sEr2rauBN0C0HS2ryvig=",
+        "owner": "awesome-skills",
+        "repo": "code-review-skill",
+        "rev": "eb12fb247ba09fd8a2bce0d1ecafa99df0bf4891",
+        "type": "github"
+      },
+      "original": {
+        "owner": "awesome-skills",
+        "repo": "code-review-skill",
+        "type": "github"
+      }
+    },
     "dim-unfocused": {
       "inputs": {
         "nixpkgs": "nixpkgs",
@@ -241,6 +257,7 @@
     },
     "root": {
       "inputs": {
+        "code-review-skill": "code-review-skill",
         "dim-unfocused": "dim-unfocused",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
