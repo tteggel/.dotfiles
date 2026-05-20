@@ -78,6 +78,11 @@ in {
   '';
 
   home.packages = with pkgs; [
+    # gh is installed here rather than via `programs.gh.enable` because the
+    # home-manager module manages ~/.config/gh/config.yml as a /nix/store
+    # symlink, which then explodes with EROFS when `gh auth login` tries to
+    # rewrite the file (e.g. to record git_protocol). Let gh own its config.
+    gh
     wget jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
     kubectl firebase-tools micro starship nodejs
     (google-cloud-sdk.withExtraComponents [
@@ -295,8 +300,6 @@ in {
     enable = true;
     nix-direnv.enable = true;
   };
-
-  programs.gh.enable = true;
 
   programs.git = {
     enable = true;
