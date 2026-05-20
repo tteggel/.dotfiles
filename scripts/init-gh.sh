@@ -14,19 +14,24 @@ if ! gh auth status --hostname github.com >/dev/null 2>&1; then
   gh auth login --clipboard --git-protocol ssh --hostname github.com --web
 fi
 
-# `gh auth login --git-protocol ssh` uploads a key to GitHub but does not
-# seed ~/.ssh/known_hosts. Without this, the first SSH clone below blocks
-# on the host-key prompt and init-gh aborts.
+# Seed ~/.ssh/known_hosts so the user's future SSH-based git ops don't
+# hang on the host-key prompt. (gh auth login doesn't seed this.)
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
 if ! grep -q "^github.com " "$HOME/.ssh/known_hosts" 2>/dev/null; then
   ssh-keyscan -t rsa,ecdsa,ed25519 github.com 2>/dev/null >> "$HOME/.ssh/known_hosts"
 fi
 
+# Bootstrap clone uses anonymous HTTPS so it doesn't depend on the SSH
+# key actually having been uploaded by `gh auth login` (which has been
+# observed to silently no-op — key exists locally, never reaches GitHub,
+# the SSH clone then fails to authenticate). Flip the remote back to SSH
+# afterwards so subsequent git ops match the configured git protocol.
 target="$HOME/src/github.com/tteggel/.dotfiles"
 mkdir -p "$(dirname "$target")"
 if [ ! -d "$target" ]; then
-  gh repo clone tteggel/.dotfiles "$target"
+  git clone https://github.com/tteggel/.dotfiles.git "$target"
+  git -C "$target" remote set-url origin git@github.com:tteggel/.dotfiles.git
 fi
 
 mkdir -p "$HOME/.init-gh-completed"
