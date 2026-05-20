@@ -2,7 +2,7 @@ layout {
     pane split_direction="vertical" {
         pane stacked=true size="50%" {
             pane command="claude" name="Claude"
-            pane command="gemini" name="Gemini"
+            pane command="agy" name="Agy"
             pane command="codex" name="Codex"
         }
         pane stacked=true size="50%" {

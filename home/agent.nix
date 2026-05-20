@@ -4,24 +4,20 @@
   zellij-main = bespoke-zellij.zellij;
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
-  chromeDevtoolsBrowserUrl = "http://127.0.0.1:9222";
+  mcp = import ./mcp.nix { inherit pkgs lib; };
   claude = pkgs.writeShellApplication {
     name = "claude";
     runtimeInputs = [ llm-agents.claude-code ];
     # `=` form is required: --mcp-config is variadic and would otherwise consume
     # subsequent positional args as additional config files.
-    text = ''exec claude --mcp-config=${../config/claude/mcp.json} "$@"'';
+    text = ''exec claude --mcp-config=${mcp.claudeMcpConfig} "$@"'';
   };
   codex = pkgs.writeShellApplication {
     name = "codex";
     runtimeInputs = [ llm-agents.codex ];
-    text = ''
-      exec codex \
-        -c 'mcp_servers.chrome-devtools={command="npx",args=["-y","chrome-devtools-mcp@latest","--browser-url=${chromeDevtoolsBrowserUrl}"],startup_timeout_ms=60000}' \
-        "$@"
-    '';
+    text = ''exec codex ${lib.concatStringsSep " " mcp.codexArgs} "$@"'';
   };
-  gemini = llm-agents.gemini-cli;
+  agy = llm-agents.antigravity;
   expectedDotfiles = [
     ".cache" ".local" ".zsh_history" ".zoxide.db" ".zoxide.db.zo"
     ".zcompdump*" ".zsh_sessions" "src"
@@ -50,7 +46,7 @@ in {
     lazygit yazi nodejs
     zellij-main
     claude
-    gemini
+    agy
     codex
     (writeShellApplication {
       name = "open-browser";
@@ -81,9 +77,9 @@ in {
       text = builtins.readFile ../scripts/claude-statusline.sh;
     })
     (writeShellApplication {
-      name = "gemini-session";
-      runtimeInputs = [ fzf gemini ];
-      text = builtins.readFile ../scripts/gemini-session.sh;
+      name = "agy-session";
+      runtimeInputs = [ fzf agy ];
+      text = builtins.readFile ../scripts/agy-session.sh;
     })
     (writeShellApplication {
       name = "code-session";
@@ -108,9 +104,24 @@ in {
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
-  home.file.".claude/settings.json".source = ../config/claude/settings.json;
-  home.file.".gemini/settings.json".source = ../config/gemini/settings.json;
-  home.file.".gemini/experiments.json".source = ../config/gemini/experiments.json;
+  home.file = mcp.agyExtensionFiles // {
+    ".claude/settings.json".source = ../config/claude/settings.json;
+  };
+
+  home.activation.agyPluginImport = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${agy}/bin/agy plugin import gemini >/dev/null || true
+  '';
+
+  home.activation.agySettingsSeed = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    settings="$HOME/.gemini/antigravity-cli/settings.json"
+    if [ ! -e "$settings" ]; then
+      install -d "$(dirname "$settings")"
+      install -m 0644 ${pkgs.writeText "agy-settings.json" (builtins.toJSON {
+        enableTelemetry = false;
+        chromiumSandbox = true;
+      })} "$settings"
+    fi
+  '';
 
   programs.zsh = {
     initContent = ''
@@ -123,7 +134,6 @@ in {
       export ZELLIJ_CONFIG_DIR=~/.config/zellij
       export COLORTERM=truecolor
       export CLAUDE_CODE_EFFORT_LEVEL=max
-      export GEMINI_EXP="$HOME/.gemini/experiments.json"
       export EDITOR=micro
       export BROWSER=open-browser
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"

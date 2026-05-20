@@ -47,7 +47,7 @@ commands=(
   "exec:zsh -c 'fd --type f | fzf --preview \"bat --color=always {}\" | xargs -r zed'	[Nav] Find & open file"
   "exec:code-session	[Dev] Coding session"
   "exec:claude-session	[Dev] Claude Code"
-  "exec:gemini-session	[Dev] Gemini CLI"
+  "exec:agy-session	[Dev] Antigravity CLI"
   "exec:codex	[Dev] Codex CLI"
   "exec:lazygit	[Git] Git UI (lazygit)"
   "run:gh pr list	[Git] List pull requests"

@@ -25,7 +25,7 @@ NixOS configuration for `thixos`, a WSL2-based development machine.
 
 The top-level `flake.nix` produces a single NixOS configuration (`thixos`):
 
-- **Inputs**: `nixpkgs` (unstable), `nixos-wsl`, `llm-agents` (Claude Code, Gemini, Codex), `dim-unfocused` (local path flake for custom Zellij)
+- **Inputs**: `nixpkgs` (unstable), `nixos-wsl`, `llm-agents` (Claude Code, Antigravity, Codex), `dim-unfocused` (local path flake for custom Zellij)
 - **Output**: `nixosConfigurations.thixos`
 
 The `dim-unfocused` sub-flake (at `bespoke/zellij/dim-unfocused/`) has its own inputs including a Zellij fork. It produces a custom Zellij binary and a WASM plugin. See `bespoke/zellij/dim-unfocused/AGENTS.md` for deep details on the shader system.
@@ -50,7 +50,7 @@ The configuration embeds several substantial shell applications as `writeShellAp
 
 - **`session-picker`** — Zellij session manager. Lists existing sessions, creates new ones, clones GitHub repos. Launched on shell login.
 - **`command-palette`** — Context-aware fzf command launcher with ~25 commands. Invoked via Zellij keybinding.
-- **`code-session`**, **`claude-session`**, **`gemini-session`** — Launch dev/LLM sessions in Zellij.
+- **`code-session`**, **`claude-session`**, **`agy-session`** — Launch dev/LLM sessions in Zellij.
 - **`gcloud-switch`**, **`gcloud-reauth`** — GCP project/cluster switching.
 - **`zed`** — Interop wrapper to launch Windows Zed editor from WSL.
 - **`open-browser`** — Opens URLs in Windows Chrome from WSL.
@@ -65,7 +65,7 @@ The configuration embeds several substantial shell applications as `writeShellAp
 
 ### System packages
 
-Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, gemini-cli, codex).
+Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex).
 
 ### Config file management
 

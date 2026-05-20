@@ -33,7 +33,6 @@ ${B}${C}═══ Environment ═══${R}
   EDITOR                    micro
   BROWSER                   open-browser
   CLAUDE_CODE_EFFORT_LEVEL  max
-  GEMINI_EXP                ~/.gemini/experiments.json (3.1 flag)
   STARSHIP_CONFIG           ~/.config/starship.toml
   MANPAGER                  bat
 
@@ -43,7 +42,7 @@ ${B}${C}═══ Helpers on PATH ═══${R}
     session-picker          launch / attach a zellij session
     command-palette         fuzzy launcher (Ctrl+Shift+P)
     claude-session          pick / resume a Claude Code session
-    gemini-session          pick / resume a Gemini session
+    agy-session             pick / continue an Antigravity (agy) session
     code-session            open code layout in zellij
 
   ${Y}GCP${R}

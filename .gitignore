@@ -18,6 +18,9 @@
 # Claude Code
 .claude/
 
+# Antigravity per-project state
+.antigravitycli/
+
 # Nix build results
 result
 result-*

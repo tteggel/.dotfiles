@@ -4,7 +4,6 @@
   agentSkillDirs = [
     ".claude/skills"
     ".codex/skills"
-    ".gemini/skills"
   ];
 
   # Fetch a skill tarball published to the npm registry. Pin with a sha256 so
