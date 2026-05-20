@@ -178,10 +178,11 @@ fi
 display="${no_client}${has_client}${remote_lines}${wsl_lines}${cmd_lines}"
 
 # Empty state: no local sessions, no remote sessions cached, no other WSL
-# distros → jump straight to creating one (matches old behaviour).
+# distros → start one in $HOME. Don't call new_session here: it requires a
+# non-empty zoxide DB and would exit 1 on first boot, which would bubble
+# up through `session-picker; exit` in zsh init and kill the whole shell.
 if [ -z "$no_client$has_client$remote_lines$wsl_lines" ]; then
-  new_session
-  exit $?
+  start_session "$HOME"
 fi
 
 pick=$(printf '%s' "$display" | fzf --prompt="Zellij session> " --height=~50% --reverse \

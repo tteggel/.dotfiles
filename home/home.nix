@@ -128,7 +128,7 @@ in {
     })
     (writeShellApplication {
       name = "init-gh";
-      runtimeInputs = [ gh ];
+      runtimeInputs = [ gh openssh ];
       text = builtins.readFile ../scripts/init-gh.sh;
     })
     (writeShellApplication {
