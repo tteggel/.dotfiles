@@ -46,12 +46,17 @@ if [ "$choice" = yoloixos ]; then
 fi
 
 echo
-echo "Staging $choice (closures from cache.numtide.com)..."
-sudo nixos-rebuild boot --flake "/etc/seed-source#$choice"
+echo "Activating $choice (closures from cache.numtide.com)..."
+# `switch`, not `boot`: activation rewrites /etc/wsl.conf (and /etc/passwd) on
+# disk now. With `boot`, those files stay on seed's config until the staged
+# generation activates on next launch — but wsl.exe reads /etc/wsl.conf *before*
+# /init runs activation, so it tries to spawn the relay as the now-vanished
+# `seed` user and the first post-terminate boot fails.
+sudo nixos-rebuild switch --flake "/etc/seed-source#$choice"
 
 sudo install -m 0644 /dev/null /var/lib/seed-bootstrap.done
 
 echo
-echo "Staged $choice. Terminating this WSL instance — relaunch to enter $choice."
+echo "Activated $choice. Terminating this WSL instance — relaunch to enter $choice."
 sync
 exec /mnt/c/Windows/System32/wsl.exe --terminate "$WSL_DISTRO_NAME"

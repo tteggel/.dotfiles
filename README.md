@@ -21,9 +21,10 @@ wsl -d thixos
 ## Architecture
 
 - `seed` — minimal bootstrap; bash login, NOPASSWD wheel sudo, `inputs.self`
-  baked at `/etc/nixos`. Prompts t/y, runs `nixos-rebuild boot --flake
-  /etc/nixos#<choice>`, marks `/var/lib/seed-bootstrap.done`, then
-  `wsl.exe --terminate $WSL_DISTRO_NAME`.
+  baked at `/etc/seed-source`. Prompts t/y, runs `nixos-rebuild switch --flake
+  /etc/seed-source#<choice>` (switch, not boot — activation must rewrite
+  `/etc/wsl.conf` *now* so the next launch finds the new default user), marks
+  `/var/lib/seed-bootstrap.done`, then `wsl.exe --terminate $WSL_DISTRO_NAME`.
 - `thixos` — interactive dev. User `thom` (wheel), Tailscale, full toolchain.
 - `yoloixos` — agent sandbox. User `agent` (no wheel), no interop, no
   automount, outbound firewall, 4GB / 200% CPU slice. **One-way: `agent` has
