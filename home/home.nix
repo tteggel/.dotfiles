@@ -48,8 +48,14 @@ in {
   };
 
   home.activation.windowsterminal = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    for wt_dir in /mnt/c/Users/*/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState; do
-      [ -d "$wt_dir" ] || continue
+    # Glob over user profiles (LocalState is created lazily on WT's first
+    # launch, so gating on it would silently no-op on freshly-imaged Windows
+    # boxes where the user opened wsl from cmd.exe before ever opening WT).
+    for user_dir in /mnt/c/Users/*; do
+      [ -f "$user_dir/NTUSER.DAT" ] || continue
+      [ -w "$user_dir" ] || continue
+      wt_dir="$user_dir/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState"
+      mkdir -p "$wt_dir" || continue
       ${pkgs.gnused}/bin/sed 's/\x1b/\\u001b/g' ${../config/windows-terminal.json} \
         > "$wt_dir/settings.json"
     done
