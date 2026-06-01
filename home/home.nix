@@ -17,7 +17,7 @@
     runtimeInputs = [ llm-agents.codex ];
     text = ''exec codex ${lib.concatStringsSep " " mcp.codexArgs} "$@"'';
   };
-  agy = llm-agents.antigravity;
+  agy = llm-agents.antigravity-cli;
   expectedDotfiles = [
     ".ssh" ".cache" ".local" ".config" ".claude" ".gemini"
     ".zsh_history" ".zoxide.db" ".zoxide.db.zo" ".sudo_as_admin_successful"
