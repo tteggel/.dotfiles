@@ -28,6 +28,13 @@
   # usbip-core. Takes effect after a `wsl --shutdown` (module loads at boot).
   boot.kernelModules = [ "vhci_hcd" ];
 
+  # Cross-build aarch64 images (e.g. the sonos-digi-in Raspberry Pi 4 SD image)
+  # under QEMU user-mode emulation: registers an aarch64-linux binfmt_misc handler
+  # and adds aarch64-linux to Nix's extra-platforms, so `nix build` can realise
+  # aarch64 derivations on this x86_64 host. binfmt_misc is already mounted on the
+  # WSL2 kernel, so this takes effect on `nixos-rebuild switch` (no reboot needed).
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
   environment.systemPackages = [
     pkgs.usbutils                       # lsusb, to confirm the device attached
     (pkgs.writeShellApplication {       # manual fallback / ad-hoc or new port
