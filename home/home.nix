@@ -18,6 +18,31 @@
     text = ''exec codex ${lib.concatStringsSep " " mcp.codexArgs} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
+  # Work around google-cloud-sdk 570 component packaging: bundled Python 3.14
+  # wants Tcl/Tk 9, and its libpython3.so has a broken vendored DT_NEEDED.
+  googleCloudSdkComponentStdenv = pkgs.stdenv // {
+    mkDerivation = attrs:
+      pkgs.stdenv.mkDerivation (attrs // {
+        autoPatchelfIgnoreMissingDeps =
+          (attrs.autoPatchelfIgnoreMissingDeps or []) ++ [
+            "libpython3.14.so.1.0"
+          ];
+      });
+  };
+  googleCloudSdk = pkgs.google-cloud-sdk.override {
+    callPackage = path: args:
+      pkgs.callPackage path (
+        args
+        // lib.optionalAttrs (builtins.baseNameOf (toString path) == "components.nix") {
+          stdenv = googleCloudSdkComponentStdenv;
+          tcl-8_6 = pkgs.tcl-9_0;
+          tclPackages = pkgs.tcl9Packages;
+        }
+      );
+  };
+  googleCloudSdkWithGke = googleCloudSdk.withExtraComponents [
+    googleCloudSdk.components.gke-gcloud-auth-plugin
+  ];
   expectedDotfiles = [
     ".ssh" ".cache" ".local" ".config" ".claude" ".gemini"
     ".zsh_history" ".zoxide.db" ".zoxide.db.zo" ".sudo_as_admin_successful"
@@ -87,9 +112,7 @@ in {
     gh
     wget jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
     kubectl firebase-tools micro starship nodejs
-    (google-cloud-sdk.withExtraComponents [
-      google-cloud-sdk.components.gke-gcloud-auth-plugin
-    ])
+    googleCloudSdkWithGke
     (writeShellApplication {
       name = "open-browser";
       text = builtins.readFile ../scripts/open-browser.sh;
@@ -101,34 +124,26 @@ in {
     (writeShellApplication {
       name = "gcloud-reauth";
       runtimeInputs = [ 
-        (google-cloud-sdk.withExtraComponents [
-          google-cloud-sdk.components.gke-gcloud-auth-plugin
-        ]) 
+        googleCloudSdkWithGke
         firebase-tools
       ];
       text = builtins.readFile ../scripts/gcloud-reauth.sh;
     })
     (writeShellApplication {
       name = "gcloud-switch";
-      runtimeInputs = [ (google-cloud-sdk.withExtraComponents [
-        google-cloud-sdk.components.gke-gcloud-auth-plugin
-      ]) kubectl fzf ];
+      runtimeInputs = [ googleCloudSdkWithGke kubectl fzf ];
       text = builtins.readFile ../scripts/gcloud-switch.sh;
     })
     (writeShellApplication {
       name = "gcloud-iap-ssh";
-      runtimeInputs = [ (google-cloud-sdk.withExtraComponents [
-        google-cloud-sdk.components.gke-gcloud-auth-plugin
-      ]) fzf ];
+      runtimeInputs = [ googleCloudSdkWithGke fzf ];
       text = builtins.readFile ../scripts/gcloud-iap-ssh.sh;
     })
     (writeShellApplication {
       name = "hygiene-inspection";
       runtimeInputs = [
         fd git gh
-        (google-cloud-sdk.withExtraComponents [
-          google-cloud-sdk.components.gke-gcloud-auth-plugin
-        ])
+        googleCloudSdkWithGke
         kubectl
       ];
       text = builtins.readFile ../scripts/hygiene-inspection.sh;
@@ -185,9 +200,7 @@ in {
     (writeShellApplication {
       name = "gcloud-iap-zellij-web";
       runtimeInputs = [
-        (google-cloud-sdk.withExtraComponents [
-          google-cloud-sdk.components.gke-gcloud-auth-plugin
-        ])
+        googleCloudSdkWithGke
         fzf zellij-main
       ];
       text = builtins.readFile ../scripts/gcloud-iap-zellij-web.sh;

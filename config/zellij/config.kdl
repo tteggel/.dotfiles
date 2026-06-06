@@ -35,9 +35,16 @@ copy_on_select true
 // Scrollback
 scroll_buffer_size 10000
 
-// Session management
-session_serialization true
-serialize_pane_viewport true
+// Session management: serialization OFF. With it on, zellij dumps each pane's
+// live process and resurrects it on reattach with `start_suspended true` — the
+// "run program / drop to shell" prompt. Worse, our `claude`/`codex` wrappers
+// exec the real binary, so the dumped command is a stale /nix/store path with
+// injected args (the "wrong command"). WSL idle-shutdown kills the server
+// often, so nearly every reopen hit that path. Off => reopening just runs the
+// layout fresh: agents launch clean, no resume params, no prompt.
+// Trade-off: sessions don't survive the server dying, so the picker shows no
+// EXITED entries — reopen a project via zoxide/new-session instead.
+session_serialization false
 
 // Web server: bind to all interfaces so IAP TCP forwarding can reach it
 // on the VM's primary interface. Access control is enforced by the GCP
