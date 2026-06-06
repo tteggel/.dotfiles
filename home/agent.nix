@@ -96,6 +96,7 @@ in {
 
   home.file = mcp.agyExtensionFiles // {
     ".claude/settings.json".source = ../config/claude/settings.json;
+    ".claude/CLAUDE.md".source = ../config/claude/CLAUDE.md;
   };
 
   home.activation.agyPluginImport = lib.hm.dag.entryAfter ["writeBoundary"] ''
