@@ -41,8 +41,6 @@ ${B}${C}═══ Helpers on PATH ═══${R}
   ${Y}Sessions${R}
     session-picker          launch / attach a zellij session
     command-palette         fuzzy launcher (Ctrl+Shift+P)
-    claude-session          pick / resume a Claude Code session
-    agy-session             pick / continue an Antigravity (agy) session
     code-session            open code layout in zellij
 
   ${Y}GCP${R}

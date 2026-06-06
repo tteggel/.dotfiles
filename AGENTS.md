@@ -50,7 +50,7 @@ The configuration embeds several substantial shell applications as `writeShellAp
 
 - **`session-picker`** — Zellij session manager. Lists existing sessions, creates new ones, clones GitHub repos. Launched on shell login.
 - **`command-palette`** — Context-aware fzf command launcher with ~25 commands. Invoked via Zellij keybinding.
-- **`code-session`**, **`claude-session`**, **`agy-session`** — Launch dev/LLM sessions in Zellij.
+- **`code-session`** — Open the code layout in Zellij (agents launch fresh; resume via each agent's own native picker).
 - **`gcloud-switch`**, **`gcloud-reauth`** — GCP project/cluster switching.
 - **`zed`** — Interop wrapper to launch Windows Zed editor from WSL.
 - **`open-browser`** — Opens URLs in Windows Chrome from WSL.

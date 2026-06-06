@@ -67,19 +67,9 @@ in {
       text = builtins.readFile ../scripts/session-picker.sh;
     })
     (writeShellApplication {
-      name = "claude-session";
-      runtimeInputs = [ fzf claude ];
-      text = builtins.readFile ../scripts/claude-session.sh;
-    })
-    (writeShellApplication {
       name = "claude-statusline";
       runtimeInputs = [ jq ];
       text = builtins.readFile ../scripts/claude-statusline.sh;
-    })
-    (writeShellApplication {
-      name = "agy-session";
-      runtimeInputs = [ fzf agy ];
-      text = builtins.readFile ../scripts/agy-session.sh;
     })
     (writeShellApplication {
       name = "code-session";
