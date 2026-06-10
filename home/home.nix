@@ -18,28 +18,8 @@
     text = ''exec codex ${lib.concatStringsSep " " mcp.codexArgs} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
-  # Work around google-cloud-sdk 570 component packaging: bundled Python 3.14
-  # wants Tcl/Tk 9, and its libpython3.so has a broken vendored DT_NEEDED.
-  googleCloudSdkComponentStdenv = pkgs.stdenv // {
-    mkDerivation = attrs:
-      pkgs.stdenv.mkDerivation (attrs // {
-        autoPatchelfIgnoreMissingDeps =
-          (attrs.autoPatchelfIgnoreMissingDeps or []) ++ [
-            "libpython3.14.so.1.0"
-          ];
-      });
-  };
-  googleCloudSdk = pkgs.google-cloud-sdk.override {
-    callPackage = path: args:
-      pkgs.callPackage path (
-        args
-        // lib.optionalAttrs (builtins.baseNameOf (toString path) == "components.nix") {
-          stdenv = googleCloudSdkComponentStdenv;
-        }
-      );
-  };
-  googleCloudSdkWithGke = googleCloudSdk.withExtraComponents [
-    googleCloudSdk.components.gke-gcloud-auth-plugin
+  googleCloudSdkWithGke = pkgs.google-cloud-sdk.withExtraComponents [
+    pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin
   ];
   expectedDotfiles = [
     ".ssh" ".cache" ".local" ".config" ".claude" ".gemini"
