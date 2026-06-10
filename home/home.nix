@@ -35,8 +35,6 @@
         args
         // lib.optionalAttrs (builtins.baseNameOf (toString path) == "components.nix") {
           stdenv = googleCloudSdkComponentStdenv;
-          tcl-8_6 = pkgs.tcl-9_0;
-          tclPackages = pkgs.tcl9Packages;
         }
       );
   };
