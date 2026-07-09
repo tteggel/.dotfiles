@@ -1,10 +1,56 @@
 SRC_ROOT="$HOME/src/github.com"
 ZW_HOSTS_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zellij-web/hosts"
 
+# MRU list of project dirs we've opened. Survives the zellij server dying
+# (serialization is off), so the picker can offer recently-used projects even
+# when their live session is gone. One absolute path per line, most-recent first.
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/session-picker"
+RECENT_FILE="$STATE_DIR/recent"
+
+# Push a project dir onto the MRU list (deduped, most-recent first, capped).
+# Best-effort: never abort the picker if state can't be written. $HOME is the
+# empty-state fallback, not a real project, so it's not recorded.
+record_recent() {
+  local dir="$1" tmp
+  [ -n "$dir" ] || return 0
+  [ "$dir" = "$HOME" ] && return 0
+  mkdir -p "$STATE_DIR" 2>/dev/null || return 0
+  tmp=$(mktemp "$STATE_DIR/.recent.XXXXXX" 2>/dev/null) || return 0
+  {
+    printf '%s\n' "$dir"
+    [ -f "$RECENT_FILE" ] && grep -vxF "$dir" "$RECENT_FILE"
+  } 2>/dev/null | awk 'NF && !seen[$0]++' | head -n 50 > "$tmp" || true
+  if [ -s "$tmp" ]; then
+    mv -f "$tmp" "$RECENT_FILE" 2>/dev/null || rm -f "$tmp" 2>/dev/null || true
+  else
+    rm -f "$tmp" 2>/dev/null || true
+  fi
+  if command -v zoxide >/dev/null 2>&1; then
+    zoxide add "$dir" 2>/dev/null || true
+  fi
+}
+
+# Map a session name back to a project dir: prefer the MRU list (exact basename
+# match, most-recent first), fall back to zoxide. Empty output if unknown.
+resolve_dir() {
+  local want="$1" d
+  if [ -f "$RECENT_FILE" ]; then
+    while IFS= read -r d; do
+      [ -n "$d" ] || continue
+      if [ "$(basename "$d")" = "$want" ]; then
+        printf '%s\n' "$d"
+        return 0
+      fi
+    done < "$RECENT_FILE"
+  fi
+  zoxide query "$want" 2>/dev/null || true
+}
+
 start_session() {
   local dir="$1"
   local name
   name=$(basename "$dir")
+  record_recent "$dir" || true
   cd "$dir" && exec zellij -s "$name" -n ~/.config/zellij/layouts/code.kdl
 }
 
@@ -100,29 +146,78 @@ create_from_seed() {
 # Each menu row is: id<TAB>label . The id encodes the action; fzf shows
 # only the label via --with-nth=2.
 
-# Local sessions, with attached/exited annotations.
-sessions=$(zellij list-sessions -n -s 2>/dev/null || true)
-no_client=""
-has_client=""
-if [ -n "$sessions" ]; then
-  while IFS= read -r line; do
-    name=$(echo "$line" | awk '{print $1}')
-    [ -z "$name" ] && continue
-    if echo "$line" | grep -q "EXITED"; then
-      entry="local:$name"$'\t'"$name (EXITED)"
-      no_client="${no_client}${entry}"$'\n'
-    elif echo "$line" | grep -q "(current session)"; then
-      entry="local:$name"$'\t'"$name (current)"
-      has_client="${has_client}${entry}"$'\n'
-    elif echo "$line" | grep -q "attached"; then
-      entry="local:$name"$'\t'"$name (attached)"
-      has_client="${has_client}${entry}"$'\n'
-    else
-      entry="local:$name"$'\t'"$name"
-      no_client="${no_client}${entry}"$'\n'
+# --- Recently-used projects (MRU) merged with live sessions -------------------
+# Recent projects recorded by start_session are the source of truth: they
+# survive the zellij server dying (serialization is off) and are listed
+# most-recently-used first. Live sessions are merged in so running ones stay
+# attachable and nothing is hidden.
+
+# Live sessions: name -> status. Use `-n` (not `-s`, which strips the
+# annotations) so current/attached/exited can be told apart.
+declare -A live_status=()
+live_order=()
+while IFS= read -r line; do
+  [ -n "$line" ] || continue
+  name=${line%% *}
+  [ -n "$name" ] || continue
+  case "$line" in
+    *"(current)"*) status="current" ;;
+    *attached*)    status="attached" ;;
+    *EXITED*)      status="exited" ;;
+    *)             status="detached" ;;
+  esac
+  live_status["$name"]="$status"
+  live_order+=("$name")
+done < <(zellij list-sessions -n 2>/dev/null || true)
+
+# Label a live, non-exited session for display.
+live_label() {
+  case "$1" in
+    current)  printf '%s (current)' "$2" ;;
+    attached) printf '%s (attached)' "$2" ;;
+    *)        printf '%s' "$2" ;;
+  esac
+}
+
+entries=""
+declare -A shown=()
+
+# 1) Recent projects, most-recently-used first. Attach if a live session of the
+#    same name is running; otherwise reopen the project fresh in its directory.
+if [ -f "$RECENT_FILE" ]; then
+  while IFS= read -r dir; do
+    [ -n "$dir" ] || continue
+    name=$(basename "$dir")
+    [ -n "${shown[$name]:-}" ] && continue
+    status="${live_status[$name]:-}"
+    if [ -n "$status" ] && [ "$status" != "exited" ]; then
+      entries+="local:$name"$'\t'"$(live_label "$status" "$name")"$'\n'
+      shown["$name"]=1
+    elif [ -d "$dir" ]; then
+      entries+="recent:$dir"$'\t'"$name"$'\n'
+      shown["$name"]=1
     fi
-  done <<< "$sessions"
+  done < "$RECENT_FILE"
 fi
+
+# 2) Live sessions not already listed (started outside the picker, or whose dir
+#    predates the MRU file). Reopen exited ones fresh in their dir when zoxide
+#    can resolve it, else attach so nothing is hidden.
+for name in "${live_order[@]}"; do
+  [ -n "${shown[$name]:-}" ] && continue
+  shown["$name"]=1
+  status="${live_status[$name]}"
+  if [ "$status" = "exited" ]; then
+    dir=$(resolve_dir "$name")
+    if [ -n "$dir" ] && [ -d "$dir" ]; then
+      entries+="recent:$dir"$'\t'"$name"$'\n'
+    else
+      entries+="local:$name"$'\t'"$name (exited)"$'\n'
+    fi
+  else
+    entries+="local:$name"$'\t'"$(live_label "$status" "$name")"$'\n'
+  fi
+done
 
 # Cached remote (zellij-web/IAP) sessions: one file per host with shell-sourceable
 # ZW_PROJECT/ZW_INSTANCE/ZW_ZONE/ZW_SESSIONS, written by gcloud-iap-zellij-web.
@@ -175,13 +270,13 @@ if command -v wsl-spawn >/dev/null 2>&1; then
   cmd_lines+="cmd:seed"$'\t'"$SEED_LABEL"$'\n'
 fi
 
-display="${no_client}${has_client}${remote_lines}${wsl_lines}${cmd_lines}"
+display="${entries}${remote_lines}${wsl_lines}${cmd_lines}"
 
 # Empty state: no local sessions, no remote sessions cached, no other WSL
 # distros → start one in $HOME. Don't call new_session here: it requires a
 # non-empty zoxide DB and would exit 1 on first boot, which would bubble
 # up through `session-picker; exit` in zsh init and kill the whole shell.
-if [ -z "$no_client$has_client$remote_lines$wsl_lines" ]; then
+if [ -z "$entries$remote_lines$wsl_lines" ]; then
   start_session "$HOME"
 fi
 
@@ -207,7 +302,13 @@ case "$id" in
   cmd:seed)        create_from_seed ;;
   local:*)
     name="${id#local:}"
+    dir=$(resolve_dir "$name")
+    if [ -n "$dir" ]; then record_recent "$dir" || true; fi
     exec zellij attach "$name"
+    ;;
+  recent:*)
+    dir="${id#recent:}"
+    start_session "$dir"
     ;;
   remote:*)
     spec="${id#remote:}"

@@ -14,7 +14,7 @@
     # busid across boots, replugs and resets — no per-session Windows command.
     # busid is the *physical USB port*: rediscover with `usbipd list` (and
     # re-run `usbipd bind`) if the probe ever moves to a different port.
-    autoAttach = [ "3-1" ];
+    autoAttach = [ "1-1" ];
 
     # Mirrored networking (config/wslconfig) ⇒ the Windows usbipd server is on
     # localhost. (The module default extracts the eth0 gateway, for NAT mode.)
