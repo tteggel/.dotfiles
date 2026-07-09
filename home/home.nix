@@ -307,6 +307,7 @@ in {
     settings = {
       user.name = "Thom Leggett";
       user.email = "thom@tteggel.org";
+      core.fsync = "committed";
       core.pager = "delta";
       interactive.diffFilter = "delta --color-only";
       delta = {

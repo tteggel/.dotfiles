@@ -188,6 +188,7 @@ in {
     settings = {
       user.name = "YOLO Agent";
       user.email = "agent@yolo.local";
+      core.fsync = "committed";
       core.pager = "delta";
       interactive.diffFilter = "delta --color-only";
       delta = {
