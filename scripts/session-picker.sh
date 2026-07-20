@@ -51,6 +51,12 @@ start_session() {
   local name
   name=$(basename "$dir")
   record_recent "$dir" || true
+  # A dead (EXITED) session of the same name blocks `zellij -s` with "Session
+  # with name X already exists, but is dead". Zellij 0.45 keeps EXITED sessions
+  # in the list even with serialization off, so reopening a recent project whose
+  # session has exited hits this. Serialization is off => the corpse holds no
+  # recoverable state, so drop it (dead-only; no --force) and start fresh.
+  zellij delete-session "$name" >/dev/null 2>&1 || true
   cd "$dir" && exec zellij -s "$name" -n ~/.config/zellij/layouts/code.kdl
 }
 

@@ -42,8 +42,9 @@ scroll_buffer_size 10000
 // injected args (the "wrong command"). WSL idle-shutdown kills the server
 // often, so nearly every reopen hit that path. Off => reopening just runs the
 // layout fresh: agents launch clean, no resume params, no prompt.
-// Trade-off: sessions don't survive the server dying, so the picker shows no
-// EXITED entries — reopen a project via zoxide/new-session instead.
+// Note: zellij still lists EXITED sessions (their names persist on disk even
+// with serialization off), so `zellij -s <name>` collides with a dead session
+// of the same name. session-picker's start_session deletes the corpse first.
 session_serialization false
 
 // Web server: bind to all interfaces so IAP TCP forwarding can reach it
