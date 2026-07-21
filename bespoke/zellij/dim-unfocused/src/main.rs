@@ -83,17 +83,33 @@ impl ZellijPlugin for DimUnfocused {
                 }
             },
             Event::PaneUpdate(pane_manifest) => {
-                let mut currently_visible: std::collections::HashSet<(u32, bool)> =
+                // Every real (non-plugin) pane still present, INCLUDING collapsed
+                // stack members. Since zellij 0.44's stack-list UI, collapsing a
+                // stacked pane moves it into the server's suppressed_panes and it
+                // reports is_suppressed=true while keeping whatever shader we last
+                // set on it. If we dropped such a pane from `dimmed_panes` while it
+                // was suppressed, then on re-expand-with-focus the remove() below
+                // would return false, we'd skip the un-dim, and the now-active pane
+                // would stay dark. So keep suppressed panes tracked and only prune a
+                // key once its pane is actually gone (closed => absent from manifest).
+                let mut present: std::collections::HashSet<(u32, bool)> =
                     std::collections::HashSet::new();
 
                 for (_tab_id, panes) in &pane_manifest.panes {
                     for pane in panes {
-                        if pane.is_plugin || pane.is_suppressed {
+                        if pane.is_plugin {
                             continue;
                         }
 
                         let pane_key = (pane.id, pane.is_plugin);
-                        currently_visible.insert(pane_key);
+                        present.insert(pane_key);
+
+                        // Collapsed stack members aren't rendered; leave their
+                        // shader as-is (still tracked above) until they reappear.
+                        if pane.is_suppressed {
+                            continue;
+                        }
+
                         let pane_id = if pane.is_plugin {
                             PaneId::Plugin(pane.id)
                         } else {
@@ -113,7 +129,7 @@ impl ZellijPlugin for DimUnfocused {
                     }
                 }
 
-                self.dimmed_panes.retain(|k| currently_visible.contains(k));
+                self.dimmed_panes.retain(|k| present.contains(k));
             },
             _ => {},
         }

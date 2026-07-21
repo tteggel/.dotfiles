@@ -23,6 +23,14 @@ pane_frames false
 default_layout "compact"
 show_startup_tips false
 
+// Render stacked panes the classic way (collapsed members inline) instead of
+// the new (0.44+) "stack list" UI, which lists members vertically at the top
+// with the expanded pane pinned to the bottom. Upstream default is `true`.
+// Keeping this off also sidesteps the stack-list's suppressed-pane handling,
+// which the dim-unfocused shader plugin does not track (would leave re-focused
+// stack members dimmed).
+stacked_pane_list false
+
 // Editor for scrollback
 scrollback_editor "micro"
 
