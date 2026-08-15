@@ -127,12 +127,30 @@ mkdir -p $TMPDIR/dim-plugin-lockgen
 cp -a bespoke/zellij/dim-unfocused/{src,Cargo.toml,Cargo.lock} $TMPDIR/dim-plugin-lockgen/
 ln -s /path/to/zellij-fork-clone $TMPDIR/dim-plugin-lockgen/zellij-src
 
-# Regenerate inside a shell with the zellij build deps available
-SHADER_WASM_PATH=/dev/null nix develop bespoke/zellij/dim-unfocused#zellij \
+# Regenerate. The default devShell carries the rust-overlay toolchain; the
+# `#zellij` package env no longer puts cargo on PATH, and generate-lockfile
+# only resolves deps so it needs no native build inputs.
+nix develop ./bespoke/zellij/dim-unfocused \
   --command bash -c "cd $TMPDIR/dim-plugin-lockgen && cargo generate-lockfile"
 
 cp $TMPDIR/dim-plugin-lockgen/Cargo.lock bespoke/zellij/dim-unfocused/Cargo.lock
 ```
+
+### The zellij derivation overrides `zellij-unwrapped`, not `zellij`
+
+nixpkgs' `zellij` attribute is a `symlinkJoin` wrapper around `zellij-unwrapped`
+(the actual `buildRustPackage`). `pkgs.zellij.overrideAttrs` therefore overrides
+*the wrapper* — the build succeeds in seconds and silently ships stock upstream
+zellij with no pane-shader support. Always override `pkgs.zellij-unwrapped`, and
+sanity-check a build with:
+
+```bash
+readlink -f result/bin/zellij   # must NOT point at a zellij-unwrapped-X.Y.Z store path
+```
+
+nixpkgs' `postInstall` also runs `mandown docs/MANPAGE.md`, which upstream
+deleted in zellij-org/zellij#5426, so the flake overrides `postInstall` to
+install only the shell completions.
 
 ### Rebasing the fork
 
@@ -150,3 +168,22 @@ git push origin pane-shaders-static-next
 ```
 
 Push uses SSH (`git@github.com:tteggel/zellij.git`) because rebasing usually pulls in upstream `.github/workflows/*.yml` changes that the OAuth token can't authorize.
+
+Verify before pushing by building straight from the local checkout — no push, no
+lock churn:
+
+```bash
+nix build ./bespoke/zellij/dim-unfocused#zellij \
+  --override-input zellij-src "git+file:///path/to/zellij-fork?ref=pane-shaders-static-next"
+```
+
+**Proto tag numbers are the recurring conflict.** The patch claims one
+`CommandName` and one `PluginCommand.payload` tag, and upstream keeps taking the
+next free values. On each rebase, renumber ours above whatever upstream now
+occupies, in both `plugin_command.proto` and the generated
+`assets/prost/api.plugin_command.rs` (enum value, `as_str_name`, `from_str_name`,
+and the `tags="…"` list on `PluginCommand::payload`). History so far:
+215→227→229 for `CommandName`, 164→172 for the payload oneof.
+
+Upstream also raises its MSRV regularly (0.45 needs rustc 1.95), so a rebase
+usually means bumping the sub-flake's `nixpkgs` and `rust-overlay` too.

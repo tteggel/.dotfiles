@@ -59,13 +59,24 @@
     };
   in {
     packages.${system} = rec {
-      zellij = pkgs.zellij.overrideAttrs (old: {
-        version = "0.44.0-unstable";
+      # Override zellij-unwrapped, not zellij: nixpkgs' `zellij` is only a
+      # symlinkJoin wrapper, so overriding it leaves the stock binary in place.
+      zellij = pkgs.zellij-unwrapped.overrideAttrs (old: {
+        pname = "zellij";
+        version = "0.45.0-unstable";
         src = zellij-src;
         cargoDeps = zellijCargoVendored;
         postPatch = ''
           substituteInPlace Cargo.toml \
             --replace-fail ', "vendored_curl"' "" || true
+        '';
+        # Upstream removed docs/MANPAGE.md (zellij-org/zellij#5426), so drop
+        # nixpkgs' mandown step and keep only the shell completions.
+        postInstall = ''
+          installShellCompletion --cmd zellij \
+            --bash <($out/bin/zellij setup --generate-completion bash) \
+            --fish <($out/bin/zellij setup --generate-completion fish) \
+            --zsh <($out/bin/zellij setup --generate-completion zsh)
         '';
         doInstallCheck = false;
       });
