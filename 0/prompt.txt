@@ -1,0 +1,1 @@
+switch and check the shader still dims properly
