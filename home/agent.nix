@@ -48,6 +48,9 @@ in {
     claude
     agy
     codex
+    # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
+    # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
+    llm-agents.entire
     (writeShellApplication {
       name = "open-browser";
       text = builtins.readFile ../scripts/open-browser.sh;
