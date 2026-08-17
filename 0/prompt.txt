@@ -1,0 +1,14 @@
+why doesn't entire login save the token?  entire login
+Logging in to: https://us.auth.entire.io
+
+Press Enter to open in browser...
+
+Warning: failed to open browser: start browser command "xdg-open": exec: "xdg-open": executable file not found in $PATH
+Open this URL in your browser to sign in: https://us.auth.entire.io/authorize?client_id=entire-cli&REDACTED&code_challenge_method=S256&redirect_uri=http%3A%2F%2F127.0.0.1%3A45629%2Fcallback&response_type=code&scope=cli+offline_access&REDACTED
+Waiting for sign-in... save login: store refresh token in credential store: The name is not activatable
+
+If this machine has no usable OS keyring (headless server, container, CI), store tokens in a file instead:
+
+  ENTIRE_TOKEN_STORE=file entire login
+
+Tokens are then written with 0600 permissions to /home/thom/.config/entire/tokens.json (override the location with ENTIRE_TOKEN_STORE_PATH)
