@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>brw7od0n5</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-thom-src-github-com-tteggel--dotfiles/dbebf1b9-db76-4bc3-a4fe-76934a462dfe/tasks/brw7od0n5.output</output-file>
+<status>completed</status>
+<summary>Background command "Rebuild zellij with corrected override" completed (exit code 0)</summary>
+</task-notification>
