@@ -1,0 +1,5 @@
+<task-notification>
+<task-id>b2wqk1jz6</task-id>
+<summary>Monitor event: "nix build zellij progress/errors"</summary>
+<event>[Monitor timed out — re-arm if needed.]</event>
+</task-notification>
