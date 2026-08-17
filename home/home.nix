@@ -18,6 +18,18 @@
     text = ''exec codex ${lib.concatStringsSep " " mcp.codexArgs} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
+  open-browser = pkgs.writeShellApplication {
+    name = "open-browser";
+    text = builtins.readFile ../scripts/open-browser.sh;
+  };
+  # Tools that exec `xdg-open` directly (ignoring $BROWSER) get a working one.
+  # runtimeInputs pins open-browser by store path, so this does not depend on
+  # the user profile being on PATH.
+  xdg-open = pkgs.writeShellApplication {
+    name = "xdg-open";
+    runtimeInputs = [ open-browser ];
+    text = builtins.readFile ../scripts/xdg-open.sh;
+  };
   googleCloudSdkWithGke = pkgs.google-cloud-sdk.withExtraComponents [
     pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin
   ];
@@ -94,10 +106,8 @@ in {
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
     llm-agents.entire
     googleCloudSdkWithGke
-    (writeShellApplication {
-      name = "open-browser";
-      text = builtins.readFile ../scripts/open-browser.sh;
-    })
+    open-browser
+    xdg-open
     (writeShellApplication {
       name = "zed";
       text = builtins.readFile ../scripts/zed.sh;
