@@ -20,8 +20,21 @@ args=()
 for arg in "$@"; do
   if [[ "$arg" == -* ]]; then
     args+=("$arg")
-  elif [[ -e "$arg" || -d "$arg" ]]; then
-    args+=("$(wslpath -w "$arg")")
+    continue
+  fi
+
+  # Zed also accepts `file:line` and `file:line:col` (lazygit's editAtLine uses
+  # it). Peel a trailing numeric suffix off so the path still resolves, then
+  # reattach it to the translated Windows path.
+  path="$arg"
+  suffix=""
+  while [[ ! -e "$path" && "$path" == *:* && "${path##*:}" =~ ^[0-9]+$ ]]; do
+    suffix=":${path##*:}$suffix"
+    path="${path%:*}"
+  done
+
+  if [[ -e "$path" ]]; then
+    args+=("$(wslpath -w "$path")$suffix")
   else
     args+=("$arg")
   fi

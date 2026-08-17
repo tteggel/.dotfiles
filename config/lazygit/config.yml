@@ -1,14 +1,24 @@
 os:
-  editCommand: "zed"
-  editCommandTemplate: "{{editor}} {{filename}}"
+  # Built-in preset; expands to `zed -- {{filename}}` / `zed -- {{filename}}:{{line}}`.
+  # `zed` is our WSL interop wrapper (scripts/zed.sh), which translates paths and
+  # line suffixes to Windows form before handing off to zed.exe.
+  editPreset: zed
 gui:
   theme:
     activeBorderColor:
       - '#61afef'
       - bold
 git:
-  pagers:
-    - colorArg: always
-      pager: delta --dark --paging=never
-    - colorArg: always
-      pager: env GIT_CONFIG_PARAMETERS="'delta.side-by-side=false'" delta --dark --paging=never
+  # Cycle between these with `|` and `\`. Side-by-side comes from the global
+  # gitconfig (delta.side-by-side = true); the second renderer overrides it off
+  # for when a pane is too narrow to split. delta has no `--side-by-side=false`,
+  # so the override has to go through git config rather than a CLI flag.
+  diffRenderers:
+    - type: stdinFilter
+      name: delta
+      colorArg: always
+      command: delta --dark --paging=never
+    - type: stdinFilter
+      name: delta (unified)
+      colorArg: always
+      command: env GIT_CONFIG_PARAMETERS="'delta.side-by-side=false'" delta --dark --paging=never
