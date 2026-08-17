@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bohovx0ak</task-id>
+<tool-use-id>toolu_015cGLsxxbtupmCgjG51ZEFy</tool-use-id>
+<output-file>/tmp/claude-1000/-home-thom-src-github-com-tteggel--dotfiles/dbebf1b9-db76-4bc3-a4fe-76934a462dfe/tasks/bohovx0ak.output</output-file>
+<status>completed</status>
+<summary>Background command "Check build after wait" completed (exit code 0)</summary>
+</task-notification>
