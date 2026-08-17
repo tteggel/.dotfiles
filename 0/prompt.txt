@@ -1,0 +1,5 @@
+<task-notification>
+<task-id>begfs1y1a</task-id>
+<summary>Monitor event: "cargo check errors/completion for rebased zellij"</summary>
+<event>[Monitor timed out — re-arm if needed.]</event>
+</task-notification>
