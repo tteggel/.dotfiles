@@ -221,6 +221,11 @@ in {
       export CLAUDE_CODE_EFFORT_LEVEL=max
       export BROWSER=open-browser
       export EDITOR=micro
+      # `entire login` defaults to the OS keyring via the D-Bus Secret Service.
+      # WSL has a session bus but nothing provides org.freedesktop.secrets, so
+      # the token write fails ("The name is not activatable") and the login is
+      # thrown away. Persist to ~/.config/entire/tokens.json (0600) instead.
+      export ENTIRE_TOKEN_STORE=file
       export USE_GKE_GCLOUD_AUTH_PLUGIN=True
       export MANPAGER="sh -c 'col -bx | bat -l man -p'"
       init-gh
