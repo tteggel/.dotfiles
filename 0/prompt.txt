@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bvffy32tr</task-id>
+<tool-use-id>toolu_01UzzA89sm5Qbuqz2Fse18nc</tool-use-id>
+<output-file>/tmp/claude-1000/-home-thom-src-github-com-tteggel--dotfiles/dbebf1b9-db76-4bc3-a4fe-76934a462dfe/tasks/bvffy32tr.output</output-file>
+<status>completed</status>
+<summary>Background command "Long wait for build" completed (exit code 0)</summary>
+</task-notification>
