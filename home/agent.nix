@@ -5,6 +5,7 @@
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
   mcp = import ./mcp.nix { inherit pkgs lib; };
+  codex-cfg = import ./codex.nix { inherit lib; };
   claude = pkgs.writeShellApplication {
     name = "claude";
     runtimeInputs = [ llm-agents.claude-code ];
@@ -15,7 +16,7 @@
   codex = pkgs.writeShellApplication {
     name = "codex";
     runtimeInputs = [ llm-agents.codex ];
-    text = ''exec codex ${lib.concatStringsSep " " mcp.codexArgs} "$@"'';
+    text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.tuiArgs)} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
   open-browser = pkgs.writeShellApplication {
@@ -81,7 +82,7 @@ in {
     })
     (writeShellApplication {
       name = "claude-statusline";
-      runtimeInputs = [ jq ];
+      runtimeInputs = [ jq git ];
       text = builtins.readFile ../scripts/claude-statusline.sh;
     })
     (writeShellApplication {
