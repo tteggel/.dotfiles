@@ -25,7 +25,7 @@ NixOS configuration for `thixos`, a WSL2-based development machine.
 
 The top-level `flake.nix` produces a single NixOS configuration (`thixos`):
 
-- **Inputs**: `nixpkgs` (unstable), `nixos-wsl`, `llm-agents` (Claude Code, Antigravity, Codex), `dim-unfocused` (local path flake for custom Zellij)
+- **Inputs**: `nixpkgs` (unstable), `nixos-wsl`, `llm-agents` (Claude Code, Antigravity, Codex, Grok), `dim-unfocused` (local path flake for custom Zellij)
 - **Output**: `nixosConfigurations.thixos`
 
 The `dim-unfocused` sub-flake (at `bespoke/zellij/dim-unfocused/`) has its own inputs including a Zellij fork. It produces a custom Zellij binary and a WASM plugin. See `bespoke/zellij/dim-unfocused/AGENTS.md` for deep details on the shader system.
@@ -65,7 +65,7 @@ The configuration embeds several substantial shell applications as `writeShellAp
 
 ### System packages
 
-Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex).
+Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex, grok).
 
 ### Config file management
 

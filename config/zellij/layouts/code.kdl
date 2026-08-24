@@ -4,6 +4,7 @@ layout {
             pane command="claude" name="Claude"
             pane command="agy" name="Agy"
             pane command="codex" name="Codex"
+            pane command="grok" name="Grok"
         }
         pane stacked=true size="50%" {
             pane command="lazygit" name="Git"

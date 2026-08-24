@@ -6,6 +6,7 @@
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
   mcp = import ./mcp.nix { inherit pkgs lib; };
   codex-cfg = import ./codex.nix { inherit lib; };
+  grok-cfg = import ./grok.nix { inherit pkgs; inherit (mcp) servers; };
   claude = pkgs.writeShellApplication {
     name = "claude";
     runtimeInputs = [ llm-agents.claude-code ];
@@ -19,6 +20,7 @@
     text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.tuiArgs)} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
+  grok = llm-agents.grok;
   open-browser = pkgs.writeShellApplication {
     name = "open-browser";
     text = builtins.readFile ../scripts/open-browser.sh;
@@ -35,7 +37,7 @@
     pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin
   ];
   expectedDotfiles = [
-    ".ssh" ".cache" ".local" ".config" ".claude" ".gemini"
+    ".ssh" ".cache" ".local" ".config" ".claude" ".gemini" ".grok"
     ".zsh_history" ".zoxide.db" ".zoxide.db.zo" ".sudo_as_admin_successful"
     ".init-gh-completed" ".zcompdump*" ".zsh_sessions" ".wget-hsts" "src"
     ".nix-profile" ".nix-defexpr" ".nix-channels"
@@ -155,6 +157,7 @@ in {
     claude
     agy
     codex
+    grok
     (writeShellApplication {
       name = "session-picker";
       runtimeInputs = [ zellij-main fzf zoxide gh git ];
@@ -196,7 +199,7 @@ in {
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
-  home.file = (lib.optionalAttrs (!isMinimal) mcp.agyExtensionFiles) // {
+  home.file = (lib.optionalAttrs (!isMinimal) (mcp.agyExtensionFiles // grok-cfg.managedFiles)) // {
     ".claude/settings.json".source = ../config/claude/settings.json;
   };
 

@@ -6,6 +6,7 @@
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
   mcp = import ./mcp.nix { inherit pkgs lib; };
   codex-cfg = import ./codex.nix { inherit lib; };
+  grok-cfg = import ./grok.nix { inherit pkgs; inherit (mcp) servers; };
   claude = pkgs.writeShellApplication {
     name = "claude";
     runtimeInputs = [ llm-agents.claude-code ];
@@ -19,6 +20,7 @@
     text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.tuiArgs)} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
+  grok = llm-agents.grok;
   open-browser = pkgs.writeShellApplication {
     name = "open-browser";
     text = builtins.readFile ../scripts/open-browser.sh;
@@ -61,6 +63,7 @@ in {
     claude
     agy
     codex
+    grok
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
     llm-agents.entire
@@ -108,7 +111,7 @@ in {
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
-  home.file = mcp.agyExtensionFiles // {
+  home.file = mcp.agyExtensionFiles // grok-cfg.managedFiles // {
     ".claude/settings.json".source = ../config/claude/settings.json;
   };
 
