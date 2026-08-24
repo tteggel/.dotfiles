@@ -6,7 +6,7 @@
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
   mcp = import ./mcp.nix { inherit pkgs lib; };
   codex-cfg = import ./codex.nix { inherit lib; };
-  grok-cfg = import ./grok.nix { inherit pkgs; inherit (mcp) servers; };
+  grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
   claude = pkgs.writeShellApplication {
     name = "claude";
     runtimeInputs = [ llm-agents.claude-code ];
@@ -111,12 +111,16 @@ in {
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
-  home.file = mcp.agyExtensionFiles // grok-cfg.managedFiles // {
+  home.file = mcp.agyExtensionFiles // {
     ".claude/settings.json".source = ../config/claude/settings.json;
   };
 
   home.activation.agyPluginImport = lib.hm.dag.entryAfter ["writeBoundary"] ''
     ${agy}/bin/agy plugin import gemini >/dev/null || true
+  '';
+
+  home.activation.grokMcpSeed = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${grok-cfg.mcpSeed}
   '';
 
   home.activation.agySettingsSeed = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -141,6 +145,10 @@ in {
       export ZELLIJ_CONFIG_DIR=~/.config/zellij
       export COLORTERM=truecolor
       export CLAUDE_CODE_EFFORT_LEVEL=max
+      # Grok's counterpart. A GROK_CONFIG overlay rather than a config file:
+      # Grok deletes ~/.grok/managed_config.toml whenever it refreshes its
+      # model catalog, so the env is the durable slot. See home/grok.nix.
+      export GROK_CONFIG=${lib.escapeShellArg grok-cfg.envOverlay}
       export EDITOR=micro
       export BROWSER=open-browser
       # `entire login` defaults to the OS keyring via the D-Bus Secret Service.
