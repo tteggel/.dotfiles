@@ -17,7 +17,7 @@
   codex = pkgs.writeShellApplication {
     name = "codex";
     runtimeInputs = [ llm-agents.codex ];
-    text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.tuiArgs)} "$@"'';
+    text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.configArgs)} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
   grok = llm-agents.grok;
@@ -243,6 +243,12 @@ in {
       # Grok deletes ~/.grok/managed_config.toml whenever it refreshes its
       # model catalog, so the env is the durable slot. See home/grok.nix.
       export GROK_CONFIG=${lib.escapeShellArg grok-cfg.envOverlay}
+      # Auto-compact at 256k tokens of context, matching `autoCompactWindow` in
+      # config/claude/settings.json and `model_auto_compact_token_limit` in
+      # home/codex.nix. Grok takes a percentage of the model's window instead of
+      # a token count, and `[session]` is not overlay-allowlisted, so it arrives
+      # as its own env var. See home/grok.nix.
+      export GROK_AUTO_COMPACT_THRESHOLD_PERCENT=${toString grok-cfg.autoCompactThresholdPercent}
       export BROWSER=open-browser
       export EDITOR=micro
       # `entire login` defaults to the OS keyring via the D-Bus Secret Service.

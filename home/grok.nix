@@ -3,7 +3,24 @@
   # none/minimal/low/medium/high/xhigh/max; a model that does not advertise
   # `max` falls back to the top level its own menu offers.
   reasoningEffort = "max";
+
+  # Grok's counterpart to Claude's `autoCompactWindow` and Codex's
+  # `model_auto_compact_token_limit`, both set to 256k tokens. Grok only takes a
+  # percentage of the model's context window, so 256k is expressed against it:
+  # grok-4.6's catalog entry is a 500k window (and an 80% default threshold), so
+  # 51% is ~255k tokens. Revisit if the default model's window changes.
+  #
+  # The config key is `[session] auto_compact_threshold_percent`, and `session`
+  # is not on the GROK_CONFIG allowlist (models, features, a narrowed toolset,
+  # and shell_environment_policy filters), so the GROK_CONFIG overlay below
+  # cannot carry it, and there is no `grok config set` to seed config.toml with
+  # either. That leaves the env var GROK_AUTO_COMPACT_THRESHOLD_PERCENT -- read
+  # by the same config resolver, clamped to 0..=100 -- as the durable slot.
+  # Exported alongside GROK_CONFIG in home/home.nix and home/agent.nix.
+  autoCompactThresholdPercent = 51;
 in {
+  inherit autoCompactThresholdPercent;
+
   # GROK_CONFIG is a config overlay layered above ~/.grok/config.toml, and
   # `models` is on its allowlist. An env var is also the one slot Grok cannot
   # rewrite -- see the note on mcpSeed below.
