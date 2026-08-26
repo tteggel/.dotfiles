@@ -97,6 +97,44 @@ in {
     done
   '';
 
+  # FancyZones lives on the Windows side (PowerToys). Same pattern as
+  # windowsterminal: push the repo copy onto every writable Windows profile.
+  # applied-layouts.json is keyed by GPU-specific monitor-instance IDs, so a
+  # blind overwrite would miss displays on another machine. Stamp the default
+  # custom grid onto every device the target already knows; fall back to a
+  # straight copy when PowerToys has not created the file yet.
+  home.activation.fancyzones = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    fancyzones_src=${../config/windows/fancyzones}
+    jq=${pkgs.jq}/bin/jq
+    for user_dir in /mnt/c/Users/*; do
+      [ -f "$user_dir/NTUSER.DAT" ] || continue
+      [ -w "$user_dir" ] || continue
+      fz_dir="$user_dir/AppData/Local/Microsoft/PowerToys/FancyZones"
+      mkdir -p "$fz_dir" || continue
+      for f in settings.json custom-layouts.json default-layouts.json \
+               layout-hotkeys.json layout-templates.json; do
+        install -m 0644 "$fancyzones_src/$f" "$fz_dir/$f"
+      done
+      dest="$fz_dir/applied-layouts.json"
+      src="$fancyzones_src/applied-layouts.json"
+      if [ -f "$dest" ] && "$jq" -e '."applied-layouts" | type == "array"' "$dest" >/dev/null 2>&1; then
+        "$jq" --slurpfile defaults "$fancyzones_src/default-layouts.json" '
+          ($defaults[0]."default-layouts"[0].layout) as $layout
+          | ."applied-layouts" |= map(. + {"applied-layout": $layout})
+        ' "$dest" > "$dest.tmp" && mv "$dest.tmp" "$dest"
+        chmod 0644 "$dest"
+      else
+        install -m 0644 "$src" "$dest"
+      fi
+      pt_settings="$user_dir/AppData/Local/Microsoft/PowerToys/settings.json"
+      if [ -f "$pt_settings" ] && [ -w "$pt_settings" ]; then
+        "$jq" '.enabled.FancyZones = true' "$pt_settings" > "$pt_settings.tmp" \
+          && mv "$pt_settings.tmp" "$pt_settings"
+        chmod 0644 "$pt_settings"
+      fi
+    done
+  '';
+
   home.packages = with pkgs; [
     # gh is installed here rather than via `programs.gh.enable` because the
     # home-manager module manages ~/.config/gh/config.yml as a /nix/store

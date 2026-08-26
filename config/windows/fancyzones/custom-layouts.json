@@ -1,0 +1,82 @@
+{
+  "custom-layouts": [
+    {
+      "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+      "name": "3rds & 4ths Hybrid Grid (4K - No Spacing)",
+      "type": "grid",
+      "info": {
+        "rows": 6,
+        "columns": 6,
+        "rows-percentage": [
+          2500,
+          833,
+          1667,
+          1667,
+          833,
+          2500
+        ],
+        "columns-percentage": [
+          2500,
+          833,
+          1667,
+          1667,
+          833,
+          2500
+        ],
+        "cell-child-map": [
+          [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          [
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
+          ],
+          [
+            30,
+            31,
+            32,
+            33,
+            34,
+            35
+          ]
+        ],
+        "show-spacing": false,
+        "spacing": 0,
+        "sensitivity-radius": 20
+      }
+    }
+  ]
+}

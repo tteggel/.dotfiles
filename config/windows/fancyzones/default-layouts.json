@@ -1,0 +1,26 @@
+{
+  "default-layouts": [
+    {
+      "monitor-configuration": "vertical",
+      "layout": {
+        "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+        "type": "custom",
+        "show-spacing": false,
+        "spacing": 0,
+        "zone-count": 3,
+        "sensitivity-radius": 20
+      }
+    },
+    {
+      "monitor-configuration": "horizontal",
+      "layout": {
+        "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+        "type": "custom",
+        "show-spacing": false,
+        "spacing": 0,
+        "zone-count": 3,
+        "sensitivity-radius": 20
+      }
+    }
+  ]
+}

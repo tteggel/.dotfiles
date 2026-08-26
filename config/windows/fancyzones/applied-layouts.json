@@ -1,0 +1,89 @@
+{
+  "applied-layouts": [
+    {
+      "device": {
+        "monitor": "TSB3700",
+        "monitor-instance": "4&35609429&0&UID4165",
+        "serial-number": "0",
+        "monitor-number": 2,
+        "virtual-desktop": "{00000000-0000-0000-0000-000000000000}"
+      },
+      "applied-layout": {
+        "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+        "type": "custom",
+        "show-spacing": false,
+        "spacing": 0,
+        "zone-count": 3,
+        "sensitivity-radius": 20
+      }
+    },
+    {
+      "device": {
+        "monitor": "TSB3700",
+        "monitor-instance": "4&35609429&0&UID4165",
+        "serial-number": "0",
+        "monitor-number": 1,
+        "virtual-desktop": "{00000000-0000-0000-0000-000000000000}"
+      },
+      "applied-layout": {
+        "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+        "type": "custom",
+        "show-spacing": false,
+        "spacing": 0,
+        "zone-count": 3,
+        "sensitivity-radius": 20
+      }
+    },
+    {
+      "device": {
+        "monitor": "\\\\.\\DISPLAY1",
+        "monitor-instance": "",
+        "serial-number": "",
+        "monitor-number": 0,
+        "virtual-desktop": "{00000000-0000-0000-0000-000000000000}"
+      },
+      "applied-layout": {
+        "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+        "type": "custom",
+        "show-spacing": false,
+        "spacing": 0,
+        "zone-count": 3,
+        "sensitivity-radius": 20
+      }
+    },
+    {
+      "device": {
+        "monitor": "BOE0BCA",
+        "monitor-instance": "4&35609429&0&UID8388688",
+        "serial-number": "0",
+        "monitor-number": 1,
+        "virtual-desktop": "{00000000-0000-0000-0000-000000000000}"
+      },
+      "applied-layout": {
+        "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+        "type": "custom",
+        "show-spacing": false,
+        "spacing": 0,
+        "zone-count": 3,
+        "sensitivity-radius": 20
+      }
+    },
+    {
+      "device": {
+        "monitor": "MSI4DD3",
+        "monitor-instance": "4&35609429&0&UID4165",
+        "serial-number": "0",
+        "monitor-number": 1,
+        "virtual-desktop": "{00000000-0000-0000-0000-000000000000}"
+      },
+      "applied-layout": {
+        "uuid": "{F47C3B9B-1234-4321-ABCD-EF0123456789}",
+        "type": "custom",
+        "show-spacing": false,
+        "spacing": 0,
+        "zone-count": 3,
+        "sensitivity-radius": 20
+      }
+    }
+  ]
+}
