@@ -101,6 +101,21 @@ exact chip name).
 - **Same port**: `bind`/`autoAttach` key on the physical port (busid); a different
   port needs a one-time `bind` + `autoAttach` update.
 
+## GUI apps (Obsidian) and the WSLg blank-window bug
+
+`thixos` ships Obsidian. WSL 2.7.3+ stopped mounting `/mnt/shared_memory`, and
+without it WSLg drops to a copy path that paints nothing — GUI apps get a
+taskbar entry, a blank surface, and `[WARN:COPY MODE]` in the title
+([microsoft/wslg#1456](https://github.com/microsoft/wslg/issues/1456)).
+`nixos/wslg.nix` restores the mount as a tmpfs, early enough for the handshake
+weston does once at WSLg startup. Takes effect after a `wsl --shutdown`.
+
+Check it landed:
+```shell
+findmnt /mnt/shared_memory                                # tmpfs, mode 1777
+grep rdp_allocate_shared_memory /mnt/wslg/weston.log      # no "Failed to open"
+```
+
 ## Spawn a new WSL distro from inside thixos
 
 Open the session-picker and press **Ctrl+Y** ("Create from seed"). It prompts

@@ -6,7 +6,7 @@
   pkgs,
   ...
 }: {
-  imports = [ ./common.nix ./embedded.nix ];
+  imports = [ ./common.nix ./embedded.nix ./wslg.nix ];
 
   nix.settings.trusted-users = [ "root" "thom" ];
 

@@ -196,6 +196,9 @@ in {
     agy
     codex
     grok
+    # GUI, so it needs WSLg working — see nixos/wslg.nix for the
+    # /mnt/shared_memory mount without which its window renders blank.
+    obsidian
     (writeShellApplication {
       name = "session-picker";
       runtimeInputs = [ zellij-main fzf zoxide gh git ];
