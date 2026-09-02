@@ -249,9 +249,30 @@ in {
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
-  home.file = (lib.optionalAttrs (!isMinimal) mcp.agyExtensionFiles) // {
-    ".claude/settings.json".source = ../config/claude/settings.json;
-  };
+  home.file = lib.optionalAttrs (!isMinimal) mcp.agyExtensionFiles;
+
+  # Claude Code writes ~/.claude/settings.json itself: /effort, /model and
+  # /config save defaults there, and an "always allow" answer appends to
+  # permissions.allow. Each write is staged as a sibling temp file, so a
+  # home.file symlink into the store fails the whole command with EROFS
+  # ("Failed to set effort level: ... EROFS: read-only file system"). Install a
+  # real, writable copy instead and merge this repo's keys over whatever Claude
+  # Code has accumulated: the pins below win, its own keys survive. A key
+  # dropped from config/claude/settings.json lingers in the copy until it is
+  # deleted there by hand.
+  home.activation.claudeSettings = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    settings="$HOME/.claude/settings.json"
+    managed=${../config/claude/settings.json}
+    install -d "$(dirname "$settings")"
+    if [ -f "$settings" ] && [ ! -L "$settings" ]; then
+      ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$settings" "$managed" > "$settings.new" \
+        || cp "$managed" "$settings.new"
+    else
+      cp "$managed" "$settings.new"
+    fi
+    chmod 0644 "$settings.new"
+    mv -f "$settings.new" "$settings"
+  '';
 
   home.activation.agyPluginImport = lib.mkIf (!isMinimal) (
     lib.hm.dag.entryAfter ["writeBoundary"] ''
