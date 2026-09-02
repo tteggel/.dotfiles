@@ -145,6 +145,19 @@ in {
     mv -f "$settings.new" "$settings"
   '';
 
+  # programs.git renders ~/.config/git/config into the store, but `git config
+  # --global` -- what `git lfs install`, `gh auth setup-git` and git's own
+  # safe.directory advice all run -- writes to git's global config file, and
+  # with no ~/.gitconfig present git picks the XDG path and then cannot take
+  # its lock inside /nix/store ("could not lock config file ...: Read-only file
+  # system"). Git reads both files, so an empty ~/.gitconfig moves the write
+  # target off the symlink without hiding anything: the store file still
+  # supplies everything programs.git sets, and a key written here overrides it,
+  # visible in `git config --list --show-origin`.
+  home.activation.gitconfigSeed = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    [ -e "$HOME/.gitconfig" ] || install -m 0644 /dev/null "$HOME/.gitconfig"
+  '';
+
   home.activation.agyPluginImport = lib.hm.dag.entryAfter ["writeBoundary"] ''
     ${agy}/bin/agy plugin import gemini >/dev/null || true
   '';
