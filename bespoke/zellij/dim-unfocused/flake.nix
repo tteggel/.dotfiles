@@ -63,7 +63,7 @@
       # symlinkJoin wrapper, so overriding it leaves the stock binary in place.
       zellij = pkgs.zellij-unwrapped.overrideAttrs (old: {
         pname = "zellij";
-        version = "0.45.0-unstable";
+        version = "0.46.0-unstable";
         src = zellij-src;
         cargoDeps = zellijCargoVendored;
         postPatch = ''
