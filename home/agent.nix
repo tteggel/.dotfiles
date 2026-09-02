@@ -12,7 +12,16 @@
     runtimeInputs = [ llm-agents.claude-code ];
     # `=` form is required: --mcp-config is variadic and would otherwise consume
     # subsequent positional args as additional config files.
-    text = ''exec claude --mcp-config=${mcp.claudeMcpConfig} "$@"'';
+    #
+    # `--effort max` rather than CLAUDE_CODE_EFFORT_LEVEL=max: the env var is
+    # consulted ahead of everything else and pins the session, so /effort just
+    # refuses ("Not applied: CLAUDE_CODE_EFFORT_LEVEL=max overrides effort this
+    # session"). The flag only seeds the session's starting level, leaving
+    # /effort free to change it. The `effortLevel` setting is not an option
+    # either: its schema stops at xhigh, so `max` cannot be persisted there.
+    # Placed before "$@" because the last --effort wins, so an explicit
+    # `claude --effort high` still overrides this default.
+    text = ''exec claude --mcp-config=${mcp.claudeMcpConfig} --effort max "$@"'';
   };
   codex = pkgs.writeShellApplication {
     name = "codex";
@@ -144,10 +153,10 @@ in {
       export STARSHIP_CONFIG=~/.config/starship.toml
       export ZELLIJ_CONFIG_DIR=~/.config/zellij
       export COLORTERM=truecolor
-      export CLAUDE_CODE_EFFORT_LEVEL=max
-      # Grok's counterpart. A GROK_CONFIG overlay rather than a config file:
-      # Grok deletes ~/.grok/managed_config.toml whenever it refreshes its
-      # model catalog, so the env is the durable slot. See home/grok.nix.
+      # Grok's counterpart to the `--effort max` on the claude wrapper. A
+      # GROK_CONFIG overlay rather than a config file: Grok deletes
+      # ~/.grok/managed_config.toml whenever it refreshes its model catalog,
+      # so the env is the durable slot. See home/grok.nix.
       export GROK_CONFIG=${lib.escapeShellArg grok-cfg.envOverlay}
       # Auto-compact at 256k tokens of context, matching `autoCompactWindow` in
       # config/claude/settings.json and `model_auto_compact_token_limit` in

@@ -1,5 +1,6 @@
 { lib, grok, servers }: let
-  # Grok's counterpart to CLAUDE_CODE_EFFORT_LEVEL=max. The canonical ladder is
+  # Grok's counterpart to Claude's `--effort max` (see the claude wrapper in
+  # home/home.nix). The canonical ladder is
   # none/minimal/low/medium/high/xhigh/max; a model that does not advertise
   # `max` falls back to the top level its own menu offers.
   reasoningEffort = "max";

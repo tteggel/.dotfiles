@@ -32,7 +32,6 @@ ${B}${C}═══ Environment ═══${R}
 
   EDITOR                    micro
   BROWSER                   open-browser
-  CLAUDE_CODE_EFFORT_LEVEL  max
   STARSHIP_CONFIG           ~/.config/starship.toml
   MANPAGER                  bat
 
