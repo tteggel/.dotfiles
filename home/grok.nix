@@ -6,8 +6,10 @@
   reasoningEffort = "max";
 
   # Grok's counterpart to Claude's `autoCompactWindow` and Codex's
-  # `model_auto_compact_token_limit`, both set to 256k tokens. Grok only takes a
-  # percentage of the model's context window, so 256k is expressed against it:
+  # `model_auto_compact_token_limit`. Grok and Codex target roughly 256k;
+  # Claude separately uses a 512k capacity rather than a literal trigger. Grok
+  # only takes a percentage of the model's context window, so 256k is expressed
+  # against it:
   # grok-4.6's catalog entry is a 500k window (and an 80% default threshold), so
   # 51% is ~255k tokens. Revisit if the default model's window changes.
   #

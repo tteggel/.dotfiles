@@ -15,13 +15,14 @@
     "weekly-limit"
   ];
 
-  # Auto-compact at 256k tokens, the same point Claude gets from
-  # `autoCompactWindow` in config/claude/settings.json and Grok from
-  # home/grok.nix. Codex ships no default of its own (`auto_compact_token_limit`
-  # is null for every entry in `codex debug models`), so without this compaction
-  # waits for the model's own window -- 272k on the current gpt-5.x models. The
-  # companion `model_auto_compact_token_limit_scope` defaults to `total`, i.e.
-  # the whole prompt including the fixed prefix, which is what the status line's
+  # Auto-compact when the full active context reaches 256k tokens. Unlike
+  # Claude's `autoCompactWindow`, this is a literal trigger rather than a
+  # capacity from which the runtime subtracts its own headroom. Codex ships no
+  # default of its own (`auto_compact_token_limit` is null for every entry in
+  # `codex debug models`), so without this compaction waits for the model's own
+  # window -- 272k on the current models. The companion
+  # `model_auto_compact_token_limit_scope` defaults to `total`, i.e. the whole
+  # prompt including the fixed prefix, which is what the status line's
   # `context-remaining` item counts down.
   autoCompactTokenLimit = 256000;
 

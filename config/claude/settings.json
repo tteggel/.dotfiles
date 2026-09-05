@@ -1,6 +1,6 @@
 {
   "model": "opus[1m]",
-  "autoCompactWindow": 256000,
+  "autoCompactWindow": 512000,
   "permissions": {
     "defaultMode": "auto"
   },
