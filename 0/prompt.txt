@@ -1,0 +1,32 @@
+what's up with my system rebuild:
+error:
+       … while calling the 'derivationStrict' builtin
+         at «nix-internal»/derivation-internal.nix:37:12:
+           36|
+           37|   strict = derivationStrict drvAttrs;
+             |            ^
+           38|
+
+       … while evaluating derivation 'nixos-system-thixos-26.11.20260904.801bef6'
+         whose name attribute is located at «github:nixos/nixpkgs/801bef6abd86b91e51083066b83fb354a11fc640?narHash=sha256-hLD4l3QOGBQhkVp3mQ2lJ/YbEi99qUgKapb40KovZ88%3D»/pkgs/stdenv/generic/make-derivation.nix:651:11
+
+       … while evaluating attribute 'buildCommand' of derivation 'nixos-system-thixos-26.11.20260904.801bef6'
+         at «github:nixos/nixpkgs/801bef6abd86b91e51083066b83fb354a11fc640?narHash=sha256-hLD4l3QOGBQhkVp3mQ2lJ/YbEi99qUgKapb40KovZ88%3D»/nixos/modules/system/activation/top-level.nix:63:7:
+           62|       allowSubstitutes = false;
+           63|       buildCommand = systemBuilder;
+             |       ^
+           64|
+
+       … while evaluating the option `environment.etc."nix/nix.conf".source':
+
+       … while evaluating the option `nix.settings.experimental-features':
+
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: A definition for option `nix.settings.experimental-features' is not of type `list of string'. TypeError: Definition values:
+       - In `/nix/store/pfnf6n15pi8zykasa948p8dcnfn61frq-source/nixos/common.nix': "nix-command flakes"
+Command 'nix --extra-experimental-features 'nix-command flakes' build --print-out-paths '/home/thom/src/github.com/tteggel/.dotfiles#nixosConfigurations."thixos".config.system.build.toplevel' --no-link' returned non-zero exit status 1.
+
+---
+
+commit and push
