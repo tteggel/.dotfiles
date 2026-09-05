@@ -1,0 +1,59 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "01M1SW5C09C6VHQEV9H2CG4PM4",
+  "session_id": "01a07397-0761-7d60-ae75-eb2a8cef1f96",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-05T22:48:55.037852199Z",
+  "branch": "master",
+  "checkpoints_count": 6,
+  "save_step_count": 1,
+  "files_touched": [
+    "config/claude/settings.json",
+    "home/agent.nix",
+    "home/codex.nix",
+    "home/grok.nix",
+    "home/home.nix"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "af373b7fb680",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 293288,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 7357056,
+    "output_tokens": 29595,
+    "api_call_count": 72
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-05T22:48:54.901529699Z",
+    "agent_lines": 23,
+    "agent_removed": 20,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 23,
+    "total_lines_changed": 43,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 23,
+      "agent_lines_removed": 20
+    }
+  ]
+}

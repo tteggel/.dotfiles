@@ -1,0 +1,26 @@
+what's the auto-compaction limit for each of the configured harnesses?
+
+---
+
+why is fable 5.1 so token-hungry?
+
+---
+
+yeah i'm noticing very rapid context consumption at xhigh thinking. I'm compacting context early to avoid fade at fuller contexts and keep costs/usage down.
+
+---
+
+is there a way in claude or codex to have the model decide when to compact based on phase?
+
+---
+
+explain this - I think a config is not taking somewhere?                                                4% until auto-compact · ◎ /goal active (1h)
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  maude · main · Fable 5.1 xhigh · 89% context left · 112k in · 73 out · 5h 77% (resets 2h) · weekly 95% (resets 2d)        /rc
+  ⏵⏵ auto mode on · 1 monitor · ← 1 agent
+
+---
+
+up the compaction window for claude to 512K. summarise the behaviour for codex
