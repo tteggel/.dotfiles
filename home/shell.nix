@@ -11,6 +11,9 @@
 
   programs.zsh = {
     enable = true;
+    # Preserve the existing layout when home.stateVersion 26.05 changes the
+    # default to $XDG_CONFIG_HOME/zsh.
+    dotDir = config.home.homeDirectory;
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;

@@ -57,7 +57,7 @@
 in {
   imports = [ ./shell.nix ./skills.nix ];
 
-  home.stateVersion = "25.05"; # Match NixOS stateVersion
+  home.stateVersion = "26.05";
 
   nix = {
     package = lib.mkDefault pkgs.nix;
