@@ -145,6 +145,42 @@
         "type": "github"
       }
     },
+    "mdv": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787403464,
+        "narHash": "sha256-E7kfWBPYLNMl3dXrMQ3nMqkSiE2ng1+zXnswGjoIpP4=",
+        "owner": "WhoSowSee",
+        "repo": "mdv",
+        "rev": "4e23b4b1904073caf6fcc5d06d14b468f95b603d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "WhoSowSee",
+        "repo": "mdv",
+        "type": "github"
+      }
+    },
+    "mdv-previewer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787403774,
+        "narHash": "sha256-iYPhBzbaCS8IM39/Flai02AA8OJgl2Ue2nB2sKqTbZY=",
+        "owner": "WhoSowSee",
+        "repo": "mdv-previewer.yazi",
+        "rev": "099ebba8fe1739f0402cefc14cba19747daa657d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "WhoSowSee",
+        "repo": "mdv-previewer.yazi",
+        "type": "github"
+      }
+    },
     "nixos-wsl": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -235,6 +271,8 @@
         "dim-unfocused": "dim-unfocused",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
+        "mdv": "mdv",
+        "mdv-previewer": "mdv-previewer",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_4"
       }

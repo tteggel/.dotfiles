@@ -4,6 +4,7 @@
   zellij-main = bespoke-zellij.zellij;
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
+  mdv = inputs.mdv.packages.${pkgs.stdenv.hostPlatform.system}.default;
   mcp = import ./mcp.nix { inherit pkgs lib; };
   codex-cfg = import ./codex.nix { inherit lib; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
@@ -150,7 +151,7 @@ in {
     # symlink, which then explodes with EROFS when `gh auth login` tries to
     # rewrite the file (e.g. to record git_protocol). Let gh own its config.
     gh
-    wget jq eza bat fd ripgrep fzf zoxide delta lazygit yazi difftastic
+    wget jq eza bat fd ripgrep fzf zoxide delta lazygit difftastic
     kubectl firebase-tools micro starship nodejs
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
@@ -248,6 +249,20 @@ in {
   xdg.configFile."zellij/config.kdl".source = ../config/zellij/config.kdl;
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
+
+  programs.yazi = {
+    enable = true;
+    extraPackages = [ mdv ];
+    plugins.mdv-previewer = inputs.mdv-previewer;
+    settings.plugin = {
+      prepend_previewers = [
+        { url = "*.{md,markdown,txt}"; run = "mdv-previewer"; }
+      ];
+      prepend_preloaders = [
+        { url = "*.{md,markdown,txt}"; run = "mdv-previewer"; }
+      ];
+    };
+  };
 
   home.file = lib.optionalAttrs (!isMinimal) mcp.agyExtensionFiles;
 

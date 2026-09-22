@@ -15,6 +15,14 @@
     };
     llm-agents.url = "github:numtide/llm-agents.nix";
     dim-unfocused.url = "path:./bespoke/zellij/dim-unfocused";
+    mdv = {
+      url = "github:WhoSowSee/mdv";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    mdv-previewer = {
+      url = "github:WhoSowSee/mdv-previewer.yazi";
+      flake = false;
+    };
 
     # Agent skills (SKILL.md format, shared by Claude / Codex / Antigravity).
     # Add new GitHub-sourced skills here as `flake = false` inputs, then
