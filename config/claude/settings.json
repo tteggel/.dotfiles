@@ -1,6 +1,11 @@
 {
   "model": "opus[1m]",
   "autoCompactWindow": 512000,
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
     "defaultMode": "auto"
   },
