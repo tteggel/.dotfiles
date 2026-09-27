@@ -30,7 +30,7 @@ ${B}${C}═══ Zellij ═══${R}
 
 ${B}${C}═══ Environment ═══${R}
 
-  EDITOR                    micro
+  EDITOR / VISUAL            hx (Helix)
   BROWSER                   open-browser
   STARSHIP_CONFIG           ~/.config/starship.toml
   MANPAGER                  bat

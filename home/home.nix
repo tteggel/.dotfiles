@@ -151,7 +151,7 @@ in {
     # symlink, which then explodes with EROFS when `gh auth login` tries to
     # rewrite the file (e.g. to record git_protocol). Let gh own its config.
     gh
-    wget jq eza bat fd ripgrep fzf zoxide delta lazygit helix difftastic
+    wget jq eza bat fd ripgrep fzf zoxide delta lazygit difftastic
     kubectl firebase-tools micro starship nodejs
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
@@ -350,7 +350,6 @@ in {
       # overlay-allowlisted, so it arrives as its own env var. See home/grok.nix.
       export GROK_AUTO_COMPACT_THRESHOLD_PERCENT=${toString grok-cfg.autoCompactThresholdPercent}
       export BROWSER=open-browser
-      export EDITOR=micro
       # `entire login` defaults to the OS keyring via the D-Bus Secret Service.
       # WSL has a session bus but nothing provides org.freedesktop.secrets, so
       # the token write fails ("The name is not activatable") and the login is

@@ -1,8 +1,6 @@
 os:
-  # Built-in preset; expands to `zed -- {{filename}}` / `zed -- {{filename}}:{{line}}`.
-  # `zed` is our WSL interop wrapper (scripts/zed.sh), which translates paths and
-  # line suffixes to Windows form before handing off to zed.exe.
-  editPreset: zed
+  # Open Helix in the terminal, jumping to the selected diff line when editing.
+  editPreset: helix
 gui:
   theme:
     activeBorderColor:

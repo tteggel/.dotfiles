@@ -32,7 +32,7 @@ show_startup_tips false
 stacked_pane_list false
 
 // Editor for scrollback
-scrollback_editor "micro"
+scrollback_editor "hx"
 
 // Mouse support
 mouse_mode true

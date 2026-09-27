@@ -61,7 +61,7 @@ The configuration embeds several substantial shell applications as `writeShellAp
 - Auto-attaches to Zellij on login
 - Zoxide + fzf for directory navigation
 - Dynamic pane titles (`repo:branch` format via precmd/preexec hooks)
-- Environment: `ZELLIJ_CONFIG_DIR`, `BROWSER`, `EDITOR` (micro), `MANPAGER` (bat)
+- Environment: `ZELLIJ_CONFIG_DIR`, `BROWSER`, `EDITOR` / `VISUAL` (hx/Helix), `MANPAGER` (bat)
 
 ### System packages
 

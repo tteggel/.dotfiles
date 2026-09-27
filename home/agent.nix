@@ -67,7 +67,7 @@ in {
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta difftastic micro starship
-    lazygit helix yazi nodejs
+    lazygit yazi nodejs
     zellij-main
     claude
     agy
@@ -199,7 +199,6 @@ in {
       # model's window instead of a token count, and `[session]` is not
       # overlay-allowlisted, so it arrives as its own env var. See home/grok.nix.
       export GROK_AUTO_COMPACT_THRESHOLD_PERCENT=${toString grok-cfg.autoCompactThresholdPercent}
-      export EDITOR=micro
       export BROWSER=open-browser
       # `entire login` defaults to the OS keyring via the D-Bus Secret Service.
       # WSL has a session bus but nothing provides org.freedesktop.secrets, so

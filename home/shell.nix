@@ -1,4 +1,13 @@
 { config, pkgs, ... }: {
+  programs.helix = {
+    enable = true;
+    defaultEditor = true;
+    # Match the One Dark palette used by Starship and Zellij.
+    settings.theme = "onedark";
+  };
+
+  programs.git.settings.core.editor = "hx";
+
   programs.bash = {
     enable = true;
     initExtra = ''
@@ -11,6 +20,12 @@
 
   programs.zsh = {
     enable = true;
+    # New Zellij panes inherit the session's original environment, including
+    # Home Manager's guard against sourcing session variables again.
+    envExtra = ''
+      export EDITOR="${config.home.sessionVariables.EDITOR}"
+      export VISUAL="${config.home.sessionVariables.VISUAL}"
+    '';
     # Preserve the existing layout when home.stateVersion 26.05 changes the
     # default to $XDG_CONFIG_HOME/zsh.
     dotDir = config.home.homeDirectory;
