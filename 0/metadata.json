@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M3J742Q5HBNPWPX15VMNSAFR",
+  "session_id": "01a0e448-2345-7db1-8c33-01794ad6a78c",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-27T19:57:54.80969523Z",
+  "branch": "master",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "AGENTS.md",
+    "config/lazygit/config.yml",
+    "config/zellij/config.kdl",
+    "home/agent.nix",
+    "home/home.nix",
+    "home/shell.nix",
+    "scripts/keybinds-help.sh"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6-astra",
+  "turn_id": "0f279804f302",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 71821,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1467520,
+    "output_tokens": 11333,
+    "api_call_count": 27,
+    "subagent_tokens_complete": true
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-27T19:57:54.782149064Z",
+    "agent_lines": 22,
+    "agent_removed": 11,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 22,
+    "total_lines_changed": 33,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 22,
+      "agent_lines_removed": 11
+    }
+  ]
+}
