@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M3J4AN9TZB4CA89E9P4ATSTB",
+  "strategy": "manual-commit",
+  "branch": "master",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "AGENTS.md",
+    "bespoke/zellij/dim-unfocused/AGENTS.md",
+    "bespoke/zellij/dim-unfocused/flake.lock",
+    "config/zellij/config.kdl",
+    "config/zellij/layouts/code.kdl",
+    "config/zellij/layouts/minimal.kdl",
+    "flake.lock",
+    "home/agent.nix",
+    "home/home.nix",
+    "scripts/command-palette.sh",
+    "scripts/session-picker.sh"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 74977,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1149952,
+    "output_tokens": 9613,
+    "api_call_count": 22,
+    "subagent_tokens_complete": true
+  }
+}
