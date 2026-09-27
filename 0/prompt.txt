@@ -1,1 +1,1 @@
-remove the status line from the bottom of the screen it's pointless
+commit everything
