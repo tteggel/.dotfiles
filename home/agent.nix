@@ -67,7 +67,7 @@ in {
 
   home.packages = with pkgs; [
     wget gh jq eza bat fd ripgrep fzf zoxide delta difftastic micro starship
-    lazygit yazi nodejs
+    lazygit helix yazi nodejs
     zellij-main
     claude
     agy
@@ -118,6 +118,7 @@ in {
   xdg.configFile."lazygit/config.yml".source = ../config/lazygit/config.yml;
   xdg.configFile."zellij/config.kdl".source = ../config/zellij/config.kdl;
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
+  xdg.configFile."zellij/layouts/minimal.kdl".source = ../config/zellij/layouts/minimal.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
   home.file = mcp.agyExtensionFiles;

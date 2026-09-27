@@ -50,6 +50,7 @@ commands=(
   "exec:agy	[Dev] Antigravity CLI"
   "exec:codex	[Dev] Codex CLI"
   "exec:grok	[Dev] Grok CLI"
+  "exec:hx	[Dev] Helix editor"
   "exec:lazygit	[Git] Git UI (lazygit)"
   "run:gh pr list	[Git] List pull requests"
   "exec:gh pr create	[Git] Create pull request"

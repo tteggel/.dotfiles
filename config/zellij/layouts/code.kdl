@@ -1,13 +1,14 @@
+// Bare panes also define the session's new-tab template, so Ctrl+Shift+t
+// and code-session's `new-tab --layout` both open another full code tab.
 layout {
     pane split_direction="vertical" {
-        pane stacked=true size="50%" {
-            pane command="claude" name="Claude"
-            pane command="agy" name="Agy"
-            pane command="codex" name="Codex"
-            pane command="grok" name="Grok"
+        pane size="55%" {
+            pane command="claude" name="Claude" size="50%"
+            pane command="codex" name="Codex" size="50%"
         }
-        pane stacked=true size="50%" {
+        pane stacked=true size="45%" {
             pane command="lazygit" name="Git"
+            pane command="hx" name="Helix"
             pane name="Terminal"
         }
     }

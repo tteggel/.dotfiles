@@ -151,7 +151,7 @@ in {
     # symlink, which then explodes with EROFS when `gh auth login` tries to
     # rewrite the file (e.g. to record git_protocol). Let gh own its config.
     gh
-    wget jq eza bat fd ripgrep fzf zoxide delta lazygit difftastic
+    wget jq eza bat fd ripgrep fzf zoxide delta lazygit helix difftastic
     kubectl firebase-tools micro starship nodejs
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
@@ -248,6 +248,7 @@ in {
   xdg.configFile."lazygit/config.yml".source = ../config/lazygit/config.yml;
   xdg.configFile."zellij/config.kdl".source = ../config/zellij/config.kdl;
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
+  xdg.configFile."zellij/layouts/minimal.kdl".source = ../config/zellij/layouts/minimal.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
   programs.yazi = {

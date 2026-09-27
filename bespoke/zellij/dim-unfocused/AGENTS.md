@@ -183,7 +183,7 @@ next free values. On each rebase, renumber ours above whatever upstream now
 occupies, in both `plugin_command.proto` and the generated
 `assets/prost/api.plugin_command.rs` (enum value, `as_str_name`, `from_str_name`,
 and the `tags="…"` list on `PluginCommand::payload`). History so far:
-215→227→229 for `CommandName`, 164→172 for the payload oneof.
+215→227→229→233 for `CommandName`, 164→172→176 for the payload oneof.
 
 Upstream also raises its MSRV regularly (0.45 needs rustc 1.95), so a rebase
 usually means bumping the sub-flake's `nixpkgs` and `rust-overlay` too.

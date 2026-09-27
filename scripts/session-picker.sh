@@ -52,10 +52,9 @@ start_session() {
   name=$(basename "$dir")
   record_recent "$dir" || true
   # A dead (EXITED) session of the same name blocks `zellij -s` with "Session
-  # with name X already exists, but is dead". Zellij 0.45 keeps EXITED sessions
-  # in the list even with serialization off, so reopening a recent project whose
-  # session has exited hits this. Serialization is off => the corpse holds no
-  # recoverable state, so drop it (dead-only; no --force) and start fresh.
+  # with name X already exists, but is dead". The purge before listing normally
+  # leaves none; this catches one that died after it ran. Drop it (dead-only;
+  # no --force) and start fresh: all it holds is a stale resurrection layout.
   zellij delete-session "$name" >/dev/null 2>&1 || true
   cd "$dir" && exec zellij -s "$name" -n ~/.config/zellij/layouts/code.kdl
 }
@@ -155,8 +154,15 @@ create_from_seed() {
 # --- Recently-used projects (MRU) merged with live sessions -------------------
 # Recent projects recorded by start_session are the source of truth: they
 # survive the zellij server dying (serialization is off) and are listed
-# most-recently-used first. Live sessions are merged in so running ones stay
-# attachable and nothing is hidden.
+# most-recently-used first. Live sessions are merged in so every running one
+# stays attachable.
+
+# Serialization is off (config.kdl), so a dead (EXITED) session is only ever a
+# session-layout.kdl left behind from before it was: zellij lists a session as
+# dead exactly while that file outlives its server. Attaching one resurrects
+# its months-old commands, each parked behind a "Waiting to run" prompt, so
+# delete them before listing. Dead-only: without --force live ones are kept.
+zellij delete-all-sessions --yes >/dev/null 2>&1 || true
 
 # Live sessions: name -> status. Use `-n` (not `-s`, which strips the
 # annotations) so current/attached/exited can be told apart.
@@ -207,8 +213,9 @@ if [ -f "$RECENT_FILE" ]; then
 fi
 
 # 2) Live sessions not already listed (started outside the picker, or whose dir
-#    predates the MRU file). Reopen exited ones fresh in their dir when zoxide
-#    can resolve it, else attach so nothing is hidden.
+#    predates the MRU file). An exited one that survived the purge is never
+#    attached, as that would resurrect it: reopen it fresh in its dir when
+#    zoxide can resolve it, else leave it out.
 for name in "${live_order[@]}"; do
   [ -n "${shown[$name]:-}" ] && continue
   shown["$name"]=1
@@ -217,8 +224,6 @@ for name in "${live_order[@]}"; do
     dir=$(resolve_dir "$name")
     if [ -n "$dir" ] && [ -d "$dir" ]; then
       entries+="recent:$dir"$'\t'"$name"$'\n'
-    else
-      entries+="local:$name"$'\t'"$name (exited)"$'\n'
     fi
   else
     entries+="local:$name"$'\t'"$(live_label "$status" "$name")"$'\n'

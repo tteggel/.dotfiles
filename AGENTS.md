@@ -65,7 +65,7 @@ The configuration embeds several substantial shell applications as `writeShellAp
 
 ### System packages
 
-Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex, grok).
+Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, helix, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex, grok).
 
 ### Config file management
 

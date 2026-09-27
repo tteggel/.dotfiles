@@ -20,7 +20,7 @@ themes {
 
 // Clean UI
 pane_frames false
-default_layout "compact"
+default_layout "minimal"
 show_startup_tips false
 
 // Render stacked panes the classic way (collapsed members inline) instead of
@@ -50,9 +50,11 @@ scroll_buffer_size 10000
 // injected args (the "wrong command"). WSL idle-shutdown kills the server
 // often, so nearly every reopen hit that path. Off => reopening just runs the
 // layout fresh: agents launch clean, no resume params, no prompt.
-// Note: zellij still lists EXITED sessions (their names persist on disk even
-// with serialization off), so `zellij -s <name>` collides with a dead session
-// of the same name. session-picker's start_session deletes the corpse first.
+// Turning it off does not remove layouts already written: zellij lists a
+// session as EXITED for as long as its session-layout.kdl (under
+// ~/.cache/zellij/contract_version_1/session_info/) outlives its server, and
+// attaching one still resurrects it, prompts and stale commands included.
+// session-picker deletes those dead sessions before it lists anything.
 session_serialization false
 
 // Web server: bind to all interfaces so IAP TCP forwarding can reach it
