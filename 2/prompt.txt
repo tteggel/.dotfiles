@@ -1,0 +1,17 @@
+i wanna make some changes to the coding layout. i want the left column split in half horizontally with claude at the top and codex at the bottom. remove agy and grok but keep their packages. increase the width of the left column a little. install helix and run it in the same set of tabs as lazygit and the terminal. move to the new zellij tab header. can we remove the "waiting to run" prompt from zellij, and stop it from trying to resume old commands in the panes - it gets it wrong all the time.
+
+---
+
+you can commit the ssh-agent change to work on a clean abse
+
+---
+
+look at the tab-bar/compact-bar plugins please
+
+---
+
+is compact-bar getting removed?
+
+---
+
+switch back to compact-bar, I don't like the headers at the top it seems wasteful even though it's not taking up any more space!
