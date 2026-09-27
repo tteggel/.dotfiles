@@ -1,0 +1,82 @@
+update the zellij fork with upstream and rebase the shader
+
+---
+
+<task-notification>
+<task-id>bebrj9o58</task-id>
+<summary>Monitor event: "zellij/plugin build milestones and errors"</summary>
+<event>zellij&gt; Finished cargoSetupPostUnpackHook
+zellij&gt; Finished cargoSetupPostPatchHook</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bebrj9o58</task-id>
+<summary>Monitor event: "zellij/plugin build milestones and errors"</summary>
+<event>dim-unfocused&gt;     Finished `release` profile [optimized] target(s) in 1m 19s
+dim-unfocused&gt; Running phase: installPhase</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bebrj9o58</task-id>
+<summary>Monitor event: "zellij/plugin build milestones and errors"</summary>
+<event>zellij&gt;     Finished `release` profile [optimized] target(s) in 9m 31s</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bebrj9o58</task-id>
+<summary>Monitor event: "zellij/plugin build milestones and errors"</summary>
+<event>zellij&gt; Finished cargoInstallPostBuildHook
+zellij&gt; Finished cargoBuildHook
+zellij&gt; Running phase: checkPhase</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bebrj9o58</task-id>
+<summary>Monitor event: "zellij/plugin build milestones and errors"</summary>
+<event>zellij&gt;     Finished `release` profile [optimized] target(s) in 1m 13s
+zellij&gt; test result: ok. 10 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.01s
+zellij&gt; test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+zellij&gt; test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+zellij&gt; Finished cargoCheckHook
+zellij&gt; Running phase: installPhase</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bebrj9o58</task-id>
+<summary>Monitor event: "zellij/plugin build milestones and errors"</summary>
+<event>zellij&gt; Finished cargoInstallHook</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>btxbx3pty</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-thom-src-github-com-tteggel--dotfiles/05cf627e-d42f-40e8-b4d9-27a5b8a6a5cc/tasks/btxbx3pty.output</output-file>
+<status>completed</status>
+<summary>Background command "Build patched zellij and plugin from local checkout" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+is there anything upstream that could give us anything like dim-unfocussed?
+
+---
+
+yeah the frame mode isn't working for me and I tried a set_pane_color approach before landing here. I'm not wedded to zellij - are there any other options I should look at?
