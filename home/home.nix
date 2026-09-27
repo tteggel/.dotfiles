@@ -439,6 +439,23 @@ in {
     nix-direnv.enable = true;
   };
 
+  # ssh-agent as a systemd user unit, socket at $XDG_RUNTIME_DIR/ssh-agent.
+  # The module exports SSH_AUTH_SOCK from the generated .profile/.zprofile/
+  # .zshenv (skipped when SSH_CONNECTION shows a forwarded agent), so every
+  # shell and zellij pane shares the one agent; lingering keeps it up across
+  # logins.
+  services.ssh-agent.enable = true;
+
+  # AddKeysToAgent, or the agent sits empty until an `ssh-add` by hand: the
+  # first ssh/git op that unlocks a key parks it in the agent for the rest of
+  # the boot. enableDefaultConfig = false stops home-manager writing its
+  # legacy `Host *` defaults (and a deprecation warning) into ~/.ssh/config.
+  programs.ssh = {
+    enable = true;
+    enableDefaultConfig = false;
+    settings."*".AddKeysToAgent = "yes";
+  };
+
   programs.git = {
     enable = true;
     settings = {
