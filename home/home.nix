@@ -254,7 +254,22 @@ in {
   programs.yazi = {
     enable = true;
     extraPackages = [ mdv ];
-    plugins.mdv-previewer = inputs.mdv-previewer;
+    # mdv master renamed its --pretty-* styling flags (WhoSowSee/mdv@556d839),
+    # but the plugin's default args still use the v5.1.0 release names, so every
+    # preview failed with "unexpected argument '--pretty-list'". --replace-fail
+    # breaks the build once the plugin catches up: that's the cue to drop this
+    # and go back to plain `inputs.mdv-previewer`.
+    plugins.mdv-previewer = pkgs.applyPatches {
+      name = "mdv-previewer.yazi";
+      src = inputs.mdv-previewer;
+      postPatch = ''
+        substituteInPlace main.lua \
+          --replace-fail '"--pretty-list"' '"--list-style"' \
+          --replace-fail '"--pretty-checkbox"' '"--checkbox-style"' \
+          --replace-fail '"--pretty-definition"' '"--definition-marker-style"' \
+          --replace-fail '"--pretty-table"' '"--table-borders"'
+      '';
+    };
     settings.plugin = {
       prepend_previewers = [
         { url = "*.{md,markdown,txt}"; run = "mdv-previewer"; }
