@@ -32,6 +32,11 @@
   # counters), so it has to stay writable. Keeping it out of the repo also keeps
   # the project paths it records out of a public repository.
   configArgs = [
+    # Leave scrolling and mouse selection to Zellij, whose copy_on_select
+    # copies on release. Codex's fullscreen transcript captures selection and
+    # requires an explicit copy instead.
+    "-c tui.fullscreen_transcript=false"
+    "-c 'tui.alternate_screen=\"never\"'"
     "-c 'tui.status_line=[${lib.concatMapStringsSep "," builtins.toJSON statusLineItems}]'"
     "-c model_auto_compact_token_limit=${toString autoCompactTokenLimit}"
   ];
