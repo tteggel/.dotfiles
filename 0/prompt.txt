@@ -1,0 +1,5 @@
+commit and push please
+
+---
+
+codex interfering with my copy/paste and requiring a ctrl-c is very annoying - can you configure it to stop doing that and restore my previous select to copy behavour?
