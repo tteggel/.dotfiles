@@ -270,6 +270,9 @@ in {
           --replace-fail '"--pretty-table"' '"--table-borders"'
       '';
     };
+    # Parent and current columns kept equal and narrow so the preview gets two
+    # thirds of the width: in the code layout yazi only has the right column.
+    settings.mgr.ratio = [ 1 1 4 ];
     settings.plugin = {
       prepend_previewers = [
         { url = "*.{md,markdown,txt}"; run = "mdv-previewer"; }

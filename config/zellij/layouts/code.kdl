@@ -8,7 +8,7 @@ layout {
         }
         pane stacked=true size="45%" {
             pane command="lazygit" name="Git"
-            pane command="hx" name="Helix"
+            pane command="yazi" name="Yazi"
             pane name="Terminal"
         }
     }
