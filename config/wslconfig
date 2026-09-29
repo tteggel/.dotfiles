@@ -1,2 +1,6 @@
 [wsl2]
-networkingMode=mirrored
+# Consomme (WSL >= 2.9; "virtioproxy" before): a user-mode NAT that still gives
+# Linux the Windows IP and shares 127.0.0.1 with Windows, like mirrored does.
+# Mirrored re-applied eth1's address and routes on every Hyper-V NIC status event
+# (Wi-Fi roams and more), dropping the default route up to ~400 times a day.
+networkingMode=consomme

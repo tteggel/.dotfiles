@@ -94,8 +94,9 @@ exact chip name).
   load. It's `boot.kernelModules = [ "vhci_hcd" ]`; needs a `wsl --shutdown` (or
   `sudo modprobe vhci_hcd` to load immediately).
 - **Can't reach the server** (`usbip list -r 127.0.0.1` fails) → Windows Firewall
-  rule for TCP 3240. `snippetIpAddress = "127.0.0.1"` assumes mirrored networking
-  (which `config/wslconfig` sets); NAT mode uses the eth0 gateway instead.
+  rule for TCP 3240. `snippetIpAddress = "127.0.0.1"` assumes WSL shares Windows'
+  localhost — true for consomme (which `config/wslconfig` sets) and mirrored
+  networking; NAT mode uses the eth0 gateway instead.
 - No custom kernel is built — USB/IP rides the stock WSL2 kernel. *"WSL kernel is
   not USBIP capable"* → `wsl --update`.
 - **Same port**: `bind`/`autoAttach` key on the physical port (busid); a different

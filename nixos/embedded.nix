@@ -16,8 +16,9 @@
     # re-run `usbipd bind`) if the probe ever moves to a different port.
     autoAttach = [ "1-1" ];
 
-    # Mirrored networking (config/wslconfig) ⇒ the Windows usbipd server is on
-    # localhost. (The module default extracts the eth0 gateway, for NAT mode.)
+    # Consomme networking (config/wslconfig), like mirrored, shares 127.0.0.1 with
+    # Windows ⇒ the Windows usbipd server is on localhost. (The module default
+    # extracts the eth0 gateway: right for NAT mode, but the LAN router here.)
     snippetIpAddress = "127.0.0.1";
   };
 
