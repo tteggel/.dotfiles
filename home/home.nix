@@ -476,6 +476,13 @@ in {
 
   programs.git = {
     enable = true;
+    includes = [
+      {
+        # The trailing slash matches all repositories beneath this directory.
+        condition = "gitdir:~/src/github.com/bookcreator/";
+        contents.user.email = "thom@bookcreator.com";
+      }
+    ];
     settings = {
       user.name = "Thom Leggett";
       user.email = "thom@tteggel.org";
