@@ -1,1 +1,1 @@
-I want the git committer and author for any repos under src/github.com/bookcreator to be thom@bookcreator.com and keep thom@tteggel.org for any other commits - what's the best way to achieve this without having to remember to update the local committer and author each time I check out a bookcreator repo?
+commit it please
