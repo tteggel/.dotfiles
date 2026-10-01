@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "01M3VEC60AJ4XA3JSJM0AR4JNV",
+  "session_id": "01a0f6c9-a2d3-7db2-bd18-f26169d4fd1e",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-01T09:57:49.952011213Z",
+  "branch": "master",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "nixos/common.nix"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6-astra",
+  "turn_id": "1fea31260b61",
+  "compact_transcript_start": 0,
+  "initial_attribution": {
+    "calculated_at": "2026-10-01T09:57:49.947267174Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 0,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 22,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "nixos/common.nix": 22
+      }
+    }
+  ]
+}
