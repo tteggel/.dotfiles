@@ -1,0 +1,31 @@
+is there a way to render mermaid diagrams in the terminal? how about when they're embedded into a markdown? I'd like my yazi markdown preview to render the diagrams if possible
+
+---
+
+<task-notification>
+<task-id>by2063n3x</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-thom-src-github-com-tteggel--dotfiles/d335e59d-ff66-4d9c-bbe6-5417183fe605/tasks/by2063n3x.output</output-file>
+<status>completed</status>
+<summary>Background command "Build mermaid-ascii 1.6.1 from its flake" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bbjry4pcb</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-thom-src-github-com-tteggel--dotfiles/d335e59d-ff66-4d9c-bbe6-5417183fe605/tasks/bbjry4pcb.output</output-file>
+<status>completed</status>
+<summary>Background command "Build merman-cli v0.8.0 from its flake" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bq62oczjf</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-thom-src-github-com-tteggel--dotfiles/d335e59d-ff66-4d9c-bbe6-5417183fe605/tasks/bq62oczjf.output</output-file>
+<status>completed</status>
+<summary>Background command "Re-run projection check per diagram family" completed (exit code 0)</summary>
+</task-notification>
