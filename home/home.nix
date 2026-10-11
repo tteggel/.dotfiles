@@ -5,6 +5,7 @@
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
   mdv = inputs.mdv.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  merman = inputs.merman.packages.${pkgs.stdenv.hostPlatform.system}.default;
   mcp = import ./mcp.nix { inherit pkgs lib; };
   codex-cfg = import ./codex.nix { inherit lib; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
@@ -42,6 +43,12 @@
     name = "xdg-open";
     runtimeInputs = [ open-browser ];
     text = builtins.readFile ../scripts/xdg-open.sh;
+  };
+  # mdv that draws ```mermaid fences as diagrams, for yazi's markdown preview.
+  mdv-mermaid = pkgs.writeShellApplication {
+    name = "mdv";
+    runtimeInputs = [ mdv merman pkgs.jq ];
+    text = builtins.readFile ../scripts/mdv-mermaid.sh;
   };
   googleCloudSdkWithGke = pkgs.google-cloud-sdk.withExtraComponents [
     pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin
@@ -253,7 +260,7 @@ in {
 
   programs.yazi = {
     enable = true;
-    extraPackages = [ mdv ];
+    extraPackages = [ mdv-mermaid ];
     plugins.mdv-previewer = inputs.mdv-previewer;
     # Parent and current columns kept equal and narrow so the preview gets two
     # thirds of the width: in the code layout yazi only has the right column.

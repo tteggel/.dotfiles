@@ -181,10 +181,29 @@
         "type": "github"
       }
     },
+    "merman": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1791219220,
+        "narHash": "sha256-PPegdxdgT7OF5jzFskj3r5Ftwca0Z2A61q+Y2zLQuZ0=",
+        "owner": "Latias94",
+        "repo": "merman",
+        "rev": "2029bd547077b1a6800878e125663633d81e6d87",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Latias94",
+        "ref": "v0.8.0",
+        "repo": "merman",
+        "type": "github"
+      }
+    },
     "nixos-wsl": {
       "inputs": {
         "flake-compat": "flake-compat",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs_4"
       },
       "locked": {
         "lastModified": 1789164534,
@@ -235,6 +254,22 @@
     },
     "nixpkgs_3": {
       "locked": {
+        "lastModified": 1781216227,
+        "narHash": "sha256-9mUW6gNwoN2SWc/l0fW4svPNOulXLl8ijqKyeSOGgJE=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a0374025a863d007d98e3297f6aa46cc3141c2f0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
         "lastModified": 1789006805,
         "narHash": "sha256-xB8mKMOx1IA9vTDNLmJZ6n4wCMq/cuWBBOzGCRnqxrU=",
         "owner": "NixOS",
@@ -249,7 +284,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_4": {
+    "nixpkgs_5": {
       "locked": {
         "lastModified": 1791048980,
         "narHash": "sha256-KgItSKML8Xvte0B7/uGnBDsYzSnnKHcOaiUbgWBXLXw=",
@@ -273,8 +308,9 @@
         "llm-agents": "llm-agents",
         "mdv": "mdv",
         "mdv-previewer": "mdv-previewer",
+        "merman": "merman",
         "nixos-wsl": "nixos-wsl",
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": "nixpkgs_5"
       }
     },
     "rust-overlay": {

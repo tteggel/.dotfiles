@@ -23,6 +23,11 @@
       url = "github:WhoSowSee/mdv-previewer.yazi";
       flake = false;
     };
+    # Draws mermaid diagrams as text for the yazi markdown preview
+    # (scripts/mdv-mermaid.sh). Pinned to a release because the CLI is pre-1.0
+    # and still renaming flags. No nixpkgs follows: it is a several-minute Rust
+    # build with no binary cache, so let it rebuild only when this tag moves.
+    merman.url = "github:Latias94/merman/v0.8.0";
 
     # Agent skills (SKILL.md format, shared by Claude / Codex / Antigravity).
     # Add new GitHub-sourced skills here as `flake = false` inputs, then
