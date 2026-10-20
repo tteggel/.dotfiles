@@ -1,0 +1,5 @@
+why doesn't my yazi allow me to copy/paste by dragging like my other apps?
+
+---
+
+nah the shift drag doesn't respect zellij panes so it's useless. I'm happy with option 2 as I use keys for yazi almost exclusively
