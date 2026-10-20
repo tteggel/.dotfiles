@@ -213,6 +213,7 @@ in {
     agy
     codex
     grok
+    llm-agents.copilot-cli
     # GUI, so it needs WSLg working — see nixos/wslg.nix for the
     # /mnt/shared_memory mount without which its window renders blank.
     obsidian
