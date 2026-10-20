@@ -53,6 +53,16 @@
   googleCloudSdkWithGke = pkgs.google-cloud-sdk.withExtraComponents [
     pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin
   ];
+  # Consomme's localhost relay cannot forward Node's default dual-stack [::]
+  # listener to Windows (microsoft/WSL#41860). Firebase's OAuth callback uses
+  # exactly that binding; IPv4 loopback preserves the normal browser login.
+  firebase-tools = pkgs.firebase-tools.overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      substituteInPlace "$out/lib/node_modules/firebase-tools/lib/auth.js" \
+        --replace-fail 'server.listen(port, () => {' \
+                       'server.listen(port, "127.0.0.1", () => {'
+    '';
+  });
   expectedDotfiles = [
     ".ssh" ".cache" ".local" ".config" ".claude" ".gemini" ".grok"
     ".zsh_history" ".zoxide.db" ".zoxide.db.zo" ".sudo_as_admin_successful"
@@ -97,6 +107,17 @@ in {
       [ -f "$user_dir/NTUSER.DAT" ] || continue
       [ -w "$user_dir" ] || continue
       install -m 0644 ${../config/wslconfig} "$user_dir/.wslconfig"
+    done
+  '';
+
+  # Keep the diagnostic/recovery tool on Windows so it remains available when
+  # WSL cannot start or its network backend is stuck.
+  home.activation.wslNetwork = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    for user_dir in /mnt/c/Users/*; do
+      [ -f "$user_dir/NTUSER.DAT" ] || continue
+      [ -w "$user_dir" ] || continue
+      install -D -m 0644 ${../config/windows/wsl-network.ps1} \
+        "$user_dir/AppData/Local/wsl-network/wsl-network.ps1"
     done
   '';
 

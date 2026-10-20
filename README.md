@@ -38,6 +38,55 @@ sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 ```
 (Inside yoloixos this is intentionally impossible.)
 
+## WSL networking and authentication
+
+`config/wslconfig` selects Consomme. Mirrored mode previously dropped the guest's
+default route on Wi-Fi NIC events, so switching back can reintroduce that problem.
+
+Firebase's browser login normally opens a dual-stack `[::]` callback listener.
+Consomme currently refuses IPv4 connections to that listener and hangs forwarding
+IPv6 from Windows ([WSL#41860](https://github.com/microsoft/WSL/issues/41860)).
+`home/home.nix` patches Firebase to listen on `127.0.0.1` instead; both
+`firebase login --reauth` and `gcloud-reauth` use that package. The substitution
+fails the build if upstream changes the listener, so the workaround gets reviewed
+on upgrades. Before rebuilding, `firebase login --reauth --no-localhost` bypasses
+the callback entirely using Firebase's supported code-paste flow.
+
+For a complete outage, collect evidence **before** restarting anything. Home
+Manager installs a Windows-side tool that remains available when WSL is broken.
+Run from Windows PowerShell after rebuilding:
+
+```powershell
+& "$env:LOCALAPPDATA\wsl-network\wsl-network.ps1"
+```
+
+Reports go to `%LOCALAPPDATA%\wsl-network\reports`. They compare Windows and
+guest HTTPS requests by hostname and IP, and record routes, DNS ownership,
+firewall policy, host services and recent Windows networking errors. Individual
+WSL commands time out so a stuck guest does not block the rest of the report.
+Use `-Distro <name>` if the distro was imported under another name.
+
+If only hostname requests fail, inspect DNS: WSL and Tailscale have both been
+observed rewriting `/etc/resolv.conf`. If guest requests to IPs fail while the
+Windows probes work, the WSL backend or filtering path is implicated. If both
+fail, investigate the Windows connection; Windows logged Wi-Fi limited-connectivity
+recovery and DNS timeouts during the October 2026 investigation. A healthy
+snapshot had outbound/loopback allowed and no explicit Windows block rules;
+this does not establish what happened during an earlier outage.
+
+To try recovery without rebooting Windows, save work in **all** WSL distros,
+then run from **elevated Windows PowerShell**:
+
+```powershell
+& "$env:LOCALAPPDATA\wsl-network\wsl-network.ps1" -Recover
+```
+
+This captures a report, runs `wsl --shutdown`, then restarts the Windows
+`WslService` (or legacy `LxssManager`). Terminating/rebooting one guest leaves
+host services running. Reopen WSL and run the report again to check recovery.
+The service restart is a recovery attempt; the intermittent outage's cause
+has not yet been reproduced. Firewall policy is unchanged.
+
 ## Embedded debug probes (USB/IP passthrough)
 
 `thixos` forwards a USB debug probe from Windows into WSL over USB/IP, so you can
