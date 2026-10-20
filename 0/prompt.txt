@@ -1,0 +1,7 @@
+couple of things to investigate and fix:
+1. firebase reauth doen't work since switching the networking mode;
+2. a couple of times where the WSL has got into a state where networking was completely down and only a host restart would fix - guest terminate and reboot had no effect. connections were actievly refused - host firewall?
+
+---
+
+commit and push
