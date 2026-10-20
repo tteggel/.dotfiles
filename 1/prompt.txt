@@ -1,0 +1,5 @@
+can I use my github copilot subscription with codex and claude code TUI apps? some hacky proxy?
+
+---
+
+let's try the copilot cli - is it available in llm-agents?

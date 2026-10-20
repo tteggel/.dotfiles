@@ -3,8 +3,9 @@
   "checkpoint_id": "01M5C5HWR95ZVPSVE8DJCYD5PQ",
   "strategy": "manual-commit",
   "branch": "master",
-  "checkpoints_count": 7,
+  "checkpoints_count": 9,
   "files_touched": [
+    "home/agent.nix",
     "home/home.nix"
   ],
   "sessions": [
@@ -14,14 +15,21 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 118655,
+    "input_tokens": 190226,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 1628928,
-    "output_tokens": 5492,
-    "api_call_count": 27,
+    "cache_read_tokens": 2635904,
+    "output_tokens": 8590,
+    "api_call_count": 45,
     "subagent_tokens_complete": true
   }
 }
