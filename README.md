@@ -54,10 +54,11 @@ the callback entirely using Firebase's supported code-paste flow.
 
 For a complete outage, collect evidence **before** restarting anything. Home
 Manager installs a Windows-side tool that remains available when WSL is broken.
-Run from Windows PowerShell after rebuilding:
+Run from Windows PowerShell after rebuilding. Windows blocks scripts by default,
+so bypass the execution policy for this one process:
 
 ```powershell
-& "$env:LOCALAPPDATA\wsl-network\wsl-network.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\wsl-network\wsl-network.ps1"
 ```
 
 Reports go to `%LOCALAPPDATA%\wsl-network\reports`. They compare Windows and
@@ -78,7 +79,7 @@ To try recovery without rebooting Windows, save work in **all** WSL distros,
 then run from **elevated Windows PowerShell**:
 
 ```powershell
-& "$env:LOCALAPPDATA\wsl-network\wsl-network.ps1" -Recover
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\wsl-network\wsl-network.ps1" -Recover
 ```
 
 This captures a report, runs `wsl --shutdown`, then restarts the Windows
