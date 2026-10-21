@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.11.6",
+  "checkpoint_id": "01M5FN7B9D3TRVFWS8B25X4N0R",
+  "strategy": "manual-commit",
+  "branch": "agent-parity",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "flake.lock",
+    "flake.nix",
+    "home/skills.nix"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 244,
+    "cache_creation_tokens": 411016,
+    "cache_read_tokens": 30941939,
+    "output_tokens": 268470,
+    "api_call_count": 119,
+    "subagent_tokens": {
+      "input_tokens": 442,
+      "cache_creation_tokens": 704825,
+      "cache_read_tokens": 41520636,
+      "output_tokens": 6984,
+      "api_call_count": 220
+    }
+  }
+}
