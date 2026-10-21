@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "anthropic-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791571549,
+        "narHash": "sha256-+UIqBnzyeIOvJSKYaDaE3GYPEpLw7qQqyUw5S971AfU=",
+        "owner": "anthropics",
+        "repo": "skills",
+        "rev": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "bun2nix": {
       "inputs": {
         "flake-parts": [
@@ -31,22 +47,6 @@
         "owner": "Mic92",
         "ref": "llm-agents",
         "repo": "bun2nix",
-        "type": "github"
-      }
-    },
-    "code-review-skill": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788880185,
-        "narHash": "sha256-hugc4SDGXAXBEgAYodfSTwg/FjjE9pTioxy+0VWyC34=",
-        "owner": "awesome-skills",
-        "repo": "code-review-skill",
-        "rev": "4850184dfd7765ea7b3c5c4e9b6cf8e0815ee7cb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "awesome-skills",
-        "repo": "code-review-skill",
         "type": "github"
       }
     },
@@ -300,9 +300,26 @@
         "type": "github"
       }
     },
+    "openai-doc-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776224607,
+        "narHash": "sha256-E4A6dB22rh/C2PKtpGgXKwBaVs+YMaYDtRl20tVjvAE=",
+        "owner": "openai",
+        "repo": "skills",
+        "rev": "e6afb0d74cc75d220df2faf3dd6c635c2dc6a108",
+        "type": "github"
+      },
+      "original": {
+        "owner": "openai",
+        "repo": "skills",
+        "rev": "e6afb0d74cc75d220df2faf3dd6c635c2dc6a108",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "code-review-skill": "code-review-skill",
+        "anthropic-skills": "anthropic-skills",
         "dim-unfocused": "dim-unfocused",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",
@@ -310,7 +327,9 @@
         "mdv-previewer": "mdv-previewer",
         "merman": "merman",
         "nixos-wsl": "nixos-wsl",
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_5",
+        "openai-doc-skills": "openai-doc-skills",
+        "superpowers": "superpowers"
       }
     },
     "rust-overlay": {
@@ -331,6 +350,22 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "superpowers": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792527217,
+        "narHash": "sha256-hy6aavA88hoqdUsV7vCTa0nV4YooZDSBPPPX6Jb7ZCs=",
+        "owner": "obra",
+        "repo": "superpowers",
+        "rev": "b739a8af570e10a95898f2bdf6cec97467fa6c12",
+        "type": "github"
+      },
+      "original": {
+        "owner": "obra",
+        "repo": "superpowers",
         "type": "github"
       }
     },

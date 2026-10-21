@@ -32,8 +32,19 @@
     # Agent skills (SKILL.md format, shared by Claude / Codex / Antigravity).
     # Add new GitHub-sourced skills here as `flake = false` inputs, then
     # reference them from `home/skills.nix`.
-    code-review-skill = {
-      url = "github:awesome-skills/code-review-skill";
+    superpowers = {
+      url = "github:obra/superpowers";
+      flake = false;
+    };
+    anthropic-skills = {
+      url = "github:anthropics/skills";
+      flake = false;
+    };
+    # OpenAI's Codex document skills (doc, pdf, spreadsheet, slides). Pinned to
+    # the last revision that has all four: upstream removed doc, spreadsheet
+    # and slides in April/May 2026.
+    openai-doc-skills = {
+      url = "github:openai/skills/e6afb0d74cc75d220df2faf3dd6c635c2dc6a108";
       flake = false;
     };
   };
