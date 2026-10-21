@@ -5,6 +5,7 @@
   dim-unfocused-wasm = bespoke-zellij.dim-unfocused;
   llm-agents = inputs.llm-agents.packages.x86_64-linux;
   mcp = import ./mcp.nix { inherit pkgs lib; };
+  agentDirenv = import ./agent-direnv.nix { inherit pkgs; };
   codex-cfg = import ./codex.nix { inherit lib; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
   claude = pkgs.writeShellApplication {
@@ -21,11 +22,16 @@
     # either: its schema stops at xhigh, so `max` cannot be persisted there.
     # Placed before "$@" because the last --effort wins, so an explicit
     # `claude --effort high` still overrides this default.
-    text = ''exec claude --mcp-config=${mcp.claudeMcpConfig} --effort max "$@"'';
+    text = ''
+      # Load each project's direnv environment before every Bash command.
+      export CLAUDE_ENV_FILE=${agentDirenv.loader}
+      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort max "$@"
+    '';
   };
   codex = pkgs.writeShellApplication {
     name = "codex";
-    runtimeInputs = [ llm-agents.codex ];
+    # agentDirenv.bash first: Codex runs commands with the first bash on PATH.
+    runtimeInputs = [ agentDirenv.bash llm-agents.codex ];
     text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.configArgs)} "$@"'';
   };
   agy = llm-agents.antigravity-cli;

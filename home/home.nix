@@ -7,11 +7,13 @@
   mdv = inputs.mdv.packages.${pkgs.stdenv.hostPlatform.system}.default;
   merman = inputs.merman.packages.${pkgs.stdenv.hostPlatform.system}.default;
   mcp = import ./mcp.nix { inherit pkgs lib; };
+  agentDirenv = import ./agent-direnv.nix { inherit pkgs; };
   codex-cfg = import ./codex.nix { inherit lib; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
+  docTools = import ./doc-tools.nix { inherit pkgs; };
   claude = pkgs.writeShellApplication {
     name = "claude";
-    runtimeInputs = [ llm-agents.claude-code ];
+    runtimeInputs = [ llm-agents.claude-code ] ++ docTools.tools;
     # `=` form is required: --mcp-config is variadic and would otherwise consume
     # subsequent positional args as additional config files.
     #
@@ -23,11 +25,16 @@
     # either: its schema stops at xhigh, so `max` cannot be persisted there.
     # Placed before "$@" because the last --effort wins, so an explicit
     # `claude --effort high` still overrides this default.
-    text = ''exec claude --mcp-config=${mcp.claudeMcpConfig} --effort max "$@"'';
+    text = ''
+      # Load each project's direnv environment before every Bash command.
+      export CLAUDE_ENV_FILE=${agentDirenv.loader}
+      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort max "$@"
+    '';
   };
   codex = pkgs.writeShellApplication {
     name = "codex";
-    runtimeInputs = [ llm-agents.codex ];
+    # agentDirenv.bash first: Codex runs commands with the first bash on PATH.
+    runtimeInputs = [ agentDirenv.bash llm-agents.codex ] ++ docTools.tools;
     text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.configArgs)} "$@"'';
   };
   agy = llm-agents.antigravity-cli;
@@ -270,7 +277,10 @@ in {
       ];
       text = builtins.readFile ../scripts/gcloud-iap-zellij-web.sh;
     })
-  ];
+  ] ++ lib.optionals (!isMinimal) docTools.fonts;
+
+  # Lets fontconfig, and so LibreOffice, find docTools.fonts in the profile.
+  fonts.fontconfig.enable = !isMinimal;
 
   xdg.configFile."hygiene-expected-dotfiles".text = builtins.concatStringsSep "\n" expectedDotfiles + "\n";
   xdg.configFile."starship.toml".source = ../config/starship.toml;
