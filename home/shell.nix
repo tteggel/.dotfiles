@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, lib, ... }: {
   programs.helix = {
     enable = true;
     defaultEditor = true;
@@ -44,5 +44,14 @@
       grep = "rg";
       find = "fd";
     };
+    # Claude Code builds its Bash tool's shell from an interactive zsh, so it
+    # would get these too and run eza, bat, rg and fd, which take different
+    # flags, in place of ls, cat, grep and find. It sets CLAUDECODE in that
+    # shell. Order 1500 runs after Home Manager defines the aliases (1100).
+    initContent = lib.mkOrder 1500 ''
+      if [[ -n ''${CLAUDECODE-} ]]; then
+        unalias ${lib.concatStringsSep " " (builtins.attrNames config.programs.zsh.shellAliases)}
+      fi
+    '';
   };
 }
