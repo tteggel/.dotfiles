@@ -1,0 +1,7 @@
+{
+  "tool_use_id": "toolu_01WXs5onuuufPGfHTRiXDYrz",
+  "agent_id": "a8e20aabdb17db369",
+  "subagent_type": "claude-code-guide",
+  "task_description": "Claude Code direnv per-command env",
+  "started_at": "2026-10-21T14:22:28.635586532Z"
+}

@@ -1,0 +1,7 @@
+{
+  "tool_use_id": "toolu_01EYtWH6VsoQZqG3autm617g",
+  "agent_id": "a4a380a235fe69d97",
+  "subagent_type": "general-purpose",
+  "task_description": "Codex direnv per-command env",
+  "started_at": "2026-10-21T14:22:28.655785237Z"
+}
