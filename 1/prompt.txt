@@ -1,0 +1,5 @@
+what's the oldest commit reachable or unreachable that's stored in this repo?
+
+---
+
+hm. where's my old dot-files repo? did I delete it?
