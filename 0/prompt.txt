@@ -1,0 +1,14 @@
+install the linear cli for my main shel
+
+---
+
+oh is it already there?
+
+---
+
+is there a version in llm-agents or another flake?
+
+---
+
+Failed to login: Failed to store API key in system keyring for workspace "kamihq": secret-tool store failed (exit 1): secret-tool: The name is
+  not activatable
