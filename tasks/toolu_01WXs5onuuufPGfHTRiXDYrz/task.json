@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01WXs5onuuufPGfHTRiXDYrz",
+  "agent_id": "a8e20aabdb17db369",
+  "subagent_type": "claude-code-guide",
+  "task_description": "Claude Code direnv per-command env",
+  "token_usage": {
+    "input_tokens": 80,
+    "cache_creation_tokens": 271867,
+    "cache_read_tokens": 4247810,
+    "output_tokens": 205,
+    "api_call_count": 40
+  },
+  "started_at": "2026-10-21T14:22:28.635586532Z",
+  "completed_at": "2026-10-26T09:04:52.398837242Z"
+}

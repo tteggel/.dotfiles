@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_017ZxDK2xESADEvQ69cgN8m9",
+  "agent_id": "aa500ba284472798e",
+  "subagent_type": "fork",
+  "task_description": "Research better code-review skills",
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 56970,
+    "cache_read_tokens": 1776287,
+    "output_tokens": 13085,
+    "api_call_count": 14
+  },
+  "started_at": "2026-10-21T14:06:53.844136045Z",
+  "completed_at": "2026-10-26T09:04:52.339739014Z"
+}

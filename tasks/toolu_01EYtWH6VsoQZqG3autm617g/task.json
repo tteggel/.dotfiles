@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01EYtWH6VsoQZqG3autm617g",
+  "agent_id": "a4a380a235fe69d97",
+  "subagent_type": "general-purpose",
+  "task_description": "Codex direnv per-command env",
+  "token_usage": {
+    "input_tokens": 334,
+    "cache_creation_tokens": 378196,
+    "cache_read_tokens": 35593975,
+    "output_tokens": 2610,
+    "api_call_count": 167
+  },
+  "started_at": "2026-10-21T14:22:28.655785237Z",
+  "completed_at": "2026-10-26T09:04:52.596237312Z"
+}
