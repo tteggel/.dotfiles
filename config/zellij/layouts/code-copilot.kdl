@@ -1,0 +1,26 @@
+// code.kdl with GitHub Copilot CLI in place of Claude and Codex, for repos
+// under ~/src/github.com/bookcreator/ (code-session and session-picker pick it
+// by directory). The panes pin Opus 5.5 and GPT-6.1-Sol at xhigh. Copilot has
+// no alias like Claude's `opus`, so the top pane stays on 5.5 when a newer Opus
+// ships, and an ID Copilot does not offer falls back to its default model
+// (Sonnet 5.5 today) with only a warning. Assisted permissions come from
+// Copilot's defaultPermissionMode setting, seeded in home/home.nix: an
+// interactive session refuses --assisted-approval. As in code.kdl, the bare
+// panes also define the session's new-tab template.
+layout {
+    pane split_direction="vertical" {
+        pane size="55%" {
+            pane command="copilot" name="Copilot Opus" size="50%" {
+                args "--model" "claude-opus-5.5" "--reasoning-effort" "xhigh" "--autopilot"
+            }
+            pane command="copilot" name="Copilot GPT" size="50%" {
+                args "--model" "gpt-6.1-sol" "--reasoning-effort" "xhigh" "--autopilot"
+            }
+        }
+        pane stacked=true size="45%" {
+            pane command="lazygit" name="Git"
+            pane command="yazi" name="Yazi"
+            pane name="Terminal"
+        }
+    }
+}

@@ -16,7 +16,8 @@ $lnkPath = Join-Path $desktop 'Chrome (DevTools MCP).lnk'
 $ws = New-Object -ComObject WScript.Shell
 $lnk = $ws.CreateShortcut($lnkPath)
 $lnk.TargetPath = $chromePath
-$lnk.Arguments = '--remote-debugging-port=9222 --user-data-dir="' + $Env:TEMP + '\chrome-devtools-mcp"'
+# The local dev apps' *-local.dev.bookcreator.com names are public Fastly records; send them to localhost.
+$lnk.Arguments = '--remote-debugging-port=9222 --host-resolver-rules="MAP *-local.dev.bookcreator.com 127.0.0.1" --user-data-dir="' + $Env:TEMP + '\chrome-devtools-mcp"'
 $lnk.IconLocation = "$chromePath,0"
 $lnk.Description = 'Chrome with remote debugging on :9222 for chrome-devtools-mcp'
 $lnk.Save()

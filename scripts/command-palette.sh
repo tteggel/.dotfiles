@@ -1,5 +1,7 @@
-# Prevent multiple palette instances
-exec 9>/tmp/command-palette.lock
+# Prevent duplicate menus within a session without blocking other sessions.
+# Hash session names so they cannot introduce path separators in the lock path.
+session_key=$(printf '%s' "${ZELLIJ_SESSION_NAME:-standalone}" | sha256sum)
+exec 9>"${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/command-palette-${UID}-${session_key%% *}.lock"
 if ! flock -n 9; then
   exit 0
 fi
@@ -94,7 +96,12 @@ selected=$(printf '%s\n' "${formatted[@]}" | fzf \
   --prompt="Run> " \
   --height=~100% \
   --reverse \
-  --no-info) || exit 0
+  --no-info 9>&-) || exit 0
+
+# Only the menu owns the lock. Commands and their output may stay open long
+# after selection, and must not stop the next palette from opening.
+flock -u 9
+exec 9>&-
 
 entry="${selected%%	*}"
 type="${entry%%:*}"

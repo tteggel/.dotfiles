@@ -47,10 +47,32 @@ Firebase's browser login normally opens a dual-stack `[::]` callback listener.
 Consomme currently refuses IPv4 connections to that listener and hangs forwarding
 IPv6 from Windows ([WSL#41860](https://github.com/microsoft/WSL/issues/41860)).
 `home/home.nix` patches Firebase to listen on `127.0.0.1` instead; both
-`firebase login --reauth` and `gcloud-reauth` use that package. The substitution
-fails the build if upstream changes the listener, so the workaround gets reviewed
-on upgrades. Before rebuilding, `firebase login --reauth --no-localhost` bypasses
-the callback entirely using Firebase's supported code-paste flow.
+`firebase login --reauth` and `gcloud-reauth` use that package. Firebase also
+picks its port by binding and instantly closing it on every local address.
+Consomme keeps a phantom listener for each probe for about a minute, and a real
+bind that follows on the same port is silently moved to a random port when one
+side is a wildcard and the other a specific address of the same family (0.0.0.0
+against 127.0.0.1, `::` against `::1`). The login redirect to `localhost:9005`
+then finds nothing and the CLI waits forever, so the patch probes only
+`127.0.0.1`. The substitutions fail the build if upstream changes either spot,
+so the workaround gets reviewed on upgrades. Before rebuilding,
+`firebase login --reauth --no-localhost` bypasses the callback entirely using
+Firebase's supported code-paste flow. Agent shells get that flow regardless:
+Firebase treats `CLAUDECODE` and similar variables as non-interactive. Run the
+login from a normal pane, or add `--interactive`.
+
+Node dev servers hit the same wall. `listen(port)` with no host binds `[::]`, so
+Windows Chrome gets `ERR_CONNECTION_REFUSED` from, for example,
+`https://app-local.dev.bookcreator.com:3000`. `config/node/ipv4-listen.js` is
+preloaded into every Node process started from zsh (`NODE_OPTIONS`, set in
+`home/shell.nix`) and makes a host-less `listen` bind `0.0.0.0` instead. Servers
+that pass a host are untouched and `NODE_LISTEN_DUALSTACK=1` switches the shim
+off. It does not cover servers that are not Node, or Node started outside zsh or
+with its own `NODE_OPTIONS`. The `*-local.dev.bookcreator.com` names point at
+localhost through `networking.hosts` on thixos and, for Windows, through the
+`--host-resolver-rules` flag on the Chrome (DevTools MCP) shortcut. If a server
+reports one port and `ss -ltn` shows another, a probe on a different address
+poisoned it; wait a minute or probe and bind the same address.
 
 For a complete outage, collect evidence **before** restarting anything. Home
 Manager installs a Windows-side tool that remains available when WSL is broken.

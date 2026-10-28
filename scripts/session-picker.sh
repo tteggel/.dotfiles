@@ -48,15 +48,21 @@ resolve_dir() {
 
 start_session() {
   local dir="$1"
-  local name
+  local name layout
   name=$(basename "$dir")
+  # BookCreator repos run Copilot in place of Claude and Codex, as in
+  # code-session.
+  layout=~/.config/zellij/layouts/code.kdl
+  case "$dir" in
+    "$SRC_ROOT"/bookcreator/*) layout=~/.config/zellij/layouts/code-copilot.kdl ;;
+  esac
   record_recent "$dir" || true
   # A dead (EXITED) session of the same name blocks `zellij -s` with "Session
   # with name X already exists, but is dead". The purge before listing normally
   # leaves none; this catches one that died after it ran. Drop it (dead-only;
   # no --force) and start fresh: all it holds is a stale resurrection layout.
   zellij delete-session "$name" >/dev/null 2>&1 || true
-  cd "$dir" && exec zellij -s "$name" -n ~/.config/zellij/layouts/code.kdl
+  cd "$dir" && exec zellij -s "$name" -n "$layout"
 }
 
 new_session() {

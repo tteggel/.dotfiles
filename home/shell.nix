@@ -18,6 +18,12 @@
     '';
   };
 
+  # Consomme's localhost relay can't forward Node's default dual-stack [::]
+  # listener (microsoft/WSL#41860), so dev servers that call listen(port) are
+  # unreachable from Windows browsers. This preload makes them bind IPv4;
+  # envExtra below loads it into every Node process.
+  xdg.configFile."node/ipv4-listen.js".source = ../config/node/ipv4-listen.js;
+
   programs.zsh = {
     enable = true;
     # New Zellij panes inherit the session's original environment, including
@@ -25,6 +31,13 @@
     envExtra = ''
       export EDITOR="${config.home.sessionVariables.EDITOR}"
       export VISUAL="${config.home.sessionVariables.VISUAL}"
+      # Node refuses to start if a --require target is missing, so check first.
+      if [ -r "$HOME/.config/node/ipv4-listen.js" ]; then
+        case " ''${NODE_OPTIONS-} " in
+          *ipv4-listen.js*) ;;
+          *) export NODE_OPTIONS="--require=$HOME/.config/node/ipv4-listen.js''${NODE_OPTIONS:+ $NODE_OPTIONS}" ;;
+        esac
+      fi
     '';
     # Preserve the existing layout when home.stateVersion 26.05 changes the
     # default to $XDG_CONFIG_HOME/zsh.

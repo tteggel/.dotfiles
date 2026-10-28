@@ -25,7 +25,7 @@ NixOS configuration for `thixos`, a WSL2-based development machine.
 
 The top-level `flake.nix` produces a single NixOS configuration (`thixos`):
 
-- **Inputs**: `nixpkgs` (unstable), `nixos-wsl`, `llm-agents` (Claude Code, Antigravity, Codex, Grok), `dim-unfocused` (local path flake for custom Zellij)
+- **Inputs**: `nixpkgs` (unstable), `nixos-wsl`, `llm-agents` (Claude Code, Antigravity, Codex, Grok, Copilot), `dim-unfocused` (local path flake for custom Zellij)
 - **Output**: `nixosConfigurations.thixos`
 
 The `dim-unfocused` sub-flake (at `bespoke/zellij/dim-unfocused/`) has its own inputs including a Zellij fork. It produces a custom Zellij binary and a WASM plugin. See `bespoke/zellij/dim-unfocused/AGENTS.md` for deep details on the shader system.
@@ -50,7 +50,7 @@ The configuration embeds several substantial shell applications as `writeShellAp
 
 - **`session-picker`** — Zellij session manager. Lists existing sessions, creates new ones, clones GitHub repos. Launched on shell login.
 - **`command-palette`** — Context-aware fzf command launcher with ~25 commands. Invoked via Zellij keybinding.
-- **`code-session`** — Open the code layout in Zellij (agents launch fresh; resume via each agent's own native picker).
+- **`code-session`** — Open the code layout in Zellij (agents launch fresh; resume via each agent's own native picker). Repos under `~/src/github.com/bookcreator/` get `code-copilot.kdl` instead, with two Copilot CLIs (Opus 5.5 and GPT-6.1-Sol, xhigh, autopilot) in place of Claude and Codex; `session-picker` makes the same choice for new sessions.
 - **`gcloud-switch`**, **`gcloud-reauth`** — GCP project/cluster switching.
 - **`zed`** — Interop wrapper to launch Windows Zed editor from WSL.
 - **`open-browser`** — Opens URLs in Windows Chrome from WSL.
@@ -61,11 +61,11 @@ The configuration embeds several substantial shell applications as `writeShellAp
 - Auto-attaches to Zellij on login
 - Zoxide + fzf for directory navigation
 - Dynamic pane titles (`repo:branch` format via precmd/preexec hooks)
-- Environment: `ZELLIJ_CONFIG_DIR`, `BROWSER`, `EDITOR` / `VISUAL` (hx/Helix), `MANPAGER` (bat)
+- Environment: `ZELLIJ_CONFIG_DIR`, `BROWSER`, `EDITOR` / `VISUAL` (hx/Helix), `MANPAGER` (bat), `NODE_OPTIONS` (preloads `config/node/ipv4-listen.js` so host-less Node `listen` binds IPv4, see the README's WSL networking section)
 
 ### System packages
 
-Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, helix, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex, grok).
+Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, helix, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex, grok, copilot).
 
 ### Config file management
 

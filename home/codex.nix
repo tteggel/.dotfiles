@@ -26,12 +26,22 @@
   # `context-remaining` item counts down.
   autoCompactTokenLimit = 256000;
 
+  # Default model and effort, also given to the GPT pane of the code-copilot
+  # Zellij layout. Plan mode keeps a separate effort, so it is set as well.
+  # `-c` outranks config.toml, so each launch starts here even after /model
+  # saves a different pick there.
+  model = "gpt-6.1-sol";
+  reasoningEffort = "xhigh";
+
   # Passed as `-c` rather than written to ~/.codex/config.toml. home-manager's
   # home.file installs read-only nix-store symlinks, and Codex writes that file
   # itself (per-project trust_level entries, the tui.model_availability_nux
   # counters), so it has to stay writable. Keeping it out of the repo also keeps
   # the project paths it records out of a public repository.
   configArgs = [
+    "-c 'model=${builtins.toJSON model}'"
+    "-c 'model_reasoning_effort=${builtins.toJSON reasoningEffort}'"
+    "-c 'plan_mode_reasoning_effort=${builtins.toJSON reasoningEffort}'"
     # Leave scrolling and mouse selection to Zellij, whose copy_on_select
     # copies on release. Codex's fullscreen transcript captures selection and
     # requires an explicit copy instead.
@@ -41,5 +51,5 @@
     "-c model_auto_compact_token_limit=${toString autoCompactTokenLimit}"
   ];
 in {
-  inherit statusLineItems autoCompactTokenLimit configArgs;
+  inherit statusLineItems autoCompactTokenLimit model reasoningEffort configArgs;
 }

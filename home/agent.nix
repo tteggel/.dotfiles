@@ -14,18 +14,19 @@
     # `=` form is required: --mcp-config is variadic and would otherwise consume
     # subsequent positional args as additional config files.
     #
-    # `--effort max` rather than CLAUDE_CODE_EFFORT_LEVEL=max: the env var is
-    # consulted ahead of everything else and pins the session, so /effort just
-    # refuses ("Not applied: CLAUDE_CODE_EFFORT_LEVEL=max overrides effort this
-    # session"). The flag only seeds the session's starting level, leaving
-    # /effort free to change it. The `effortLevel` setting is not an option
-    # either: its schema stops at xhigh, so `max` cannot be persisted there.
+    # `--effort xhigh` rather than CLAUDE_CODE_EFFORT_LEVEL=xhigh: the env var
+    # is consulted ahead of everything else and pins the session, so /effort
+    # just refuses ("Not applied: CLAUDE_CODE_EFFORT_LEVEL=xhigh overrides
+    # effort this session"). The flag only seeds the session's starting level,
+    # leaving /effort free to change it. The `effortLevel` setting is not an
+    # option either: /effort saves its pick there, so later sessions would start
+    # at whatever level was picked last instead of xhigh.
     # Placed before "$@" because the last --effort wins, so an explicit
     # `claude --effort high` still overrides this default.
     text = ''
       # Load each project's direnv environment before every Bash command.
       export CLAUDE_ENV_FILE=${agentDirenv.loader}
-      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort max "$@"
+      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort xhigh "$@"
     '';
   };
   codex = pkgs.writeShellApplication {
@@ -111,7 +112,7 @@ in {
     })
     (writeShellApplication {
       name = "command-palette";
-      runtimeInputs = [ fzf zellij-main fd zoxide ];
+      runtimeInputs = [ fzf zellij-main fd zoxide coreutils util-linux ];
       text = builtins.readFile ../scripts/command-palette.sh;
     })
     (writeShellApplication {
@@ -125,6 +126,7 @@ in {
   xdg.configFile."lazygit/config.yml".source = ../config/lazygit/config.yml;
   xdg.configFile."zellij/config.kdl".source = ../config/zellij/config.kdl;
   xdg.configFile."zellij/layouts/code.kdl".source = ../config/zellij/layouts/code.kdl;
+  xdg.configFile."zellij/layouts/code-copilot.kdl".source = ../config/zellij/layouts/code-copilot.kdl;
   xdg.configFile."zellij/layouts/minimal.kdl".source = ../config/zellij/layouts/minimal.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
@@ -185,6 +187,11 @@ in {
     fi
   '';
 
+  # Assisted permissions for interactive Copilot sessions; see home/home.nix.
+  home.activation.copilotSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${llm-agents.copilot-cli}/bin/copilot config defaultPermissionMode assisted >/dev/null || true
+  '';
+
   programs.zsh = {
     initContent = ''
       setopt HIST_FCNTL_LOCK
@@ -195,10 +202,10 @@ in {
       export STARSHIP_CONFIG=~/.config/starship.toml
       export ZELLIJ_CONFIG_DIR=~/.config/zellij
       export COLORTERM=truecolor
-      # Grok's counterpart to the `--effort max` on the claude wrapper. A
-      # GROK_CONFIG overlay rather than a config file: Grok deletes
-      # ~/.grok/managed_config.toml whenever it refreshes its model catalog,
-      # so the env is the durable slot. See home/grok.nix.
+      # Grok's default reasoning effort. A GROK_CONFIG overlay rather than a
+      # config file: Grok deletes ~/.grok/managed_config.toml whenever it
+      # refreshes its model catalog, so the env is the durable slot. See
+      # home/grok.nix.
       export GROK_CONFIG=${lib.escapeShellArg grok-cfg.envOverlay}
       # Auto-compact at roughly 256k tokens of context, matching Codex's literal
       # `model_auto_compact_token_limit` in home/codex.nix. Claude separately
