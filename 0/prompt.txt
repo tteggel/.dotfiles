@@ -1,0 +1,13 @@
+push it
+
+---
+
+install git-reomte-entire too
+
+---
+
+install git-remote-entire too
+
+---
+
+so long as it gets bumped with update system i'm good. commit and push
