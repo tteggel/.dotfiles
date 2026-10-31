@@ -8,12 +8,16 @@
 # nixpkgs zellij is built against) silently froze while the rest of the system
 # moved on. Update the child lock first, then the top level, so the top-level
 # resolve picks up the new subtree.
+#
+# The Entire plugins are pinned in their own lockfile, home/entire-plugins.json
+# (see home/entire-plugins.nix for why), which is bumped here too.
 
 set -euo pipefail
 
 DOTFILES="$HOME/src/github.com/tteggel/.dotfiles"
 CHILD="bespoke/zellij/dim-unfocused"
-LOCKS=("flake.lock" "$CHILD/flake.lock")
+PLUGINS="home/entire-plugins.json"
+LOCKS=("flake.lock" "$CHILD/flake.lock" "$PLUGINS")
 
 # Refuse to run over lock edits that aren't committed yet — this script ends in
 # a commit of exactly these files, and would otherwise sweep them up.
@@ -29,6 +33,29 @@ nix flake update --flake "$DOTFILES/$CHILD"
 
 echo "==> Updating flake.lock"
 nix flake update --flake "$DOTFILES"
+
+# Pin each plugin to its latest release (drafts and prereleases excluded),
+# taking the hash from the release's checksums.txt, which is what
+# `entire plugin install` verifies against.
+echo "==> Updating $PLUGINS"
+mapfile -t plugins < <(jq -r 'keys[]' "$DOTFILES/$PLUGINS")
+pins='{}'
+for name in "${plugins[@]}"; do
+  repo="entireio/entire-$name"
+  tag=$(gh api "repos/$repo/releases/latest" --jq .tag_name)
+  version=${tag#v}
+  asset="entire-${name}_${version}_linux_amd64.tar.gz"
+  sum=$(gh release download "$tag" -R "$repo" -p checksums.txt -O - |
+    awk -v asset="$asset" '$2 == asset { print $1 }')
+  if [[ -z $sum ]]; then
+    echo "Error: $repo $tag has no checksum for $asset" >&2
+    exit 1
+  fi
+  hash=$(nix hash convert --hash-algo sha256 --to sri "$sum")
+  pins=$(jq --arg name "$name" --arg version "$version" --arg hash "$hash" \
+    '.[$name] = {version: $version, hash: $hash}' <<<"$pins")
+done
+printf '%s\n' "$pins" >"$DOTFILES/$PLUGINS"
 
 echo "==> Switching"
 if command -v nixos-rebuild >/dev/null 2>&1; then

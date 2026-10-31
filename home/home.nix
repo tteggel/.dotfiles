@@ -11,6 +11,7 @@
   codex-cfg = import ./codex.nix { inherit lib; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
   docTools = import ./doc-tools.nix { inherit pkgs; };
+  entirePlugins = import ./entire-plugins.nix { inherit pkgs lib; };
   claude = pkgs.writeShellApplication {
     name = "claude";
     runtimeInputs = [ llm-agents.claude-code ] ++ docTools.tools;
@@ -237,6 +238,7 @@ in {
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
     llm-agents.entire
+    entirePlugins
     googleCloudSdkWithGke
     open-browser
     xdg-open

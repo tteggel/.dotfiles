@@ -1,0 +1,18 @@
+{
+  "brain": {
+    "version": "0.4.0",
+    "hash": "sha256-Q9N5PmvEDmALG961II3R04mE8UhNk2IHjwyQKp+AD4Q="
+  },
+  "graph": {
+    "version": "0.6.0",
+    "hash": "sha256-sWAP37bfu8G9C1PuMZxtuHta9YBCBqb3saEF8+l7h8o="
+  },
+  "investigate": {
+    "version": "0.1.0",
+    "hash": "sha256-hc1/ifB8+N4nPHgSkn7EMTAMck5gkNHPPvteVqx+efY="
+  },
+  "run": {
+    "version": "0.1.0",
+    "hash": "sha256-akA0NAaZqW7JKI/WiN6yWJBh3SVbP/ahMdPcpEa0QpQ="
+  }
+}
