@@ -1,0 +1,17 @@
+the entire cli install - can I add plugins
+
+---
+
+does llm-agents package any of the plugins?
+
+---
+
+any other nix flakes out there that package a tracking version of entire including plugins?
+
+---
+
+cool, add brain, graph, investigate and run please. make sure that the update system command will get latest versions
+
+---
+
+commit it
