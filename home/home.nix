@@ -41,6 +41,11 @@
   };
   agy = llm-agents.antigravity-cli;
   grok = llm-agents.grok;
+  # llm-agents builds only cmd/entire, but upstream releases also ship
+  # git-remote-entire, the git remote helper for entire:// URLs.
+  entire = llm-agents.entire.overrideAttrs (old: {
+    subPackages = old.subPackages ++ [ "./cmd/git-remote-entire" ];
+  });
   # nixpkgs.linear is the macOS desktop app; llm-agents does not package the
   # CLI yet. Pin the upstream Linux binary until it has a maintained Nix package.
   linear-cli = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
@@ -237,7 +242,7 @@ in {
     kubectl firebase-tools micro starship nodejs
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
-    llm-agents.entire
+    entire
     entirePlugins
     googleCloudSdkWithGke
     open-browser
