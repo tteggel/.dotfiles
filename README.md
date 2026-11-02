@@ -83,6 +83,18 @@ Firebase's supported code-paste flow. Agent shells get that flow regardless:
 Firebase treats `CLAUDECODE` and similar variables as non-interactive. Run the
 login from a normal pane, or add `--interactive`.
 
+gcloud's browser logins listen on `127.0.0.1:8085` and redirect to
+`localhost:8085`. Windows Chrome tries `::1` first. A stale `[::1]` relay
+listener on that port, one with no guest listener behind it, accepts the
+connection and never forwards it, so the login waits forever. Chrome never falls
+back to `127.0.0.1`. `home/google-cloud-sdk.nix` patches the redirect host to
+`127.0.0.1`, which Google accepts for both gcloud clients. The substitution fails
+the build if upstream changes it. To spot this, run `netstat.exe -ano` from WSL
+and look for a `dllhost` `[::1]:<port>` listener that `ss -ltn` doesn't show.
+Don't connect to the callback port while a login is waiting, because gcloud
+serves only one request. If you're stuck on an unpatched build, change
+`localhost` to `127.0.0.1` in the hanging tab's URL.
+
 Node dev servers hit the same wall. `listen(port)` with no host binds `[::]`, so
 Windows Chrome gets `ERR_CONNECTION_REFUSED` from, for example,
 `https://app-local.dev.bookcreator.com:3000`. `config/node/ipv4-listen.js` is
