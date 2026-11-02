@@ -34,15 +34,27 @@ nix flake update --flake "$DOTFILES/$CHILD"
 echo "==> Updating flake.lock"
 nix flake update --flake "$DOTFILES"
 
-# Pin each plugin to its latest release (drafts and prereleases excluded),
-# taking the hash from the release's checksums.txt, which is what
-# `entire plugin install` verifies against.
+# Pin each plugin to its latest release, taking the hash from the release's
+# checksums.txt, which is what `entire plugin install` verifies against.
+# Plugins track stable releases (drafts and prereleases excluded) unless they
+# set "channel": "nightly", which takes the newest release of any kind,
+# nightly prereleases included.
 echo "==> Updating $PLUGINS"
-mapfile -t plugins < <(jq -r 'keys[]' "$DOTFILES/$PLUGINS")
-pins='{}'
+pins=$(<"$DOTFILES/$PLUGINS")
+mapfile -t plugins < <(jq -r 'keys[]' <<<"$pins")
 for name in "${plugins[@]}"; do
   repo="entireio/entire-$name"
-  tag=$(gh api "repos/$repo/releases/latest" --jq .tag_name)
+  channel=$(jq -r --arg name "$name" '.[$name].channel // "stable"' <<<"$pins")
+  case $channel in
+    stable)
+      tag=$(gh api "repos/$repo/releases/latest" --jq .tag_name) ;;
+    nightly)
+      tag=$(gh api "repos/$repo/releases" \
+        --jq 'map(select(.draft | not)) | max_by(.published_at) | .tag_name') ;;
+    *)
+      echo "Error: $name has unknown channel '$channel'" >&2
+      exit 1 ;;
+  esac
   version=${tag#v}
   asset="entire-${name}_${version}_linux_amd64.tar.gz"
   sum=$(gh release download "$tag" -R "$repo" -p checksums.txt -O - |
@@ -53,7 +65,7 @@ for name in "${plugins[@]}"; do
   fi
   hash=$(nix hash convert --hash-algo sha256 --to sri "$sum")
   pins=$(jq --arg name "$name" --arg version "$version" --arg hash "$hash" \
-    '.[$name] = {version: $version, hash: $hash}' <<<"$pins")
+    '.[$name] += {version: $version, hash: $hash}' <<<"$pins")
 done
 printf '%s\n' "$pins" >"$DOTFILES/$PLUGINS"
 

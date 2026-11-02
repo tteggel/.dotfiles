@@ -5,7 +5,9 @@
 # Versions and hashes live in entire-plugins.json rather than in flake inputs,
 # because the release asset names embed the version. scripts/update-system.sh
 # bumps every plugin there to its latest release; to add one, add its name
-# (the part after `entire-`) to the JSON and run that script.
+# (the part after `entire-`) to the JSON and run that script. A plugin with
+# "channel": "nightly" tracks upstream's nightly prereleases instead of stable
+# releases.
 { pkgs, lib }: let
   plugin = name: pin: pkgs.stdenvNoCC.mkDerivation {
     pname = "entire-${name}";

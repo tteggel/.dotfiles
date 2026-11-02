@@ -1,5 +1,6 @@
 {
   "brain": {
+    "channel": "nightly",
     "version": "0.4.0-nightly.202610290621.f8deab17",
     "hash": "sha256-YfCFtLLmp0oVSNFAPscK1sVA8a4idrPqyudrjjLS2Zw="
   },
