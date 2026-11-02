@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.12.2",
+  "checkpoint_id": "01M6DXJ76532K0WY5TG5HF4M0E",
+  "session_id": "01a19bc8-93b1-7ba1-910d-2da465eba15f",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-02T10:41:00.504927417Z",
+  "branch": "master",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "README.md",
+    "flake.nix",
+    "home/agent-permissions.nix",
+    "home/agent.nix",
+    "home/google-cloud-sdk.nix",
+    "home/home.nix",
+    "nixos/agent-permissions.nix",
+    "nixos/common.nix",
+    "tests/agent-permissions.nix",
+    "tests/agent-permissions.py"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "fe8e10bfa577",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 119705,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 3337344,
+    "output_tokens": 19981,
+    "api_call_count": 33,
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 336,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 2,
+      "credentialed_uri": 0,
+      "entropy": 347,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 2
+  }
+}
