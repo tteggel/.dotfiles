@@ -1,0 +1,5 @@
+yes, add a nightly channel
+
+---
+
+commit and push
