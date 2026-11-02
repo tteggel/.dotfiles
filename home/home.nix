@@ -137,7 +137,7 @@
   ];
   isMinimal = builtins.getEnv "MINIMAL_ENV" != "";
 in {
-  imports = [ ./shell.nix ./skills.nix ];
+  imports = [ ./shell.nix ./skills.nix ] ++ lib.optionals (!isMinimal) [ ./bookcreator.nix ];
 
   home.stateVersion = "26.05";
 

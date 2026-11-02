@@ -28,6 +28,10 @@
     # and still renaming flags. No nixpkgs follows: it is a several-minute Rust
     # build with no binary cache, so let it rebuild only when this tag moves.
     merman.url = "github:Latias94/merman/v0.8.0";
+    # Playwright browsers for the BookCreator repos (home/bookcreator.nix). Keep
+    # this tag equal to the @playwright/test version they lock. No nixpkgs
+    # follows, so the patched browsers rebuild only when this tag moves.
+    playwright-web-flake.url = "github:pietdevries94/playwright-web-flake/1.63.0";
 
     # Agent skills (SKILL.md format, shared by Claude / Codex / Antigravity).
     # Add new GitHub-sourced skills here as `flake = false` inputs, then

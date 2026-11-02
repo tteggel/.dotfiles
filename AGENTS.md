@@ -67,6 +67,8 @@ The configuration embeds several substantial shell applications as `writeShellAp
 
 Dev tools (zellij, git, gh, ripgrep, fd, bat, eza, delta, lazygit, helix, difftastic), cloud tools (gcloud, kubectl), LLM agents (claude-code, antigravity/agy, codex, grok, copilot).
 
+`home/bookcreator.nix` holds the toolchain shared by the BookCreator repos, so they need no devshell of their own: Yarn Classic (it runs under the first `node` on PATH), pnpm, a JRE for the Firebase emulators, a node-gyp toolchain, psql, Docker with an on-demand rootless daemon (`docker-daemon start`), ffmpeg, lefthook and the Playwright 1.63.0 browsers (`PLAYWRIGHT_BROWSERS_PATH`, from the `playwright-web-flake` input, whose tag must match the repos' `@playwright/test`). Node 22 repos: `nix shell nixpkgs#nodejs_22`.
+
 ### Config file management
 
 Files from `config/` are symlinked into `~/.config/` via Home Manager's `xdg.configFile`. The Windows Terminal config is copied to the Windows filesystem via NixOS activation scripts (NixOS only).
