@@ -14,6 +14,11 @@
     mcpServers = lib.mapAttrs (_: srv: { type = "stdio"; } // srv) servers;
   });
 
+  # The shape `copilot mcp add` writes to ~/.copilot/mcp-config.json.
+  copilotMcpConfig = pkgs.writeText "copilot-mcp.json" (builtins.toJSON {
+    mcpServers = lib.mapAttrs (_: srv: { type = "local"; tools = [ "*" ]; } // srv) servers;
+  });
+
   codexInline = srv: let
     jsonArr = xs: "[${lib.concatMapStringsSep "," builtins.toJSON xs}]";
   in "command=${builtins.toJSON srv.command},args=${jsonArr srv.args},startup_timeout_ms=60000";
@@ -28,5 +33,5 @@
       { text = builtins.toJSON { inherit name; version = "1.0.0"; mcpServers.${name} = srv; }; })
     servers);
 in {
-  inherit servers claudeMcpConfig codexArgs agyExtensionFiles;
+  inherit servers claudeMcpConfig copilotMcpConfig codexArgs agyExtensionFiles;
 }

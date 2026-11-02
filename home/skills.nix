@@ -4,6 +4,7 @@
   agentSkillDirs = [
     ".claude/skills"
     ".codex/skills"
+    ".copilot/skills"
   ];
 
   # Fetch a skill tarball published to the npm registry. Pin with a sha256 so
@@ -46,14 +47,14 @@
       subpath = "skills/frontend-design";
     }
   ]
-  # Codex counterparts to the docx/pdf/pptx/xlsx skills Claude gets from the
-  # claude.ai skill sync. Anthropic's versions may only be used within
-  # Anthropic's services, so Codex gets OpenAI's Apache-2.0 ones.
+  # Codex and Copilot counterparts to the docx/pdf/pptx/xlsx skills Claude gets
+  # from the claude.ai skill sync. Anthropic's versions may only be used within
+  # Anthropic's services, so these are OpenAI's Apache-2.0 ones.
   ++ map (name: {
     inherit name;
     src = inputs.openai-doc-skills;
     subpath = "skills/.curated/${name}";
-    dirs = [ ".codex/skills" ];
+    dirs = [ ".codex/skills" ".copilot/skills" ];
   }) [ "doc" "pdf" "spreadsheet" "slides" ];
 
   resolveSrc = skill:

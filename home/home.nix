@@ -10,6 +10,7 @@
   agentDirenv = import ./agent-direnv.nix { inherit pkgs; };
   codex-cfg = import ./codex.nix { inherit lib; };
   agentPermissions = import ./agent-permissions.nix { inherit lib; };
+  copilot-cfg = import ./copilot.nix { inherit lib agentDirenv mcp agentPermissions; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
   docTools = import ./doc-tools.nix { inherit pkgs; };
   entirePlugins = import ./entire-plugins.nix { inherit pkgs lib; };
@@ -43,9 +44,9 @@
   };
   copilot = pkgs.writeShellApplication {
     name = "copilot";
-    runtimeInputs = [ llm-agents.copilot-cli ];
-    # Explicit denies win over repo approvals, assisted mode and --allow-all.
-    text = ''exec copilot "$@" ${agentPermissions.copilotArgs}'';
+    runtimeInputs = [ llm-agents.copilot-cli ] ++ docTools.tools;
+    # See home/copilot.nix.
+    text = copilot-cfg.wrapperText;
   };
   agy = llm-agents.antigravity-cli;
   grok = llm-agents.grok;
@@ -432,15 +433,11 @@ in {
     ''
   );
 
-  # Start interactive Copilot sessions, the code-copilot layout's panes among
-  # them, with assisted permissions. The layout cannot pass
-  # --assisted-approval: interactive sessions refuse it ("only supported in
-  # non-interactive prompt mode or direct workflow mode"). Copilot writes
-  # settings.json itself (/settings), so the file stays writable and
-  # `copilot config` sets this one key in place.
+  # Assisted permissions, xhigh effort, BASH_ENV support and the judge's
+  # guidance for every interactive Copilot session; see home/copilot.nix.
   home.activation.copilotSettings = lib.mkIf (!isMinimal) (
     lib.hm.dag.entryAfter ["writeBoundary"] ''
-      ${llm-agents.copilot-cli}/bin/copilot config defaultPermissionMode assisted >/dev/null || true
+      ${copilot-cfg.settingsSeed "${llm-agents.copilot-cli}/bin/copilot"}
     ''
   );
 

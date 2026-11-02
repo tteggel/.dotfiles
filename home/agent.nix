@@ -8,6 +8,7 @@
   agentDirenv = import ./agent-direnv.nix { inherit pkgs; };
   codex-cfg = import ./codex.nix { inherit lib; };
   agentPermissions = import ./agent-permissions.nix { inherit lib; };
+  copilot-cfg = import ./copilot.nix { inherit lib agentDirenv mcp agentPermissions; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
   entirePlugins = import ./entire-plugins.nix { inherit pkgs lib; };
   claude = pkgs.writeShellApplication {
@@ -41,8 +42,8 @@
   copilot = pkgs.writeShellApplication {
     name = "copilot";
     runtimeInputs = [ llm-agents.copilot-cli ];
-    # Explicit denies win over repo approvals, assisted mode and --allow-all.
-    text = ''exec copilot "$@" ${agentPermissions.copilotArgs}'';
+    # See home/copilot.nix.
+    text = copilot-cfg.wrapperText;
   };
   agy = llm-agents.antigravity-cli;
   grok = llm-agents.grok;
@@ -204,9 +205,9 @@ in {
     fi
   '';
 
-  # Assisted permissions for interactive Copilot sessions; see home/home.nix.
+  # Copilot's settings; see home/copilot.nix.
   home.activation.copilotSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    ${llm-agents.copilot-cli}/bin/copilot config defaultPermissionMode assisted >/dev/null || true
+    ${copilot-cfg.settingsSeed "${llm-agents.copilot-cli}/bin/copilot"}
   '';
 
   programs.zsh = {
