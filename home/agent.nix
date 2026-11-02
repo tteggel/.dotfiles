@@ -7,6 +7,7 @@
   mcp = import ./mcp.nix { inherit pkgs lib; };
   agentDirenv = import ./agent-direnv.nix { inherit pkgs; };
   codex-cfg = import ./codex.nix { inherit lib; };
+  agentPermissions = import ./agent-permissions.nix { inherit lib; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
   entirePlugins = import ./entire-plugins.nix { inherit pkgs lib; };
   claude = pkgs.writeShellApplication {
@@ -27,7 +28,8 @@
     text = ''
       # Load each project's direnv environment before every Bash command.
       export CLAUDE_ENV_FILE=${agentDirenv.loader}
-      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort xhigh "$@"
+      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort xhigh "$@" \
+        --disallowedTools=${lib.escapeShellArg (lib.concatStringsSep "," agentPermissions.claudeDeny)}
     '';
   };
   codex = pkgs.writeShellApplication {
@@ -35,6 +37,12 @@
     # agentDirenv.bash first: Codex runs commands with the first bash on PATH.
     runtimeInputs = [ agentDirenv.bash llm-agents.codex ];
     text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.configArgs)} "$@"'';
+  };
+  copilot = pkgs.writeShellApplication {
+    name = "copilot";
+    runtimeInputs = [ llm-agents.copilot-cli ];
+    # Explicit denies win over repo approvals, assisted mode and --allow-all.
+    text = ''exec copilot "$@" ${agentPermissions.copilotArgs}'';
   };
   agy = llm-agents.antigravity-cli;
   grok = llm-agents.grok;
@@ -86,7 +94,7 @@ in {
     agy
     codex
     grok
-    llm-agents.copilot-cli
+    copilot
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
     entire
@@ -137,7 +145,9 @@ in {
   xdg.configFile."zellij/layouts/minimal.kdl".source = ../config/zellij/layouts/minimal.kdl;
   xdg.configFile."zellij/plugins/dim-unfocused.wasm".source = "${dim-unfocused-wasm}/share/zellij/plugins/dim-unfocused.wasm";
 
-  home.file = mcp.agyExtensionFiles;
+  home.file = mcp.agyExtensionFiles // {
+    ".codex/rules/gcloud-pam.rules".text = agentPermissions.codexRules;
+  };
 
   # Claude Code writes ~/.claude/settings.json itself: /effort, /model and
   # /config save defaults there, and an "always allow" answer appends to

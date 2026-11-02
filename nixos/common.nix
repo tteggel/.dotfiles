@@ -6,6 +6,8 @@
   pkgs,
   ...
 }: {
+  imports = [ ./agent-permissions.nix ];
+
   nixpkgs = {
     config = {
       allowUnfreePredicate = _: true;

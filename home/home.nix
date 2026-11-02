@@ -9,6 +9,7 @@
   mcp = import ./mcp.nix { inherit pkgs lib; };
   agentDirenv = import ./agent-direnv.nix { inherit pkgs; };
   codex-cfg = import ./codex.nix { inherit lib; };
+  agentPermissions = import ./agent-permissions.nix { inherit lib; };
   grok-cfg = import ./grok.nix { inherit lib grok; inherit (mcp) servers; };
   docTools = import ./doc-tools.nix { inherit pkgs; };
   entirePlugins = import ./entire-plugins.nix { inherit pkgs lib; };
@@ -30,7 +31,8 @@
     text = ''
       # Load each project's direnv environment before every Bash command.
       export CLAUDE_ENV_FILE=${agentDirenv.loader}
-      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort xhigh "$@"
+      exec claude --mcp-config=${mcp.claudeMcpConfig} --effort xhigh "$@" \
+        --disallowedTools=${lib.escapeShellArg (lib.concatStringsSep "," agentPermissions.claudeDeny)}
     '';
   };
   codex = pkgs.writeShellApplication {
@@ -38,6 +40,12 @@
     # agentDirenv.bash first: Codex runs commands with the first bash on PATH.
     runtimeInputs = [ agentDirenv.bash llm-agents.codex ] ++ docTools.tools;
     text = ''exec codex ${lib.concatStringsSep " " (mcp.codexArgs ++ codex-cfg.configArgs)} "$@"'';
+  };
+  copilot = pkgs.writeShellApplication {
+    name = "copilot";
+    runtimeInputs = [ llm-agents.copilot-cli ];
+    # Explicit denies win over repo approvals, assisted mode and --allow-all.
+    text = ''exec copilot "$@" ${agentPermissions.copilotArgs}'';
   };
   agy = llm-agents.antigravity-cli;
   grok = llm-agents.grok;
@@ -101,9 +109,7 @@
     runtimeInputs = [ mdv merman pkgs.jq ];
     text = builtins.readFile ../scripts/mdv-mermaid.sh;
   };
-  googleCloudSdkWithGke = pkgs.google-cloud-sdk.withExtraComponents [
-    pkgs.google-cloud-sdk.components.gke-gcloud-auth-plugin
-  ];
+  googleCloudSdkWithGke = import ./google-cloud-sdk.nix { inherit pkgs; };
   # Consomme's localhost relay cannot forward Node's default dual-stack [::]
   # listener to Windows (microsoft/WSL#41860). Firebase's OAuth callback uses
   # exactly that binding; IPv4 loopback preserves the normal browser login.
@@ -294,7 +300,7 @@ in {
     agy
     codex
     grok
-    llm-agents.copilot-cli
+    copilot
     # GUI, so it needs WSLg working — see nixos/wslg.nix for the
     # /mnt/shared_memory mount without which its window renders blank.
     obsidian
@@ -361,7 +367,9 @@ in {
     };
   };
 
-  home.file = lib.optionalAttrs (!isMinimal) mcp.agyExtensionFiles;
+  home.file = lib.optionalAttrs (!isMinimal) (mcp.agyExtensionFiles // {
+    ".codex/rules/gcloud-pam.rules".text = agentPermissions.codexRules;
+  });
 
   # Claude Code writes ~/.claude/settings.json itself: /effort, /model and
   # /config save defaults there, and an "always allow" answer appends to

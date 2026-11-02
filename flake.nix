@@ -58,6 +58,12 @@
   } @ inputs: let
     inherit (self) outputs;
   in {
+    checks.x86_64-linux.agent-permissions = import ./tests/agent-permissions.nix {
+      pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
+      codex = inputs.llm-agents.packages.x86_64-linux.codex;
+      managedFiles = self.nixosConfigurations.thixos.config.environment.etc;
+    };
+
     nixosConfigurations = {
       thixos = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs outputs;};

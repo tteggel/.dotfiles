@@ -38,6 +38,28 @@ sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 ```
 (Inside yoloixos this is intentionally impossible.)
 
+## Agent permissions and Google Cloud PAM
+
+`nixos/agent-permissions.nix` installs root-owned, read-only system policies for
+Codex, Claude Code and Copilot CLI. These forbid `gcloud pam`, `gcloud alpha pam`
+and `gcloud beta pam`. Repository settings and allow rules cannot override the
+denies. Claude's bypass-permissions mode is disabled so it cannot skip the policy;
+auto mode remains available. Copilot's policy is a regular file because it rejects
+symlinked managed settings.
+
+Home Manager also installs Codex forbidden rules and adds explicit denies to the
+Claude and Copilot launchers, including the standalone profiles. The root-owned
+managed policies are installed by NixOS, not standalone Home Manager.
+
+`home/google-cloud-sdk.nix` removes all three PAM command groups from the installed
+SDK, including calls with global flags before `pam`. The same package supplies
+the GCP helper scripts and keeps the GKE auth plugin. This applies to that SDK;
+separately installed SDKs and direct PAM API requests require Google Cloud IAM
+restrictions to block them.
+
+Apply with the NixOS rebuild command above, then restart agent sessions. Check the
+policy and SDK offline with `nix build .#checks.x86_64-linux.agent-permissions`.
+
 ## WSL networking and authentication
 
 `config/wslconfig` selects Consomme. Mirrored mode previously dropped the guest's
