@@ -148,6 +148,8 @@ in {
 
   home.file = mcp.agyExtensionFiles // {
     ".codex/rules/gcloud-pam.rules".text = agentPermissions.codexRules;
+    # How to keep steps reviewable by the judge; see home/copilot.nix.
+    ".copilot/copilot-instructions.md".text = copilot-cfg.agentInstructions;
   };
 
   # Claude Code writes ~/.claude/settings.json itself: /effort, /model and
@@ -207,7 +209,7 @@ in {
 
   # Copilot's settings; see home/copilot.nix.
   home.activation.copilotSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    ${copilot-cfg.settingsSeed "${llm-agents.copilot-cli}/bin/copilot"}
+    ${copilot-cfg.settingsSeed { copilot = "${llm-agents.copilot-cli}/bin/copilot"; jq = "${pkgs.jq}/bin/jq"; }}
   '';
 
   programs.zsh = {
