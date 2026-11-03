@@ -41,14 +41,19 @@ sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 ## Agent permissions and Google Cloud PAM
 
 `nixos/agent-permissions.nix` installs root-owned, read-only system policies for
-Codex, Claude Code and Copilot CLI. These forbid `gcloud pam`, `gcloud alpha pam`
-and `gcloud beta pam`. Repository settings and allow rules cannot override the
+Codex and Claude Code. These forbid `gcloud pam`, `gcloud alpha pam` and
+`gcloud beta pam`. Repository settings and allow rules cannot override the
 denies. Claude's bypass-permissions mode is disabled so it cannot skip the policy;
-auto mode remains available. Copilot's policy is a regular file because it rejects
-symlinked managed settings.
+auto mode remains available.
+
+Copilot CLI gets no managed policy. Once a managed policy sets any permission
+rule, Copilot asks for every operation that matches none of the rules, so a deny
+list alone turned routine reads into "Organization policy requires confirmation"
+prompts in autopilot.
 
 Home Manager also installs Codex forbidden rules and adds explicit denies to the
-Claude and Copilot launchers, including the standalone profiles. The root-owned
+Claude and Copilot launchers, including the standalone profiles. For Copilot,
+these launcher denies and the SDK below are the only enforcement. The root-owned
 managed policies are installed by NixOS, not standalone Home Manager.
 
 `home/google-cloud-sdk.nix` removes all three PAM command groups from the installed

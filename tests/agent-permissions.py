@@ -18,7 +18,8 @@ policy = fixture["policy"]
 sdk = Path(sys.argv[2])
 prefixes = [["gcloud", "pam"], ["gcloud", "alpha", "pam"], ["gcloud", "beta", "pam"]]
 files = fixture["managedFiles"]
-assert len(files) == 3
+# A Copilot managed policy with any rule makes every unmatched operation ask.
+assert set(files) == {"codex/requirements.toml", "claude-code/managed-settings.json"}, set(files)
 for file in files.values():
     assert (file["mode"], file["user"], file["group"]) == ("0444", "root", "root")
 
@@ -30,15 +31,13 @@ assert [rule["pattern"] for rule in rules] == [
 assert all(rule["decision"] == "forbidden" for rule in rules)
 assert files["codex/requirements.toml"]["text"] == policy["codexRequirements"]
 
-for name, tool in [("claude-code", "Bash"), ("github-copilot", "Shell")]:
-    permissions = json.loads(files[f"{name}/managed-settings.json"]["text"])["permissions"]
-    assert permissions["deny"] == [
-        pattern
-        for prefix in prefixes
-        for pattern in (f"{tool}({' '.join(prefix)})", f"{tool}({' '.join(prefix)} *)")
-    ]
-    if name == "claude-code":
-        assert permissions["disableBypassPermissionsMode"] == "disable"
+permissions = json.loads(files["claude-code/managed-settings.json"]["text"])["permissions"]
+assert permissions["deny"] == [
+    pattern
+    for prefix in prefixes
+    for pattern in (f"Bash({' '.join(prefix)})", f"Bash({' '.join(prefix)} *)")
+]
+assert permissions["disableBypassPermissionsMode"] == "disable"
 
 with tempfile.TemporaryDirectory() as temporary:
     directory = Path(temporary)

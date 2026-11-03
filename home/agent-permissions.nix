@@ -7,7 +7,8 @@
     commands;
 in {
   claudeDeny = shellRules "Bash";
-  copilotDeny = shellRules "Shell";
+  # Copilot's only deny rules: a managed policy would make it ask for
+  # everything else (nixos/agent-permissions.nix).
   copilotArgs = lib.concatMapStringsSep " "
     (command: lib.escapeShellArg "--deny-tool=shell(${command}:*)" + " "
       + lib.escapeShellArg "--deny-tool=shell(${command})")
