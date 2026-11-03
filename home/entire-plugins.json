@@ -1,8 +1,8 @@
 {
   "brain": {
     "channel": "nightly",
-    "version": "0.4.0-nightly.202611020624.06a56b79",
-    "hash": "sha256-cEcQ/vaFbv/nhLnk8jwss5OX2S3GC/HRBARmqysAMBA="
+    "version": "0.5.0",
+    "hash": "sha256-5nXt+zuZrqz3mTNg8jC1zD1aZKyaCKJHGExaatMVTKA="
   },
   "graph": {
     "version": "0.6.0",
