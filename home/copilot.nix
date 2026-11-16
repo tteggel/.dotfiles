@@ -97,8 +97,14 @@
   # User-level custom instructions (~/.copilot/copilot-instructions.md), read
   # alongside each repository's AGENTS.md. The judge sees the command text
   # and the conversation but not the files a command reads, so a query run
-  # from a .sql file or a helper script left it unable to tell a read from a
-  # write, and it escalated every one.
+  # from a .sql file or a helper script could leave it unable to tell a read
+  # from a write. Files under /tmp or Copilot's session directory fared
+  # worst: it escalated most of them. Queries run from files checked into the
+  # repository mostly passed (15 approved, 10 escalated, the escalations
+  # under the old instructions). Inlining has a ceiling, though: Copilot
+  # skips the judge for a command too long to review in full ("Action too
+  # long for automatic review"). The largest command it ever reviewed was
+  # 11,434 characters, and 30,000-character inline queries were refused.
   agentInstructions = ''
     # Assisted permissions
 
@@ -107,10 +113,15 @@
     reads, so a step it cannot read becomes a prompt for the user, and in
     autopilot a denial. Keep what a command does visible in the command:
 
-    - Pass SQL inline on stdin with a quoted heredoc, for example
-      `bq query --use_legacy_sql=false --maximum_bytes_billed=N <<'SQL'`,
-      never `< query.sql` or a helper script that builds or runs the query.
-      The same goes for psql and other database clients.
+    - Keep every command under about 10,000 characters. The judge won't
+      review a longer one at all, so it always needs the user.
+    - Pass a short query inline on stdin with a quoted heredoc, for example
+      `bq query --use_legacy_sql=false --maximum_bytes_billed=N <<'SQL'`.
+      Run a longer query from its file in the repository
+      (`bq query ... < queries/report.sql`) rather than pasting it inline or
+      copying it to /tmp or the session directory. Never build or run a
+      query from a helper script. The same goes for psql and other database
+      clients.
     - Run one-off code inline as `python3 - <<'EOF'` or `node - <<'EOF'`
       rather than writing a script file and running it, at least whenever it
       queries, calls the network or writes outside the repository.
@@ -130,6 +141,14 @@
   # keeps the judge instructions it started with: one started before the
   # 2 November rebuild was still judging by the old text the next morning.
   # Restart Copilot panes (copilot --continue) after changing them.
+  #
+  # The judge also reads a record of every earlier permission decision in the
+  # session, capped at 128,000 characters. Copilot drops spent approvals to
+  # stay under the cap but keeps denials. Once the record is over the cap,
+  # every judge call fails ("retained permission evidence is too large" in
+  # ~/.copilot/logs), autopilot denies each tool call, and each denial makes
+  # the record bigger. A two-day session hit this on 3 November and never
+  # recovered. --continue resumes the same record, so only /new fixes it.
   settings = {
     # An interactive session refuses --assisted-approval ("only supported in
     # non-interactive prompt mode or direct workflow mode").
