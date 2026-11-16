@@ -1,0 +1,17 @@
+version bumps, incl major. I've done a flake input but I wanna bump zellij fork and other stuff that gets missed by the update system palette command
+
+---
+
+thoughts on the maintainability of the fork? other approaches?
+
+---
+
+continue
+
+---
+
+why did the last actions run fail?
+
+---
+
+commit & push please

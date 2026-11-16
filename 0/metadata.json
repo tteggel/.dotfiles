@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "01M7KAVRSAZ6264CTESJJVJB9A",
+  "session_id": "01a1e5cf-aecf-7b71-b1f7-d699ec8d8ab8",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T23:25:19.246252689Z",
+  "branch": "master",
+  "checkpoints_count": 3,
+  "save_step_count": 3,
+  "files_touched": [
+    ".github/workflows/build.yml",
+    "README.md",
+    "bespoke/zellij/dim-unfocused/AGENTS.md",
+    "bespoke/zellij/dim-unfocused/Cargo.lock",
+    "bespoke/zellij/dim-unfocused/flake.lock",
+    "bespoke/zellij/dim-unfocused/flake.nix",
+    "flake.lock",
+    "flake.nix",
+    "templates/nodejs/flake.nix"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "5a0ee78233f5",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 449280,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17968640,
+    "output_tokens": 67180,
+    "api_call_count": 117
+  },
+  "session_token_usage": {
+    "input_tokens": 449280,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17968640,
+    "output_tokens": 67180,
+    "api_call_count": 117
+  },
+  "redaction": {
+    "replacements": 1586,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 4,
+      "credentialed_uri": 0,
+      "entropy": 1639,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 3
+  }
+}

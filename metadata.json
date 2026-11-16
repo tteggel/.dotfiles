@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "01M7KAVRSAZ6264CTESJJVJB9A",
+  "strategy": "manual-commit",
+  "branch": "master",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".github/workflows/build.yml",
+    "README.md",
+    "bespoke/zellij/dim-unfocused/AGENTS.md",
+    "bespoke/zellij/dim-unfocused/Cargo.lock",
+    "bespoke/zellij/dim-unfocused/flake.lock",
+    "bespoke/zellij/dim-unfocused/flake.nix",
+    "flake.lock",
+    "flake.nix",
+    "templates/nodejs/flake.nix"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 449280,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17968640,
+    "output_tokens": 67180,
+    "api_call_count": 117
+  },
+  "redaction": {
+    "replacements": 1586,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 4,
+      "credentialed_uri": 0,
+      "entropy": 1639,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
