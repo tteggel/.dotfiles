@@ -16,8 +16,9 @@
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
           packages = with pkgs; [
-            nodejs_24
-            yarn
+            nodejs_26
+            # Run Yarn with the Node selected by this shell.
+            (yarn.override { withNode = false; })
             google-cloud-sdk
           ];
         };

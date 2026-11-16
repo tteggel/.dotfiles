@@ -24,7 +24,7 @@ dim-unfocused plugin (WASI)          Zellij server (patched fork)
 - `shader/src/lib.rs` — WASM shader (no_std Rust, wasm32-unknown-unknown). Fast to build (~seconds).
 - `src/main.rs` — dim-unfocused plugin (wasm32-wasip1). Fast to build (~seconds).
 - `flake.nix` — Nix build: shader WASM → plugin WASM → custom Zellij.
-- Fork: `github:tteggel/zellij` branch `pane-shaders-static` — the patched Zellij. **Slow to build (~20 minutes).**
+- Fork: `github:tteggel/zellij` branch `pane-shaders-static-2026-11-16` — the patched Zellij. **Slow to build (~20 minutes).**
 
 ### Fork Integration Points (in Zellij source)
 
@@ -32,7 +32,7 @@ These are the files modified in the fork. When rebasing on upstream, these are t
 
 | File | What | Risk |
 |------|------|------|
-| `zellij-server/src/output/mod.rs` | `ShaderInstance`, `ShaderUniforms`, `apply_shader_to_styles`, `serialize_chunks` | **High** — core rendering |
+| `zellij-server/src/output/mod.rs` | `ShaderInstance`, `ShaderUniforms`, `CharacterChunk` styles, ANSI and structured rendering | **High** — core rendering |
 | `zellij-server/src/screen.rs` | `ScreenInstruction::SetPaneShader` handler | Medium |
 | `zellij-server/src/panes/grid.rs` | `pane_shader` field on `Grid`, uniforms construction in render | Medium |
 | `zellij-server/src/panes/terminal_pane.rs` | `Pane::set_pane_shader` impl | Low |
@@ -160,11 +160,10 @@ cd /tmp/zellij-fork
 git remote add upstream https://github.com/zellij-org/zellij.git
 git fetch upstream main
 git checkout -b pane-shaders-static-next upstream/main
-git cherry-pick pane-shaders-static
+git cherry-pick origin/pane-shaders-static-2026-11-16
 # resolve conflicts, especially in output/mod.rs and grid.rs
 git push origin pane-shaders-static-next
-# update flake locks as above
-# once happy: rename pane-shaders-static-next → pane-shaders-static via gh
+# point zellij-src in flake.nix at the new branch, then update both locks above
 ```
 
 Push uses SSH (`git@github.com:tteggel/zellij.git`) because rebasing usually pulls in upstream `.github/workflows/*.yml` changes that the OAuth token can't authorize.
@@ -183,7 +182,14 @@ next free values. On each rebase, renumber ours above whatever upstream now
 occupies, in both `plugin_command.proto` and the generated
 `assets/prost/api.plugin_command.rs` (enum value, `as_str_name`, `from_str_name`,
 and the `tags="…"` list on `PluginCommand::payload`). History so far:
-215→227→229→233 for `CommandName`, 164→172→176 for the payload oneof.
+215→227→229→233→286 for `CommandName`, 164→172→176→227 for the payload oneof.
+
+Since 0.46, shaders must also run in `flatten_chunks` for structured frames.
+Its neighboring-cell style cache must be bypassed when a shader is attached,
+because colors can depend on position. Keep grapheme grouping based on the
+original styles, and shade each group as one unit. Preserve the shader and
+uniforms when floating panes split a chunk, and disable row-shift reuse for
+shaded grids. The `pane_shader_*` output tests cover these rendering paths.
 
 Upstream also raises its MSRV regularly (0.45 needs rustc 1.95), so a rebase
 usually means bumping the sub-flake's `nixpkgs` and `rust-overlay` too.

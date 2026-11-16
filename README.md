@@ -38,6 +38,19 @@ sudo nixos-rebuild switch --flake ~/src/github.com/tteggel/.dotfiles#thixos
 ```
 (Inside yoloixos this is intentionally impossible.)
 
+The palette's **Update system** command refreshes both flake lockfiles and
+`home/entire-plugins.json`, rebuilds, then commits and pushes those pins. It
+follows the configured branches and tags; it does not choose newer release tags
+or rebase the Zellij shader fork onto upstream.
+
+Manual upgrades also cover merman's release tag in `flake.nix`, Linear's version
+and archive hash in `home/home.nix`, the Node major in `templates/nodejs/flake.nix`,
+and the actions in `.github/workflows/build.yml`. For Zellij, follow the
+local-build and lockfile steps in
+[the shader guide](bespoke/zellij/dim-unfocused/AGENTS.md). Keep
+Playwright's tag matched to the BookCreator test lockfile, and retain the OpenAI
+document-skills revision while newer revisions omit the installed skills.
+
 ## Agent permissions and Google Cloud PAM
 
 `nixos/agent-permissions.nix` installs root-owned, read-only system policies for

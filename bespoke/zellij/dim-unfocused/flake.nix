@@ -8,7 +8,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zellij-src = {
-      url = "github:tteggel/zellij/pane-shaders-static";
+      url = "github:tteggel/zellij/pane-shaders-static-2026-11-16";
       flake = false;
     };
   };
@@ -33,6 +33,7 @@
     zellijCargoVendored = pkgs.rustPlatform.importCargoLock {
       lockFile = zellij-src + "/Cargo.lock";
     };
+    zellijManifest = builtins.fromTOML (builtins.readFile (zellij-src + "/Cargo.toml"));
     shaderWasm = pkgs.stdenv.mkDerivation {
       pname = "dim-shader";
       version = "0.1.0";
@@ -63,7 +64,7 @@
       # symlinkJoin wrapper, so overriding it leaves the stock binary in place.
       zellij = pkgs.zellij-unwrapped.overrideAttrs (old: {
         pname = "zellij";
-        version = "0.46.0-unstable";
+        version = "${zellijManifest.workspace.package.version}-unstable";
         src = zellij-src;
         cargoDeps = zellijCargoVendored;
         postPatch = ''

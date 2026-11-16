@@ -204,16 +204,16 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1791219220,
-        "narHash": "sha256-PPegdxdgT7OF5jzFskj3r5Ftwca0Z2A61q+Y2zLQuZ0=",
+        "lastModified": 1794443995,
+        "narHash": "sha256-fpjPJmtYY4xpep8yj8K6ZagPA+xhv3QbMMLq5nUflhE=",
         "owner": "Latias94",
         "repo": "merman",
-        "rev": "2029bd547077b1a6800878e125663633d81e6d87",
+        "rev": "e0e75bcab2fa8e39dd7a09465b7f2e035eda82ef",
         "type": "github"
       },
       "original": {
         "owner": "Latias94",
-        "ref": "v0.8.0",
+        "ref": "v0.10.0",
         "repo": "merman",
         "type": "github"
       }
@@ -272,11 +272,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1781216227,
-        "narHash": "sha256-9mUW6gNwoN2SWc/l0fW4svPNOulXLl8ijqKyeSOGgJE=",
+        "lastModified": 1793633738,
+        "narHash": "sha256-tItrb9M8eYA6WhFgmT9tpGKueri3+wRuVA952o/2xSU=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "a0374025a863d007d98e3297f6aa46cc3141c2f0",
+        "rev": "7dcdd87373d72e7a2173e4db02e20d3d7f495cfd",
         "type": "github"
       },
       "original": {
@@ -478,16 +478,16 @@
     "zellij-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1790533388,
-        "narHash": "sha256-HS2OSPKtRH+2braMdlft1L3AS/cK0suLLlQBNICL5q0=",
+        "lastModified": 1794866614,
+        "narHash": "sha256-YLK+8YDTp2CUDJMyQThY6bb9Ar2vKPTtktXpl85LwBI=",
         "owner": "tteggel",
         "repo": "zellij",
-        "rev": "c12f06278c3afb2c1552ca2634955d17361b5ef1",
+        "rev": "c8af883f7a04c18e2dae0875e9e6e8366b62d52a",
         "type": "github"
       },
       "original": {
         "owner": "tteggel",
-        "ref": "pane-shaders-static",
+        "ref": "pane-shaders-static-2026-11-16",
         "repo": "zellij",
         "type": "github"
       }

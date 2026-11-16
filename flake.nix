@@ -27,7 +27,7 @@
     # (scripts/mdv-mermaid.sh). Pinned to a release because the CLI is pre-1.0
     # and still renaming flags. No nixpkgs follows: it is a several-minute Rust
     # build with no binary cache, so let it rebuild only when this tag moves.
-    merman.url = "github:Latias94/merman/v0.8.0";
+    merman.url = "github:Latias94/merman/v0.10.0";
     # Playwright browsers for the BookCreator repos (home/bookcreator.nix). Keep
     # this tag equal to the @playwright/test version they lock. No nixpkgs
     # follows, so the patched browsers rebuild only when this tag moves.
