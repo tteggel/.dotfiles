@@ -247,6 +247,10 @@ in {
     linear-cli
     wget jq eza bat fd ripgrep fzf zoxide delta lazygit difftastic
     kubectl firebase-tools micro starship nodejs
+    # nixpkgs has no client-only package: this is ClickHouse's single
+    # multi-call binary (`clickhouse client`, `clickhouse-client`, `clickhouse
+    # local`, ...). It is in the binary cache, so it never builds from source.
+    clickhouse
     # From llm-agents rather than nixpkgs: the CLI moves fast and llm-agents
     # tracks it closely (0.10.0 vs nixpkgs' 0.9.0), same as the agent CLIs.
     entire
