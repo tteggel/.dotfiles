@@ -89,6 +89,10 @@ keybinds clear-defaults=true {
         bind "Ctrl Shift j" { MoveFocus "Down"; }
         bind "Ctrl Shift k" { MoveFocus "Up"; }
         bind "Ctrl Shift l" { MoveFocus "Right"; }
+        bind "Ctrl Alt Shift h" { MovePane "Left"; }
+        bind "Ctrl Alt Shift j" { MovePane "Down"; }
+        bind "Ctrl Alt Shift k" { MovePane "Up"; }
+        bind "Ctrl Alt Shift l" { MovePane "Right"; }
         bind "Ctrl Shift =" { Resize "Increase"; }
         bind "Ctrl Shift -" { Resize "Decrease"; }
         bind "Ctrl Shift z" { ToggleFocusFullscreen; }

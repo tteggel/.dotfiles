@@ -14,6 +14,7 @@ ${B}${C}═══ Zellij ═══${R}
     ${G}Ctrl+Shift+N${R}      New pane
     ${G}Ctrl+Shift+W${R}      Close pane
     ${G}Ctrl+Shift+H/J/K/L${R}  Move focus
+    ${G}Ctrl+Alt+Shift+H/J/K/L${R}  Swap pane with neighbour
     ${G}Ctrl+Shift+= / -${R}  Grow / shrink pane
     ${G}Ctrl+Shift+Z${R}      Toggle fullscreen
 
